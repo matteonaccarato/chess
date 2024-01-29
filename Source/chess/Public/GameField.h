@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Tile.h"
+#include "BasePawn.h"
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
 
@@ -38,13 +39,62 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Size;
 
+	// Number of rows where pawns have to be placed
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Pawns_Rows;
+
 	// Size of winning line
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 WinSize;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ATile> TileClass;
 
+	// Tile Classes
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ATile> B_TileClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ATile> W_TileClass;
+
+	// Pawns Classes
+	// Blacks
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_BishopClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_KingClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_KnightClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_PawnClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_QueenClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> B_RookClass;
+
+	// Whites
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_BishopClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_KingClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_KnightClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_PawnClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_QueenClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABasePawn> W_RookClass;
+
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CellPadding;
 
@@ -77,7 +127,7 @@ public:
 	isValidPosition
 	*/
 
-	TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
+	// TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
 
 	// allEqual
 	// 
