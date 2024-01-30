@@ -66,8 +66,12 @@ void AChess_HumanPlayer::OnLose()
 	// TODO
 }
 
-void AChess_HumanPlayer::OnClick()
+void AChess_HumanPlayer::OnClick(EClickFlag flag)
 {
+
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("%d"), flag));
+
+
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("CIAO MAMMA, turno mio? %d"), IsMyTurn));
 	FHitResult Hit = FHitResult(ForceInit);
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
@@ -94,47 +98,45 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-			// TODO: prendere questo offset da attributo pawn
 
 
 
-
-			// FVector NewLocation = AGameField::GetRelativeLocationByXYPosition(CurrPawnPosition[0], CurrPawnPosition[1]);
-			/*FVector Origin;
-			FVector BoxExtent;
-			CurrPawn->GetActorBounds(false, Origin, BoxExtent);
-
-			FVector PawnLocation(Origin.GetComponentForAxis(EAxis::X), Origin.GetComponentForAxis(EAxis::Y), Origin.GetComponentForAxis(EAxis::Z) + 100);
-			ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(CurrPawn->GetClass(), PawnLocation, FRotator(0, 90, 0));
-			// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
-			
-			
-			BasePawnObj->SetGridPosition(CurrPawnPosition[0], CurrPawnPosition[1] + 2);
-			if (BasePawnObj != nullptr)
+			// Set up action bindings
+			/* if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 			{
-				// 0.8 da mettere come attributo
-				BasePawnObj->SetActorScale3D(CurrPawn->GetActorScale3D());
-				// BasePawnObj->SetGridPosition(x, y);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
+				EnhancedInputComponent->BindAction(ClickAction, ETriggerEvent::Triggered, this, &AChess_PlayerController::ClickOnGrid);
 			} */
 
 
+
+
+
+
+
+
 			// set tile status
-			FVector SpawnPosition = CurrPawn->GetActorLocation();
+			// FVector SpawnPosition = CurrPawn->GetActorLocation();
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			GameMode->SetCellPawn(PlayerNumber, SpawnPosition); // TODO: no fvector ma spawnposition
+			if (GameMode != nullptr)
+			{
+				/*
+				* Elaborate new x,y in function of eligible moves of the pawn
+				* 
+				* TODO: update TileArray and TileMap
+				*/
+				int32 NewX = CurrPawnPosition[0] + 2;
+				int32 NewY = CurrPawnPosition[1];
 
-
-
-
-
-
-
-
-
+				FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0,0,CurrPawn->GetActorLocation()[2]);
+				CurrPawn->SetActorLocation(SpawnPosition);
+				GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+				
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+			}
+			
 
 		}
 

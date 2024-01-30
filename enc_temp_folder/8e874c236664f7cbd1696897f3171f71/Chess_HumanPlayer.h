@@ -4,13 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "../BasePawn.h"
 #include "../Chess_GameInstance.h"
 #include "Chess_PlayerInterface.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Chess_HumanPlayer.generated.h"
 
+UENUM()
+enum class EClickFlag : uint8
+{
+	SELECT_PAWN,
+	MOVE_PAWN
+};
 
 UCLASS()
 class CHESS_API AChess_HumanPlayer : public APawn, public IChess_PlayerInterface
@@ -31,12 +36,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	bool IsMyTurn = false;
-	ABasePawn* PawnTemp;
-
-	// 0 => Select Pawn to move is needed
-	// 1 => Pawn selected, Choose Tile to move on
-	// TODO: valutare se sostituibile con IsMyTurn
-	int32 SelectedPawnFlag = 0;
 
 public:	
 	// Called every frame
@@ -51,5 +50,5 @@ public:
 
 	// called on left mouse click (binding)
 	UFUNCTION()
-	void OnClick();
+	void OnClick(EClickFlag flag);
 };

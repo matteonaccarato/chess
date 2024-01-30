@@ -68,96 +68,78 @@ void AChess_HumanPlayer::OnLose()
 
 void AChess_HumanPlayer::OnClick()
 {
+
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("CIAO MAMMA, turno mio? %d"), IsMyTurn));
 	FHitResult Hit = FHitResult(ForceInit);
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
 	if (Hit.bBlockingHit && IsMyTurn)
 	{
+		// Select Pawn to move first
+		// Then I must select the new position
+		
+
+
 		// TODO: controllare se la pedina è mia
-		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
+		/* if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Selezionare pedina"));
-		}
+		} */
 
 
 
 
-
-		if (ABasePawn* CurrPawn = Cast<ABasePawn>(Hit.GetActor()))
+		if (SelectedPawnFlag == 0)
 		{
-			
-			// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, CurrPawn->GetTileId());
-			FVector2D CurrPawnPosition = CurrPawn->GetGridPosition();
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("%f %f"), CurrPawnPosition[0], CurrPawnPosition[1]));
-
-
-
-
-
-			// TODO: prendere questo offset da attributo pawn
-
-
-
-
-			// FVector NewLocation = AGameField::GetRelativeLocationByXYPosition(CurrPawnPosition[0], CurrPawnPosition[1]);
-			/*FVector Origin;
-			FVector BoxExtent;
-			CurrPawn->GetActorBounds(false, Origin, BoxExtent);
-
-			FVector PawnLocation(Origin.GetComponentForAxis(EAxis::X), Origin.GetComponentForAxis(EAxis::Y), Origin.GetComponentForAxis(EAxis::Z) + 100);
-			ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(CurrPawn->GetClass(), PawnLocation, FRotator(0, 90, 0));
-			// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
-			
-			
-			BasePawnObj->SetGridPosition(CurrPawnPosition[0], CurrPawnPosition[1] + 2);
-			if (BasePawnObj != nullptr)
+			PawnTemp = Cast<ABasePawn>(Hit.GetActor());
+			if (PawnTemp)
 			{
-				// 0.8 da mettere come attributo
-				BasePawnObj->SetActorScale3D(CurrPawn->GetActorScale3D());
-				// BasePawnObj->SetGridPosition(x, y);
+				FVector2D Curr = PawnTemp->GetGridPosition();
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("SELECTED X: %f Y: %f"), Curr[0], Curr[1]));
+				SelectedPawnFlag = 1;
 			}
-			else
+		}
+		
+
+
+
+		if (SelectedPawnFlag == 1)
+		{
+			if (ATile* NewTile = Cast<ATile>(Hit.GetActor()))
 			{
-				UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
-			} */
-
-
-			// set tile status
-			// FVector SpawnPosition = CurrPawn->GetActorLocation();
-			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode != nullptr)
-			{
-				/*
-				* Elaborate new x,y in function of eligible moves of the pawn
-				*/
-				int32 NewX = CurrPawnPosition[0] + 2;
-				int32 NewY = CurrPawnPosition[1];
-
-				FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0,0,CurrPawn->GetActorLocation()[2]);
-				CurrPawn->SetActorLocation(SpawnPosition);
-				GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+				FVector2D CurrPawnPosition = PawnTemp->GetGridPosition();
 				
+				
+
+
+				// TODO set tile status
+				
+				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+				if (GameMode != nullptr)
+				{
+					/*
+					* Elaborate new x,y in function of eligible moves of the pawn
+					*
+					* TODO: update TileArray and TileMap
+					*/
+					
+
+					FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
+					PawnTemp->SetActorLocation(SpawnPosition);
+					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+
+					SelectedPawnFlag = 0;
+					IsMyTurn = false;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+				}
 			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-			}
-			
-
-
-
-
-
-
-
-
-
-
 		}
 
 		
 
-		IsMyTurn = false;
+		
 	}
 	else
 	{

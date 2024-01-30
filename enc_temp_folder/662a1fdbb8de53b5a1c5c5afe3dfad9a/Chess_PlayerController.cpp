@@ -29,6 +29,7 @@ void AChess_PlayerController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(ClickAction, ETriggerEvent::Triggered, this, &AChess_PlayerController::ClickOnGrid);
+		EnhancedInputComponent->BindAction(ClickAction, ETriggerEvent::Triggered, this, &AChess_PlayerController::MovePawn);
 	}
 }
 
@@ -38,6 +39,16 @@ void AChess_PlayerController::ClickOnGrid()
 	const auto HumanPlayer = Cast<AChess_HumanPlayer>(GetPawn());
 	if (IsValid(HumanPlayer))
 	{
-		HumanPlayer->OnClick();
+		HumanPlayer->OnClick(EClickFlag::SELECT_PAWN);
 	}
 }
+
+void AChess_PlayerController::MovePawn()
+{
+	const auto HumanPlayer = Cast<AChess_HumanPlayer>(GetPawn());
+	if (IsValid(HumanPlayer))
+	{
+		HumanPlayer->OnClick(EClickFlag::MOVE_PAWN);
+	}
+}
+
