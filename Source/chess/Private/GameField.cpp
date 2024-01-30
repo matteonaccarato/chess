@@ -16,7 +16,7 @@ AGameField::AGameField()
 	// Size of the field (8x8)
 	Size = 8; 
 	TileSize = 120;
-	CellPadding = 20;
+	CellPadding = 0;
 	Pawns_Rows = 2;
 	// NormalizedCellPadding = FMath::RoundToDouble(((TileSize + CellPadding) / TileSize) * 100) / 100;
 }
@@ -88,7 +88,7 @@ void AGameField::GenerateField()
 					
 					if (x == 0)
 					{
-						switch (y % Size) {
+						switch (y) {
 						case 0: BasePawnClass = W_RookClass; break;
 						case 1: BasePawnClass = W_KnightClass; break;
 						case 2: BasePawnClass = W_BishopClass; break;
@@ -101,7 +101,7 @@ void AGameField::GenerateField()
 					} else if (x == 1)  BasePawnClass = W_PawnClass;
 					else if (x == Size - 1)
 					{
-						switch (y % Size) {
+						switch (y) {
 						case 0: BasePawnClass = B_RookClass; break;
 						case 1: BasePawnClass = B_KnightClass; break;
 						case 2: BasePawnClass = B_BishopClass; break;
@@ -126,7 +126,8 @@ void AGameField::GenerateField()
 
 					if (BasePawnObj != nullptr)
 					{
-						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.7, TileScale * 0.7, 0.2));
+						// 0.8 da mettere come attributo
+						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
 						// BasePawnObj->SetGridPosition(x, y);
 					}
 					else
