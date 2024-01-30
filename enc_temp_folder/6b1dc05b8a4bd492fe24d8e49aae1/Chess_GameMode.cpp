@@ -65,17 +65,8 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 	
 	*/
 
-	// FVector Location = GField->GetActorLocation() + SpawnPosition + FVector(0, 0, 10);
-	// GetWorld()->SpawnActor(B_KingClass, &Location);
-	// ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(B_KingClass, Location, FRotator(0,90,0));
-	/*if (BasePawnObj != nullptr)
-	{
-		// FVector2D xy = GField->GetXYPositionByRelativeLocation(Location);
-		// BasePawnObj->SetGridPosition(xy[0], xy[1]);
-		const float TileScale = GField->TileSize / 100; // TileScale as attribute
-		BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
-	}*/
-
+	FVector Location = GField->GetActorLocation() + SpawnPosition + FVector(0, 0, 10);
+	GetWorld()->SpawnActor(B_KingClass, &Location);
 
 	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Set"));
 

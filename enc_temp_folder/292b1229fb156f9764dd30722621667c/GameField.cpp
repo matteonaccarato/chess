@@ -132,9 +132,9 @@ void AGameField::GenerateField()
 					FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2*BoxExtent.GetComponentForAxis(EAxis::Z));
 					ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0,90,0));
 					// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
+					BasePawnObj->SetGridPosition(x, y);
 					if (BasePawnObj != nullptr)
 					{
-						BasePawnObj->SetGridPosition(x, y);
 						// 0.8 da mettere come attributo
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
 						// BasePawnObj->SetGridPosition(x, y);

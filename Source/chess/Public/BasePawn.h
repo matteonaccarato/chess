@@ -15,9 +15,21 @@ public:
 	// Sets default values for this actor's properties
 	ABasePawn();
 
+	/* void SetTileId(const FString TileId);
+	FString GetTileId() const; */
+
+	void SetGridPosition(const double InX, const double InY);
+	FVector2D GetGridPosition() const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString TileId; */
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector2D TileGridPosition;
 
 public:	
 	// Called every frame

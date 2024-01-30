@@ -16,10 +16,21 @@ ATile::ATile()
 	SetRootComponent(Scene);
 	StaticMeshComponent->SetupAttachment(Scene);
 
+	Id = TEXT("");
 	Status = ETileStatus::EMPTY;
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 
+}
+
+void ATile::SetId(const FString TileId)
+{
+	Id = TileId;
+}
+
+FString ATile::GetId() const
+{
+	return Id;
 }
 
 void ATile::SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus)
@@ -28,12 +39,12 @@ void ATile::SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus)
 	Status = TileStatus;
 }
 
-ETileStatus ATile::GetTileStatus()
+ETileStatus ATile::GetTileStatus() const
 {
 	return Status;
 }
 
-int32 ATile::GetOwner()
+int32 ATile::GetOwner() const
 {
 	return PlayerOwner;
 }
@@ -43,7 +54,7 @@ void ATile::SetGridPosition(const double InX, const double InY)
 	TileGridPosition.Set(InX, InY);
 }
 
-FVector2D ATile::GetGridPosition()
+FVector2D ATile::GetGridPosition() const
 {
 	return TileGridPosition;
 }

@@ -123,26 +123,9 @@ void AChess_HumanPlayer::OnClick()
 
 
 			// set tile status
-			// FVector SpawnPosition = CurrPawn->GetActorLocation();
+			FVector SpawnPosition = CurrPawn->GetActorLocation();
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode != nullptr)
-			{
-				/*
-				* Elaborate new x,y in function of eligible moves of the pawn
-				*/
-				int32 NewX = CurrPawnPosition[0] + 2;
-				int32 NewY = CurrPawnPosition[1];
-
-				FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0,0,CurrPawn->GetActorLocation()[2]);
-				CurrPawn->SetActorLocation(SpawnPosition);
-				GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
-				
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-			}
-			
+			GameMode->SetCellPawn(PlayerNumber, SpawnPosition); // TODO: no fvector ma spawnposition
 
 
 

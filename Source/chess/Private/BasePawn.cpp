@@ -2,6 +2,8 @@
 
 
 #include "BasePawn.h"
+#include "GameField.h"
+#include "Chess_GameMode.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -13,12 +15,40 @@ ABasePawn::ABasePawn()
 
 }
 
+void ABasePawn::SetGridPosition(const double InX, const double InY)
+{
+	TileGridPosition.Set(InX, InY);
+}
+
+FVector2D ABasePawn::GetGridPosition() const
+{
+	return TileGridPosition;
+}
+
+/* void ABasePawn::SetTileId(const FString TileIdParam)
+{
+	TileId = TileIdParam;
+}
+
+FString ABasePawn::GetTileId() const
+{
+	return TileId;
+} */
+
 // Called when the game starts or when spawned
 void ABasePawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// gamefield
+	/*AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode != nullptr)
+	{
+		GameMode->GField->OnResetEvent.AddDynamic(this, &ABasePawn::SelfDestroy);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+	}*/
 	
 }
 

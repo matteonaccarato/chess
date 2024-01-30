@@ -22,15 +22,16 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	void SetId(const FString TileId);
+	FString GetId() const;
+
 	void SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus);
+	ETileStatus GetTileStatus() const;
 
-	ETileStatus GetTileStatus();
-
-	int32 GetOwner();
+	int32 GetOwner() const;
 
 	void SetGridPosition(const double InX, const double InY);
-
-	FVector2D GetGridPosition();
+	FVector2D GetGridPosition() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,6 +42,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString Id;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ETileStatus Status;
