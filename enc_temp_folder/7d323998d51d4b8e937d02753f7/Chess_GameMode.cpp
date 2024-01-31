@@ -45,7 +45,7 @@ void AChess_GameMode::BeginPlay()
 	// Minimax player
 	// auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
-	Players.Add(AI);
+	// Players.Add(AI);
 
 
 	this->ChoosePlayerAndStartGame();
@@ -110,6 +110,6 @@ void AChess_GameMode::TurnNextPlayer()
 {
 	MoveCounter += 1;
 	CurrentPlayer = GetNextPlayer(CurrentPlayer);
-	//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d turn"), CurrentPlayer));
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d turn"), CurrentPlayer));
 	Players[CurrentPlayer]->OnTurn();
 }

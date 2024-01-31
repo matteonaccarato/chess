@@ -52,7 +52,7 @@ void AChess_HumanPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void AChess_HumanPlayer::OnTurn()
 {
 	IsMyTurn = true;
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, TEXT("My Turn"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
 	// GameInstance->SetTurnMessage(TEXT("Human Turn"));
 }
 
@@ -69,7 +69,7 @@ void AChess_HumanPlayer::OnLose()
 void AChess_HumanPlayer::OnClick()
 {
 
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("CIAO MAMMA, turno mio? %d"), IsMyTurn));
+	//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("CIAO MAMMA, turno mio? %d"), IsMyTurn));
 	FHitResult Hit = FHitResult(ForceInit);
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
 	if (Hit.bBlockingHit && IsMyTurn)
@@ -95,7 +95,7 @@ void AChess_HumanPlayer::OnClick()
 			if (PawnTemp)
 			{
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
 				SelectedPawnFlag = 1;
 			}
 		}
@@ -171,7 +171,7 @@ void AChess_HumanPlayer::OnClick()
 				}
 				else
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid movement"));
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
 				}
 
 
