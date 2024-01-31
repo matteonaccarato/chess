@@ -15,6 +15,26 @@ ABasePawn::ABasePawn()
 
 }
 
+EPawnMovement ABasePawn::GetMovement() const
+{
+	return Movement;
+}
+
+int32 ABasePawn::MaxGetNumberSteps() const
+{
+	return MaxNumberSteps;
+}
+
+void ABasePawn::SetColor(EPawnsColors PawnColor)
+{
+	Color = PawnColor;
+}
+
+EPawnsColors ABasePawn::GetColor() const
+{
+	return Color;
+}
+
 void ABasePawn::SetType(ETileStatus TileStatus)
 {
 	Type = TileStatus;

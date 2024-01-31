@@ -94,6 +94,7 @@ void AGameField::GenerateField()
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
+					EPawnsColors PawnColor;
 					// std::vector<std::string> arr = { "W_RookClass", "ca" };
 					// std::vector<ABasePawn> arr;
 					
@@ -109,13 +110,15 @@ void AGameField::GenerateField()
 
 						BasePawnClass = W_PawnsClasses[y];
 						TileStatus = W_TileStatus[y];
-						PlayerOwner = 0;	
+						PlayerOwner = 0;
+						PawnColor = EPawnsColors::WHITE;
 					}
 					else if (x == 1)
 					{
 						BasePawnClass = W_PawnClass;
 						TileStatus = ETileStatus::W_PAWN;
 						PlayerOwner = 0;
+						PawnColor = EPawnsColors::WHITE;
 					}
 					else if (x == Size - 1)
 					{
@@ -125,12 +128,14 @@ void AGameField::GenerateField()
 						BasePawnClass = B_PawnsClasses[y];
 						TileStatus = B_TileStatus[y];
 						PlayerOwner = 1;
+						PawnColor = EPawnsColors::BLACK;
 					}
 					else
 					{
 						BasePawnClass = B_PawnClass;
 						TileStatus = ETileStatus::B_PAWN;
 						PlayerOwner = 1;
+						PawnColor = EPawnsColors::BLACK;
 					}
 
 					
@@ -150,6 +155,7 @@ void AGameField::GenerateField()
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
 						// BasePawnObj->SetGridPosition(x, y);
 						BasePawnObj->SetType(TileStatus);
+						BasePawnObj->SetColor(PawnColor);
 					}
 					else
 					{

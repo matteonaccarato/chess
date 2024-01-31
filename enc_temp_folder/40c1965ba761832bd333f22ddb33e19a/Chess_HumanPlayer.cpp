@@ -114,32 +114,31 @@ void AChess_HumanPlayer::OnClick()
 
 
 				// NewGridPosition , CurrPawnPosition
-				EPawnsColors DirectionFlag = PawnTemp->GetColor();
-				int8 DeltaX = (NewGridPosition[0] - CurrPawnGridPosition[0]) * static_cast<double>(DirectionFlag);
-				int8 DeltaY = NewGridPosition[1] - CurrPawnGridPosition[1];
-				bool ValidMove = false;
+				bool ValidMove = true;
 				switch (PawnTemp->GetMovement())
 				{
 				case EPawnMovement::FORWARD:
-					
+					EPawnsColors DirectionFlag = PawnTemp->GetColor();
 
-					if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= PawnTemp->MaxGetNumberSteps())
+					if ((NewGridPosition[0] - CurrPawnGridPosition[0]) * static_cast<double>(DirectionFlag) > PawnTemp->MaxGetNumberSteps())
 					{
-						ValidMove = true;
+						ValidMove = false;
 					}
 
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("DIRECTION FLAG: %d"), DirectionFlag));
 					break;
 				/*case EPawnMovement::BACKWARD: break;
 				case EPawnMovement::LEFT: break;
 				case EPawnMovement::RIGHT: break;
 				case EPawnMovement::DIAGONAL: break;*/
 				
+				/*default:
+					ValidMove = false; */
 				}
 
-				//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("VALID MOVE: %d"), ValidMove));
 
 
-				if (ValidMove && NewTile->GetTileStatus() == ETileStatus::EMPTY)
+				if (NewTile->GetTileStatus() == ETileStatus::EMPTY)
 				{
 
 					AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
@@ -168,10 +167,6 @@ void AChess_HumanPlayer::OnClick()
 					{
 						UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 					}
-				}
-				else
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid movement"));
 				}
 
 

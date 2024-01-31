@@ -13,5 +13,8 @@ UCLASS()
 class CHESS_API AMy_Pawn : public ABasePawn
 {
 	GENERATED_BODY()
+
+public:
+	AMy_Pawn();
 	
 };

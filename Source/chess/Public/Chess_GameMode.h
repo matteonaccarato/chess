@@ -4,13 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "Players/Chess_PlayerInterface.h"
-#include "GameField.h"
+// #include "GameField.h"
 #include "GameFramework/GameModeBase.h"
 #include "Chess_GameMode.generated.h"
 
 class AActor;
+class AGameField;
 
 struct FPosition;
+
+
+// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
+UENUM()
+enum class EPawnsColors : int8
+{
+	WHITE = 1,
+	BLACK = -1
+};
 
 /**
  * 
