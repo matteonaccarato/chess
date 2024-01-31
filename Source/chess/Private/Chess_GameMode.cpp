@@ -47,11 +47,22 @@ void AChess_GameMode::BeginPlay()
 
 	// Players.Add(AI);
 
-	Players[0]->OnTurn();
+
+	this->ChoosePlayerAndStartGame();
 }
 
 void AChess_GameMode::ChoosePlayerAndStartGame()
 {
+	CurrentPlayer = 0;
+	for (int32 i = 0; i < Players.Num(); i++)
+	{
+		Players[i]->PlayerNumber = i;
+		Players[i]->Color = i == CurrentPlayer ? EColor::W : EColor::B;
+	}
+
+	MoveCounter += 1;
+
+	Players[CurrentPlayer]->OnTurn();
 }
 
 void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& SpawnPosition)
@@ -78,6 +89,9 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 
 
 	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Set"));
+
+
+	// UClass* ColorActor = Players[CurrentPlayer]->Color == E
 
 	TurnNextPlayer();
 }

@@ -35,6 +35,7 @@ FString ATile::GetId() const
 
 void ATile::SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SETTO TILE CON %d %d"), TileOwner, TileStatus));
 	PlayerOwner = TileOwner;
 	Status = TileStatus;
 }

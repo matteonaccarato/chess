@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Tile.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
@@ -18,6 +19,9 @@ public:
 	/* void SetTileId(const FString TileId);
 	FString GetTileId() const; */
 
+	void SetType(ETileStatus TileStatus);
+	ETileStatus GetType() const;
+
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
 
@@ -27,6 +31,12 @@ protected:
 
 	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString TileId; */
+
+	// TODO => FString ID per log
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ETileStatus Type;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileGridPosition;

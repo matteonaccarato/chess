@@ -12,7 +12,7 @@
 // Sets default values
 AChess_HumanPlayer::AChess_HumanPlayer()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -76,7 +76,7 @@ void AChess_HumanPlayer::OnClick()
 	{
 		// Select Pawn to move first
 		// Then I must select the new position
-		
+
 
 
 		// TODO: controllare se la pedina è mia
@@ -98,7 +98,7 @@ void AChess_HumanPlayer::OnClick()
 				SelectedPawnFlag = 1;
 			}
 		}
-		
+
 
 
 
@@ -107,39 +107,42 @@ void AChess_HumanPlayer::OnClick()
 			if (ATile* NewTile = Cast<ATile>(Hit.GetActor()))
 			{
 				FVector2D CurrPawnPosition = PawnTemp->GetGridPosition();
-				
-				
 
 
-				// TODO set tile status
-				
-				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-				if (GameMode != nullptr)
+				if (NewTile->GetTileStatus() == ETileStatus::EMPTY)
 				{
-					/*
-					* Elaborate new x,y in function of eligible moves of the pawn
-					*
-					* TODO: update TileArray and TileMap
-					*/
-					
 
-					FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
-					PawnTemp->SetActorLocation(SpawnPosition);
-					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+					AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+					if (GameMode != nullptr)
+					{
+						/*
+						* Elaborate new x,y in function of eligible moves of the pawn
+						*
+						* TODO: update TileArray and TileMap
+						*/
 
-					SelectedPawnFlag = 0;
-					IsMyTurn = false;
+						NewTile->SetTileStatus(PlayerNumber, PawnTemp->GetType());
+						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
+						PawnTemp->SetActorLocation(SpawnPosition);
+						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+
+						SelectedPawnFlag = 0;
+						IsMyTurn = false;
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+					}
 				}
-				else
-				{
-					UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-				}
+
+
+
 			}
 		}
 
-		
 
-		
+
+
 	}
 	else
 	{
@@ -147,4 +150,3 @@ void AChess_HumanPlayer::OnClick()
 		IsMyTurn = true;
 	}
 }
-

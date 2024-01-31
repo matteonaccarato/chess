@@ -87,40 +87,51 @@ void AGameField::GenerateField()
 				TileArray.Add(TileObj);
 				TileMap.Add(FVector2D(x, y), TileObj);
 
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
+				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
+
+				ETileStatus TileStatus = ETileStatus::EMPTY;
+				int32 PlayerOwner = -1;
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
 					// std::vector<std::string> arr = { "W_RookClass", "ca" };
 					// std::vector<ABasePawn> arr;
 					
+
+					
+					
+					// TArray<TSubclassOf<ABasePawn>*> PawnsClasses = { W_RookClass };
+
 					if (x == 0)
 					{
-						switch (y) {
-						case 0: BasePawnClass = W_RookClass; break;
-						case 1: BasePawnClass = W_KnightClass; break;
-						case 2: BasePawnClass = W_BishopClass; break;
-						case 3: BasePawnClass = W_QueenClass; break;
-						case 4: BasePawnClass = W_KingClass; break;
-						case 5: BasePawnClass = W_BishopClass; break;
-						case 6: BasePawnClass = W_KnightClass; break;
-						case 7: BasePawnClass = W_RookClass; break;
-						}
-					} else if (x == 1)  BasePawnClass = W_PawnClass;
+						TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_BishopClass, W_KnightClass, W_RookClass };
+						ETileStatus W_TileStatus[] = { ETileStatus::W_ROOK, ETileStatus::W_KNIGHT, ETileStatus::W_BISHOP, ETileStatus::W_QUEEN, ETileStatus::W_KING, ETileStatus::W_BISHOP, ETileStatus::W_KNIGHT, ETileStatus::W_ROOK };
+
+						BasePawnClass = W_PawnsClasses[y];
+						TileStatus = W_TileStatus[y];
+						PlayerOwner = 0;	
+					}
+					else if (x == 1)
+					{
+						BasePawnClass = W_PawnClass;
+						TileStatus = ETileStatus::W_PAWN;
+						PlayerOwner = 0;
+					}
 					else if (x == Size - 1)
 					{
-						switch (y) {
-						case 0: BasePawnClass = B_RookClass; break;
-						case 1: BasePawnClass = B_KnightClass; break;
-						case 2: BasePawnClass = B_BishopClass; break;
-						case 3: BasePawnClass = B_QueenClass; break;
-						case 4: BasePawnClass = B_KingClass; break;
-						case 5: BasePawnClass = B_BishopClass; break;
-						case 6: BasePawnClass = B_KnightClass; break;
-						case 7: BasePawnClass = B_RookClass; break;
-						}
+						TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_BishopClass, B_KnightClass, B_RookClass };
+						ETileStatus B_TileStatus[] = { ETileStatus::B_ROOK, ETileStatus::B_KNIGHT, ETileStatus::B_BISHOP, ETileStatus::B_QUEEN, ETileStatus::B_KING, ETileStatus::B_BISHOP, ETileStatus::B_KNIGHT, ETileStatus::B_ROOK };
+
+						BasePawnClass = B_PawnsClasses[y];
+						TileStatus = B_TileStatus[y];
+						PlayerOwner = 1;
 					}
-					else BasePawnClass = B_PawnClass;
+					else
+					{
+						BasePawnClass = B_PawnClass;
+						TileStatus = ETileStatus::B_PAWN;
+						PlayerOwner = 1;
+					}
 
 					
 					
@@ -138,19 +149,16 @@ void AGameField::GenerateField()
 						// 0.8 da mettere come attributo
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
 						// BasePawnObj->SetGridPosition(x, y);
+						BasePawnObj->SetType(TileStatus);
 					}
 					else
 					{
 						UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
 					}
 				}
-				
-				
-				
-				
 
-
-
+				TileObj->SetTileStatus(PlayerOwner, TileStatus);
+				
 
 				flag = !flag;
 			}
@@ -160,13 +168,7 @@ void AGameField::GenerateField()
 			}
 		}
 		flag = !flag;
-
 	}
-
-	
-	
-	
-
 }
 
 FVector2D AGameField::GetPosition(const FHitResult& Hit)

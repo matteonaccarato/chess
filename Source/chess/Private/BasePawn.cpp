@@ -15,6 +15,16 @@ ABasePawn::ABasePawn()
 
 }
 
+void ABasePawn::SetType(ETileStatus TileStatus)
+{
+	Type = TileStatus;
+}
+
+ETileStatus ABasePawn::GetType() const
+{
+	return Type;
+}
+
 void ABasePawn::SetGridPosition(const double InX, const double InY)
 {
 	TileGridPosition.Set(InX, InY);
