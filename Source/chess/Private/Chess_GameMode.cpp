@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "GameField.h"
 #include "Chess_GameMode.h"
+#include "GameField.h"
 #include "Players/Chess_PlayerController.h"
 #include "Players/Chess_HumanPlayer.h"
 #include "Players/Chess_RandomPlayer.h"
@@ -112,4 +112,53 @@ void AChess_GameMode::TurnNextPlayer()
 	CurrentPlayer = GetNextPlayer(CurrentPlayer);
 	//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d turn"), CurrentPlayer));
 	Players[CurrentPlayer]->OnTurn();
+}
+
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, const ATile* NewTile)
+{
+	bool IsValid = false;
+
+	// CurrTile => remove it
+
+	FVector2D NewGridPosition = NewTile->GetGridPosition();
+	FVector2D CurrGridPosition = Pawn->GetGridPosition();
+	
+
+
+	// NewGridPosition , CurrPawnPosition
+	EPawnsColors DirectionFlag = Pawn->GetColor();
+	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
+	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
+
+
+
+	if (NewTile->GetTileStatus() == ETileStatus::EMPTY)
+	{
+		switch (Pawn->GetMovement())
+		{
+			// TODO: can be a mix of them
+			// array of possible movements
+		case EPawnMovement::FORWARD:
+
+
+			if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
+			{
+				// TODO => unione solo tipo senza colore
+				if (Pawn->GetType() == ETileStatus::B_PAWN || Pawn->GetType() == ETileStatus::W_PAWN)
+				{
+					Pawn->SetMaxNumberSteps(1);
+				}
+				IsValid = true;
+			}
+
+			break;
+			/*case EPawnMovement::BACKWARD: break;
+			case EPawnMovement::LEFT: break;
+			case EPawnMovement::RIGHT: break;
+			case EPawnMovement::DIAGONAL: break;*/
+
+		}
+	}
+
+	return IsValid;
 }

@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "Players/Chess_PlayerInterface.h"
 // #include "GameField.h"
+// #include "BasePawn.h"
+#include "Tile.h"
 #include "GameFramework/GameModeBase.h"
 #include "Chess_GameMode.generated.h"
 
 class AActor;
 class AGameField;
+class ABasePawn;
 
 struct FPosition;
 
@@ -95,4 +98,7 @@ public:
 	int32 GetNextPlayer(int32 Player);
 
 	void TurnNextPlayer();
+
+
+	bool IsValidMove(ABasePawn* Pawn, const ATile* NewTile);
 };

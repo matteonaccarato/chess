@@ -89,10 +89,10 @@ void AChess_HumanPlayer::OnClick()
 
 		
 
-		if (SelectedPawnFlag == 0)
+		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
 			PawnTemp = Cast<ABasePawn>(Hit.GetActor());
-			if (PawnTemp)
+			if (PawnTemp && PawnTemp->GetColor() == EPawnsColors::WHITE)
 			{
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
@@ -107,42 +107,13 @@ void AChess_HumanPlayer::OnClick()
 		{
 			if (ATile* NewTile = Cast<ATile>(Hit.GetActor()))
 			{
-				// FVector2D CurrPawnPosition = PawnTemp->GetGridPosition();
-				FVector2D NewGridPosition = NewTile->GetGridPosition();
-				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
-				// if (IsValidMove(PawnTemp, NewTile))
-
-
-				// NewGridPosition , CurrPawnPosition
-				EPawnsColors DirectionFlag = PawnTemp->GetColor();
-				int8 DeltaX = (NewGridPosition[0] - CurrPawnGridPosition[0]) * static_cast<double>(DirectionFlag);
-				int8 DeltaY = NewGridPosition[1] - CurrPawnGridPosition[1];
-				bool ValidMove = false;
-				switch (PawnTemp->GetMovement())
-				{
-				case EPawnMovement::FORWARD:
-					
-
-					if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= PawnTemp->MaxGetNumberSteps())
-					{
-						ValidMove = true;
-					}
-
-					break;
-				/*case EPawnMovement::BACKWARD: break;
-				case EPawnMovement::LEFT: break;
-				case EPawnMovement::RIGHT: break;
-				case EPawnMovement::DIAGONAL: break;*/
 				
-				}
-
-				//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("VALID MOVE: %d"), ValidMove));
-
-
-				if (ValidMove && NewTile->GetTileStatus() == ETileStatus::EMPTY)
+				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+				if (GameMode->IsValidMove(PawnTemp, NewTile))
 				{
 
-					AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+
+
 					if (GameMode != nullptr)
 					{
 						/*
@@ -151,14 +122,15 @@ void AChess_HumanPlayer::OnClick()
 						* TODO: update TileArray and TileMap
 						*/
 
+
+
 						NewTile->SetTileStatus(PlayerNumber, PawnTemp->GetType());
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
-						PawnTemp->SetGridPosition(NewGridPosition[0], NewGridPosition[1]);
-						
-						
-						
-						
+						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
+
+
+
 						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
 						SelectedPawnFlag = 0;
@@ -173,6 +145,7 @@ void AChess_HumanPlayer::OnClick()
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
 				}
+				
 
 
 

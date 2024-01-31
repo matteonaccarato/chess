@@ -2,8 +2,8 @@
 
 
 #include "BasePawn.h"
-#include "GameField.h"
-#include "Chess_GameMode.h"
+// #include "GameField.h"
+// #include "Chess_GameMode.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -20,7 +20,12 @@ EPawnMovement ABasePawn::GetMovement() const
 	return Movement;
 }
 
-int32 ABasePawn::MaxGetNumberSteps() const
+void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
+{
+	MaxNumberSteps = NumberSteps;
+}
+
+int32 ABasePawn::GetMaxNumberSteps() const
 {
 	return MaxNumberSteps;
 }

@@ -156,6 +156,10 @@ void AGameField::GenerateField()
 						// BasePawnObj->SetGridPosition(x, y);
 						BasePawnObj->SetType(TileStatus);
 						BasePawnObj->SetColor(PawnColor);
+
+
+						PawnArray.Add(BasePawnObj);
+						PawnMap.Add(FVector2D(x, y), BasePawnObj);
 					}
 					else
 					{
@@ -185,6 +189,11 @@ FVector2D AGameField::GetPosition(const FHitResult& Hit)
 TArray<ATile*>& AGameField::GetTileArray()
 {
 	return TileArray;
+}
+
+TArray<ABasePawn*>& AGameField::GetPawnArray()
+{
+	return PawnArray;
 }
 
 FVector AGameField::GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const

@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
+
 UENUM()
 enum class EPawnMovement : uint8
 {
@@ -40,7 +41,9 @@ public:
 	FString GetTileId() const; */
 
 	EPawnMovement GetMovement() const;
-	int32 MaxGetNumberSteps() const;
+
+	void SetMaxNumberSteps(int32 NumberSteps);
+	int32 GetMaxNumberSteps() const;
 
 	void SetColor(EPawnsColors PawnColor);
 	EPawnsColors GetColor() const;

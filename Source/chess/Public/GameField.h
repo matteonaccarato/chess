@@ -17,12 +17,23 @@ class CHESS_API AGameField : public AActor
 	GENERATED_BODY()
 	
 public:	
-	
+
+
+	// TILES
 	UPROPERTY(Transient)
 	TArray<ATile*> TileArray;
 
 	UPROPERTY(Transient)
 	TMap<FVector2D, ATile*> TileMap;
+
+
+	// PAWNS
+	UPROPERTY(Transient)
+	TArray<ABasePawn*> PawnArray;
+	
+	UPROPERTY(Transient)
+	TMap<FVector2D, ABasePawn*> PawnMap;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
@@ -116,6 +127,7 @@ public:
 	FVector2D GetPosition(const FHitResult& Hit);
 
 	TArray<ATile*>& GetTileArray();
+	TArray<ABasePawn*>& GetPawnArray();
 
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 
