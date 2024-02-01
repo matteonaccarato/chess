@@ -3,11 +3,32 @@
 #pragma once
 
 #include "Chess_GameMode.h"
-#include "Tile.h"
+// #include "Tile.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
+
+UENUM()
+enum class EPawnType : uint8
+{
+	NONE, // 0
+	ROOK, // 1
+	KNIGHT, // 2
+	BISHOP, // 3
+	QUEEN, // 4
+	KING, // 5
+	PAWN, // 6
+};
+
+// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
+UENUM()
+enum class EPawnColor : int8
+{
+	NONE = 0,
+	WHITE = 1,
+	BLACK = -1
+};
 
 UENUM()
 enum class EPawnMovement : uint8
@@ -45,12 +66,12 @@ public:
 	void SetMaxNumberSteps(int32 NumberSteps);
 	int32 GetMaxNumberSteps() const;
 
-	void SetColor(EPawnsColors PawnColor);
-	EPawnsColors GetColor() const;
+	void SetColor(EPawnColor PawnColor);
+	EPawnColor GetColor() const;
 
 	
-	void SetType(ETileStatus TileStatus);
-	ETileStatus GetType() const;
+	void SetType(EPawnType PawnType);
+	EPawnType GetType() const;
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
@@ -69,7 +90,7 @@ protected:
 
 	// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnsColors Color;
+	EPawnColor Color;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnMovement Movement;
@@ -78,9 +99,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 MaxNumberSteps;
 
-	// Color + Type (e.g. Black Rook)
+	// Type (e.g. Rook)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ETileStatus Type;
+	EPawnType Type;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -88,7 +109,7 @@ protected:
 
 public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	// virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void SelfDestroy();

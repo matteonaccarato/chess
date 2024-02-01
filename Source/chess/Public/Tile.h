@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BasePawn.h"
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
-UENUM()
+/* UENUM()
 enum class ETileStatus : uint8
 {
 	EMPTY UMETA(DisplayName = "Empty"), // 0
@@ -22,7 +23,18 @@ enum class ETileStatus : uint8
 	W_KNIGHT, // 10
 	W_PAWN, // 11
 	W_QUEEN, // 12
-	W_ROOK, // 13
+	W_ROOK, // 13 
+}; */
+
+
+USTRUCT(BlueprintType)
+struct FTileStatus
+{
+	GENERATED_BODY()
+
+	bool EmptyFlag; // 1 => Empty, 0 => Occupied
+	EPawnColor PawnColor;
+	EPawnType PawnType;
 };
 
 UCLASS()
@@ -37,8 +49,8 @@ public:
 	void SetId(const FString TileId);
 	FString GetId() const;
 
-	void SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus);
-	ETileStatus GetTileStatus() const;
+	void SetTileStatus(const int32 TileOwner, const FTileStatus TileStatus);
+	FTileStatus GetTileStatus() const;
 
 	int32 GetOwner() const;
 
@@ -59,7 +71,7 @@ protected:
 	FString Id;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ETileStatus Status;
+	FTileStatus Status;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 PlayerOwner;

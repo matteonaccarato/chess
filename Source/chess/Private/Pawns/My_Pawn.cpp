@@ -5,6 +5,7 @@
 
 AMy_Pawn::AMy_Pawn()
 {
+	Type = EPawnType::PAWN;
 	Movement = EPawnMovement::FORWARD;
 	MaxNumberSteps = 2;
 }

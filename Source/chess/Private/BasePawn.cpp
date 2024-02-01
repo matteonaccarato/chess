@@ -30,22 +30,23 @@ int32 ABasePawn::GetMaxNumberSteps() const
 	return MaxNumberSteps;
 }
 
-void ABasePawn::SetColor(EPawnsColors PawnColor)
+void ABasePawn::SetColor(EPawnColor PawnColor)
 {
 	Color = PawnColor;
 }
 
-EPawnsColors ABasePawn::GetColor() const
+
+EPawnColor ABasePawn::GetColor() const
 {
 	return Color;
 }
 
-void ABasePawn::SetType(ETileStatus TileStatus)
+void ABasePawn::SetType(EPawnType PawnType)
 {
-	Type = TileStatus;
+	Type = PawnType;
 }
 
-ETileStatus ABasePawn::GetType() const
+EPawnType ABasePawn::GetType() const
 {
 	return Type;
 }
@@ -90,10 +91,10 @@ void ABasePawn::BeginPlay()
 }
 
 // Called every frame
-void ABasePawn::Tick(float DeltaTime)
+/* void ABasePawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
+} */
 
 void ABasePawn::SelfDestroy()
 {

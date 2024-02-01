@@ -17,7 +17,7 @@ ATile::ATile()
 	StaticMeshComponent->SetupAttachment(Scene);
 
 	Id = TEXT("");
-	Status = ETileStatus::EMPTY;
+	Status = { 1, EPawnColor::NONE, EPawnType::NONE };
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 
@@ -33,14 +33,14 @@ FString ATile::GetId() const
 	return Id;
 }
 
-void ATile::SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus)
+void ATile::SetTileStatus(const int32 TileOwner, const FTileStatus TileStatus)
 {
 	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SETTO TILE CON %d %d"), TileOwner, TileStatus));
 	PlayerOwner = TileOwner;
 	Status = TileStatus;
 }
 
-ETileStatus ATile::GetTileStatus() const
+FTileStatus ATile::GetTileStatus() const
 {
 	return Status;
 }

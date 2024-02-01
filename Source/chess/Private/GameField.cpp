@@ -38,7 +38,7 @@ void AGameField::ResetField()
 {
 	for (ATile* Obj : TileArray)
 	{
-		Obj->SetTileStatus(NOT_ASSIGNED, ETileStatus::EMPTY);
+		Obj->SetTileStatus(NOT_ASSIGNED, { 1, EPawnColor::NONE, EPawnType::NONE });
 	}
 
 	OnResetEvent.Broadcast();
@@ -92,12 +92,12 @@ void AGameField::GenerateField()
 
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
 
-				ETileStatus TileStatus = ETileStatus::EMPTY;
+				FTileStatus TileStatus = { 1, EPawnColor::NONE, EPawnType::NONE };
 				int32 PlayerOwner = -1;
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
-					EPawnsColors PawnColor;
+					TileStatus.EmptyFlag = 0;
 					// std::vector<std::string> arr = { "W_RookClass", "ca" };
 					// std::vector<ABasePawn> arr;
 					
@@ -106,39 +106,42 @@ void AGameField::GenerateField()
 					
 					// TArray<TSubclassOf<ABasePawn>*> PawnsClasses = { W_RookClass };
 
+					EPawnType PawnTypes[] = { EPawnType::ROOK, EPawnType::KNIGHT, EPawnType::BISHOP, EPawnType::QUEEN, EPawnType::KING, EPawnType::BISHOP, EPawnType::KNIGHT, EPawnType::ROOK };
+					
 					if (x == 0)
 					{
 						TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_BishopClass, W_KnightClass, W_RookClass };
-						ETileStatus W_TileStatus[] = { ETileStatus::W_ROOK, ETileStatus::W_KNIGHT, ETileStatus::W_BISHOP, ETileStatus::W_QUEEN, ETileStatus::W_KING, ETileStatus::W_BISHOP, ETileStatus::W_KNIGHT, ETileStatus::W_ROOK };
 
 						BasePawnClass = W_PawnsClasses[y];
-						TileStatus = W_TileStatus[y];
+						TileStatus.PawnColor = EPawnColor::WHITE;
+						TileStatus.PawnType = PawnTypes[y];
+
 						PlayerOwner = 0;
-						PawnColor = EPawnsColors::WHITE;
 					}
 					else if (x == 1)
 					{
 						BasePawnClass = W_PawnClass;
-						TileStatus = ETileStatus::W_PAWN;
+						
+						TileStatus.PawnColor = EPawnColor::WHITE;
+						TileStatus.PawnType = EPawnType::PAWN;
 						PlayerOwner = 0;
-						PawnColor = EPawnsColors::WHITE;
 					}
 					else if (x == Size - 1)
 					{
 						TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_BishopClass, B_KnightClass, B_RookClass };
-						ETileStatus B_TileStatus[] = { ETileStatus::B_ROOK, ETileStatus::B_KNIGHT, ETileStatus::B_BISHOP, ETileStatus::B_QUEEN, ETileStatus::B_KING, ETileStatus::B_BISHOP, ETileStatus::B_KNIGHT, ETileStatus::B_ROOK };
-
+						
 						BasePawnClass = B_PawnsClasses[y];
-						TileStatus = B_TileStatus[y];
+						TileStatus.PawnColor = EPawnColor::BLACK;
+						TileStatus.PawnType = PawnTypes[y];
 						PlayerOwner = 1;
-						PawnColor = EPawnsColors::BLACK;
 					}
 					else
 					{
 						BasePawnClass = B_PawnClass;
-						TileStatus = ETileStatus::B_PAWN;
+
+						TileStatus.PawnColor = EPawnColor::BLACK;
+						TileStatus.PawnType = EPawnType::PAWN;
 						PlayerOwner = 1;
-						PawnColor = EPawnsColors::BLACK;
 					}
 
 					
@@ -154,11 +157,11 @@ void AGameField::GenerateField()
 					if (BasePawnObj != nullptr)
 					{
 						BasePawnObj->SetGridPosition(x, y);
-						// 0.8 da mettere come attributo
+						// TODO: 0.8 da mettere come attributo
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
-						// BasePawnObj->SetGridPosition(x, y);
-						BasePawnObj->SetType(TileStatus);
-						BasePawnObj->SetColor(PawnColor);
+						
+						BasePawnObj->SetType(TileStatus.PawnType);
+						BasePawnObj->SetColor(TileStatus.PawnColor);
 
 
 						PawnArray.Add(BasePawnObj);

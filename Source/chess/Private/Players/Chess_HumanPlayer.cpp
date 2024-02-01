@@ -13,7 +13,7 @@
 AChess_HumanPlayer::AChess_HumanPlayer()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -94,7 +94,7 @@ void AChess_HumanPlayer::OnClick()
 		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
 			PawnTemp = Cast<ABasePawn>(Hit.GetActor());
-			if (PawnTemp && PawnTemp->GetColor() == EPawnsColors::WHITE)
+			if (PawnTemp && PawnTemp->GetColor() == EPawnColor::WHITE)
 			{
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
@@ -126,7 +126,7 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-						NewTile->SetTileStatus(PlayerNumber, PawnTemp->GetType());
+						NewTile->SetTileStatus(PlayerNumber, { 0, PawnTemp->GetColor(), PawnTemp->GetType() });
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
 						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);

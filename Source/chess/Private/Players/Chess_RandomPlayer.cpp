@@ -7,7 +7,7 @@
 AChess_RandomPlayer::AChess_RandomPlayer()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	GameInstace = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
@@ -50,7 +50,7 @@ void AChess_RandomPlayer::OnTurn()
 				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
 				{
 					// TODO: second condition is test only
-					if (CurrPawn->GetColor() == EPawnsColors::BLACK && CurrPawn->GetType() == ETileStatus::B_PAWN)
+					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetType() == EPawnType::PAWN)
 					{
 						MyPawns.Add(CurrPawn);
 					}
@@ -76,7 +76,7 @@ void AChess_RandomPlayer::OnTurn()
 
 					switch (MyPawns[RandIdx]->GetType())
 					{
-					case ETileStatus::B_PAWN:
+					case EPawnType::PAWN:
 						int32 RandSteps = (FMath::Rand() % MyPawns[RandIdx]->GetMaxNumberSteps()) + 1;
 						NewX -= RandSteps;
 						break;
@@ -86,11 +86,11 @@ void AChess_RandomPlayer::OnTurn()
 					if (GameMode->IsValidMove(MyPawns[RandIdx], NewX, NewY))
 					{
 
-						Tiles[OldX * 8 + OldY]->SetTileStatus(PlayerNumber, ETileStatus::EMPTY);
+						Tiles[OldX * 8 + OldY]->SetTileStatus(PlayerNumber, { 1, EPawnColor::NONE, EPawnType::NONE });
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO EMPTY"), OldX, OldY));
 
 
-						Tiles[NewX * 8 + NewY]->SetTileStatus(PlayerNumber, MyPawns[RandIdx]->GetType());
+						Tiles[NewX * 8 + NewY]->SetTileStatus(PlayerNumber, { 0, MyPawns[RandIdx]->GetColor(), MyPawns[RandIdx]->GetType() });
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO PAWN"), NewX, NewY));
 
 						FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0, 0, MyPawns[RandIdx]->GetActorLocation()[2]);

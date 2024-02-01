@@ -153,13 +153,13 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, co
 
 
 		// NewGridPosition , CurrPawnPosition
-		EPawnsColors DirectionFlag = Pawn->GetColor();
+		EPawnColor DirectionFlag = Pawn->GetColor();
 		int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
 		int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
 
 
 
-		if (NewTile->GetTileStatus() == ETileStatus::EMPTY)
+		if (NewTile->GetTileStatus().EmptyFlag)
 		{
 			switch (Pawn->GetMovement())
 			{
@@ -171,7 +171,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, co
 				if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
 				{
 					// TODO => unione solo tipo senza colore
-					if (Pawn->GetType() == ETileStatus::B_PAWN || Pawn->GetType() == ETileStatus::W_PAWN)
+					if (Pawn->GetType() == EPawnType::PAWN)
 					{
 						Pawn->SetMaxNumberSteps(1);
 					}
