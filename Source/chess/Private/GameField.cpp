@@ -43,7 +43,10 @@ void AGameField::ResetField()
 
 	OnResetEvent.Broadcast();
 
-	// gamemode
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	GameMode->IsGameOver = false;
+	GameMode->MoveCounter = 0;
+	GameMode->ChoosePlayerAndStartGame();
 }
 
 void AGameField::GenerateField()

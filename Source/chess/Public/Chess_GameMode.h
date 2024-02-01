@@ -100,5 +100,5 @@ public:
 	void TurnNextPlayer();
 
 
-	bool IsValidMove(ABasePawn* Pawn, const ATile* NewTile);
+	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY);
 };

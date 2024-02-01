@@ -74,12 +74,12 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 	{
 		IsGameOver = true;
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("DRAW"));
-
+		
 		FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
+		/*GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 			{
 				GField->ResetField();
-			}, 3, false);
+			}, 3, false); */
 	}
 	else
 	{

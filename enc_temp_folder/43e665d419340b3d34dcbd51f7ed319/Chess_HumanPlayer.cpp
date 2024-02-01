@@ -37,10 +37,10 @@ void AChess_HumanPlayer::BeginPlay()
 }
 
 // Called every frame
-/* void AChess_HumanPlayer::Tick(float DeltaTime)
+void AChess_HumanPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-} */
+}
 
 // Called to bind functionality to input
 void AChess_HumanPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

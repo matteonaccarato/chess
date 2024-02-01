@@ -75,9 +75,11 @@ void ABasePawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+
 	/*AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode != nullptr)
 	{
+		// TODO => riposizionare pedina nel punto di partenza
 		GameMode->GField->OnResetEvent.AddDynamic(this, &ABasePawn::SelfDestroy);
 	}
 	else

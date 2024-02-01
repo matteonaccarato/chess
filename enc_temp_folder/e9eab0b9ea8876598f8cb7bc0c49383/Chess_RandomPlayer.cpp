@@ -18,10 +18,10 @@ void AChess_RandomPlayer::BeginPlay()
 }
 
 // Called every frame
-/* void AChess_RandomPlayer::Tick(float DeltaTime)
+void AChess_RandomPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-} */
+}
 
 // Called to bind functionality to input
 void AChess_RandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -36,17 +36,19 @@ void AChess_RandomPlayer::OnTurn()
 	FTimerHandle TimerHandle;
 	// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
 	// RandTimer [1.0, 3.0] seconds
-	// TODO: sono magic numberss
-	int8 RandTimer = FMath::Rand() % 21 + 10;
+	// int8 RandTimer = FMath::Rand() % 20 + 10;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
+
+
 			// TODO: fare in modo meno oneroso (tipo che ogni giocatore ha come attributo una mappa
-			// { pedina: posizione }
+	// pedina: posizione
+
+			TArray<ABasePawn*> MyPawns;
 
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 			if (GameMode != nullptr)
 			{
-				TArray<ABasePawn*> MyPawns;
 				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
 				{
 					// TODO: second condition is test only
@@ -55,24 +57,38 @@ void AChess_RandomPlayer::OnTurn()
 						MyPawns.Add(CurrPawn);
 					}
 				}
+
 				// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), MyPawns.Num()));
 
 
 				// choose random pawn in mypawns
 				// move it in function of its params (movement and max steps)
 				// do action since it results in valid move
+
+				// notify if action has been taken (-1)
+				// or it ran out of possibiliities (all pawns are blocked)
+				// int8 AttemptsCounter = 0;
 				bool MoveMade = false;
 				while (!MoveMade && MyPawns.Num() > 0)
 				{
+
 					TArray<ATile*> Tiles = GameMode->GField->GetTileArray();
+
 					int32 RandIdx = FMath::Rand() % MyPawns.Num();
+					// PawnAttempt[RandIdx] = 1;
+
 
 					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI got %d."), RandIdx));
+
+
 
 					int32 OldX = MyPawns[RandIdx]->GetGridPosition()[0];
 					int32 OldY = MyPawns[RandIdx]->GetGridPosition()[1];
 					int32 NewX = OldX;
 					int32 NewY = OldY;
+
+					// FVector Location = GameMode->GField->GetRelativeLocationByXYPosition((MyPawns[RandIdx])->GetGridPosition()[0], (MyPawns[RandIdx])->GetGridPosition()[1]);
+
 
 					switch (MyPawns[RandIdx]->GetType())
 					{
@@ -85,6 +101,7 @@ void AChess_RandomPlayer::OnTurn()
 
 					if (GameMode->IsValidMove(MyPawns[RandIdx], NewX, NewY))
 					{
+
 
 						Tiles[OldX * 8 + OldY]->SetTileStatus(PlayerNumber, ETileStatus::EMPTY);
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO EMPTY"), OldX, OldY));
@@ -100,10 +117,13 @@ void AChess_RandomPlayer::OnTurn()
 						MoveMade = true;
 						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
+
+
 					}
 					else
 					{
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
+						// AttemptsCounter += 1;
 						MyPawns.RemoveAt(RandIdx);
 					}
 
@@ -123,7 +143,21 @@ void AChess_RandomPlayer::OnTurn()
 			{
 				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 			}
-		}, RandTimer/10.f, false);
+
+
+
+
+
+
+
+		}, 3, false);
+
+	
+	
+	
+
+
+	// GameMode->SetCellPawn(PlayerNumber, FVector());
 }
 
 void AChess_RandomPlayer::OnWin()
