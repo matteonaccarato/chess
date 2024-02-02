@@ -162,7 +162,7 @@ void AGameField::GenerateField()
 						
 						BasePawnObj->SetType(TileStatus.PawnType);
 						BasePawnObj->SetColor(TileStatus.PawnColor);
-
+						BasePawnObj->SetStatus(EPawnStatus::ALIVE);
 
 						PawnArray.Add(BasePawnObj);
 						PawnMap.Add(FVector2D(x, y), BasePawnObj);

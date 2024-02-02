@@ -51,6 +51,16 @@ EPawnType ABasePawn::GetType() const
 	return Type;
 }
 
+void ABasePawn::SetStatus(EPawnStatus PawnStatus)
+{
+	Status = PawnStatus;
+}
+
+EPawnStatus ABasePawn::GetStatus() const
+{
+	return Status;
+}
+
 void ABasePawn::SetGridPosition(const double InX, const double InY)
 {
 	TileGridPosition.Set(InX, InY);

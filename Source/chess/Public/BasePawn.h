@@ -49,6 +49,13 @@ enum class EPawnMovement : uint8
 	NORTHWEST // 7 */
 };
 
+UENUM()
+enum class EPawnStatus: int8
+{
+	ALIVE, // 0
+	DEAD // 1
+};
+
 UCLASS()
 class CHESS_API ABasePawn : public AActor
 {
@@ -72,6 +79,9 @@ public:
 	
 	void SetType(EPawnType PawnType);
 	EPawnType GetType() const;
+
+	void SetStatus(EPawnStatus PawnStatus);
+	EPawnStatus GetStatus() const;
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
@@ -103,6 +113,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnType Type;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPawnStatus Status;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileGridPosition;

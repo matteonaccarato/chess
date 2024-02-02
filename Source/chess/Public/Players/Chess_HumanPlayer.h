@@ -12,6 +12,14 @@
 #include "Chess_HumanPlayer.generated.h"
 
 
+
+
+
+// TODO => ogni Player ha un array di pawn vivi e un altro per quelli mangiati (oppure uno unico con un flag eaten)
+
+
+
+
 UCLASS()
 class CHESS_API AChess_HumanPlayer : public APawn, public IChess_PlayerInterface
 {

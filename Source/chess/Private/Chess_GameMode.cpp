@@ -133,7 +133,8 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, const int8 NewX, const int8 NewY)
+// TODO make it const
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag)
 {
 	bool IsValid = false;
 
@@ -159,9 +160,19 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, co
 
 
 
-		if (NewTile->GetTileStatus().EmptyFlag)
+		if (NewTile->GetTileStatus().EmptyFlag || EatFlag)
 		{
-			switch (Pawn->GetMovement())
+			switch (Pawn->GetType())
+			{
+			case EPawnType::PAWN:
+				if (EatFlag)
+					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, DeltaX, DeltaY);
+				else
+					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, DeltaX, DeltaY);
+			}
+
+
+			/*switch (Pawn->GetMovement())
 			{
 				// TODO: can be a mix of them
 				// array of possible movements
@@ -179,15 +190,45 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn/*, const ATile* CurrTile*/, co
 				}
 
 				break;
-				/*case EPawnMovement::BACKWARD: break;
+				case EPawnMovement::BACKWARD: break;
 				case EPawnMovement::LEFT: break;
 				case EPawnMovement::RIGHT: break;
-				case EPawnMovement::DIAGONAL: break;*/
+				case EPawnMovement::DIAGONAL: break;
 
-			}
+			}*/
 		}
 	}
 
 
 	return IsValid;
+}
+
+bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const int8 DeltaX, const int8 DeltaY) const
+{
+	switch (Direction)
+	{
+	case EDirection::FORWARD:
+		if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
+		{
+			if (Pawn->GetType() == EPawnType::PAWN)
+				Pawn->SetMaxNumberSteps(1);
+			
+			return true;
+		}
+		break;
+
+
+
+	case EDirection::DIAGONAL:
+		int8 MaxSteps = (Pawn->GetType() == EPawnType::PAWN) ? 1 : Pawn->GetMaxNumberSteps();
+		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= MaxSteps)
+		{
+			if (Pawn->GetType() == EPawnType::PAWN)
+				Pawn->SetMaxNumberSteps(1);
+			
+			return true;
+		}
+			
+	}
+	return false;
 }

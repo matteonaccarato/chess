@@ -16,6 +16,15 @@ class ABasePawn;
 
 struct FPosition;
 
+UENUM()
+enum class EDirection : uint8
+{
+	FORWARD,
+	BACKWARD,
+	RIGHT,
+	LEFT,
+	DIAGONAL
+};
 
 /**
  * 
@@ -92,5 +101,6 @@ public:
 	void TurnNextPlayer();
 
 
-	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY);
+	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag);
+	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const int8 DeltaX, const int8 DeltaY) const;
 };

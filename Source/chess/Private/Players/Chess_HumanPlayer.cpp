@@ -89,33 +89,44 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-		
+		// TODO inizializzare sempre tutto (anche a nullptr)
+		ABasePawn* PawnToEat = nullptr;
 
 		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
-			PawnTemp = Cast<ABasePawn>(Hit.GetActor());
-			if (PawnTemp && PawnTemp->GetColor() == EPawnColor::WHITE)
+			// TODO => PawnTemp as variabile locale
+			ABasePawn* PawnSelected = Cast<ABasePawn>(Hit.GetActor());
+			if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
 			{
+				PawnTemp = PawnSelected;
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
 				SelectedPawnFlag = 1;
+			}
+			else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
+			{
+				// Pawn to eat
+				PawnToEat = PawnSelected;
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("PAWN TO EAT IS IN X: %f Y: %f FROM %f %f"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], PawnTemp->GetGridPosition()[0], PawnTemp->GetGridPosition()[1]));
 			}
 		}
 
 
 
 
+		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 		if (SelectedPawnFlag == 1)
 		{
-			if (ATile* NewTile = Cast<ATile>(Hit.GetActor()))
+			ATile* NewTile = Cast<ATile>(Hit.GetActor());
+			if (PawnToEat)
+			{
+				NewTile = GameMode->GField->GetTileArray()[PawnToEat->GetGridPosition()[0] * GameMode->GField->Size + PawnToEat->GetGridPosition()[1]];
+			}
+			if (NewTile)
 			{
 				
-				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]))
+				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1], PawnToEat?true:false))
 				{
-
-
-
 					if (GameMode != nullptr)
 					{
 						/*
@@ -124,9 +135,24 @@ void AChess_HumanPlayer::OnClick()
 						* TODO: update TileArray and TileMap
 						*/
 
+						if (PawnToEat)
+						{
+							// TODO => c'è qualcosa da fare come destroy / deallocazione ?
+							PawnToEat->SetStatus(EPawnStatus::DEAD);
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
+							// Hides visible components
+							PawnToEat->SetActorHiddenInGame(true);
+
+							// Disables collision components
+							PawnToEat->SetActorEnableCollision(false);
+
+							// Stops the Actor from ticking
+							PawnToEat->SetActorTickEnabled(false);
+						}
 
 
 						NewTile->SetTileStatus(PlayerNumber, { 0, PawnTemp->GetColor(), PawnTemp->GetType() });
+						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->SetTileStatus(-1, { 1, EPawnColor::NONE, EPawnType::NONE });
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
 						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
