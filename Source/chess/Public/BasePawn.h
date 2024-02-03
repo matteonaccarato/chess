@@ -68,7 +68,7 @@ public:
 	/* void SetTileId(const FString TileId);
 	FString GetTileId() const; */
 
-	EPawnMovement GetMovement() const;
+	// EPawnMovement GetMovement() const;
 
 	void SetMaxNumberSteps(int32 NumberSteps);
 	int32 GetMaxNumberSteps() const;

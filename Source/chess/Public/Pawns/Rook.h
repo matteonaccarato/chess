@@ -14,4 +14,6 @@ class CHESS_API ARook : public ABasePawn
 {
 	GENERATED_BODY()
 	
+public:
+	ARook();
 };

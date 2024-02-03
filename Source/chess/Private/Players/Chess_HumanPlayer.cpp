@@ -91,6 +91,7 @@ void AChess_HumanPlayer::OnClick()
 
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
+		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 
 		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
@@ -101,6 +102,7 @@ void AChess_HumanPlayer::OnClick()
 				PawnTemp = PawnSelected;
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
+				// GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
 				SelectedPawnFlag = 1;
 			}
 			else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
@@ -114,7 +116,6 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 		if (SelectedPawnFlag == 1)
 		{
 			ATile* NewTile = Cast<ATile>(Hit.GetActor());

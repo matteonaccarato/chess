@@ -15,10 +15,10 @@ ABasePawn::ABasePawn()
 
 }
 
-EPawnMovement ABasePawn::GetMovement() const
+/* EPawnMovement ABasePawn::GetMovement() const
 {
 	return Movement;
-}
+} */
 
 void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
 {

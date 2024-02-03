@@ -133,6 +133,27 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
+void AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
+{
+
+	/* switch (Pawn->GetType())
+	{
+	case EPawnType::PAWN:
+		int8 MaxSteps = Pawn->GetMaxNumberSteps();
+		for (int8 i = 1; i <= MaxSteps; i++)
+		{
+			if (IsValidMove(Pawn, NewX, NewY + i, false))
+			{
+				GField->GetTileArray()[NewX * GField->Size + NewY + i]->Material;
+
+			}
+		}
+		break;
+	} */
+
+
+}
+
 // TODO make it const
 bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag)
 {
@@ -166,9 +187,18 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			{
 			case EPawnType::PAWN:
 				if (EatFlag)
-					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, DeltaX, DeltaY);
+					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
 				else
-					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, DeltaX, DeltaY);
+					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
+				break;
+
+			case EPawnType::ROOK:
+				IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = IsValid || this->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = IsValid || this->CheckDirection(EDirection::RIGHT, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = IsValid || this->CheckDirection(EDirection::LEFT, Pawn, NewGridPosition, CurrGridPosition);
+				break;
+			
 			}
 
 
@@ -203,13 +233,24 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 	return IsValid;
 }
 
-bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const int8 DeltaX, const int8 DeltaY) const
+bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition) const
 {
+	EPawnColor DirectionFlag = Pawn->GetColor();
+	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
+	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
+
 	switch (Direction)
 	{
 	case EDirection::FORWARD:
 		if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
 		{
+			// TODO function => IsLineClear()
+			for (int8 XOffset = 1; XOffset < FMath::Abs(DeltaX); XOffset++)
+			{
+				// return false if there is a pawn along the movement
+				if (!GField->TileArray[(CurrGridPosition[0] + XOffset) * GField->Size + NewGridPosition[1]]->GetTileStatus().EmptyFlag)
+					return false;
+			}
 			if (Pawn->GetType() == EPawnType::PAWN)
 				Pawn->SetMaxNumberSteps(1);
 			
@@ -218,6 +259,16 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 		break;
 
 
+	case EDirection::BACKWARD:
+		return DeltaY == 0 && -DeltaX >= 0 && -DeltaX <= Pawn->GetMaxNumberSteps();
+
+
+	// TODO right e left si possono unire
+	case EDirection::RIGHT:
+		return DeltaX == 0 && DeltaY >= 0 && DeltaY <= Pawn->GetMaxNumberSteps();
+
+	case EDirection::LEFT:
+		return DeltaX == 0 && -DeltaY >= 0 && -DeltaY <= Pawn->GetMaxNumberSteps();
 
 	case EDirection::DIAGONAL:
 		int8 MaxSteps = (Pawn->GetType() == EPawnType::PAWN) ? 1 : Pawn->GetMaxNumberSteps();

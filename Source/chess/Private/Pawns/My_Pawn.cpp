@@ -6,6 +6,6 @@
 AMy_Pawn::AMy_Pawn()
 {
 	Type = EPawnType::PAWN;
-	Movement = EPawnMovement::FORWARD;
+	// Movement = EPawnMovement::FORWARD;
 	MaxNumberSteps = 2;
 }
