@@ -4,16 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "BasePawn.h"
-#include "King.generated.h"
+#include "Bishop.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API AKing : public ABasePawn
+class CHESS_API ABishop : public ABasePawn
 {
 	GENERATED_BODY()
 	
-public:
-	AKing();
 };

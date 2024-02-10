@@ -16,5 +16,4 @@ class CHESS_API AMy_Pawn : public ABasePawn
 
 public:
 	AMy_Pawn();
-	
 };

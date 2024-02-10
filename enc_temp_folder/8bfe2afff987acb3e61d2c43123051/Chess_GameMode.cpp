@@ -197,25 +197,37 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 				IsValid = IsValid || this->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);
 				IsValid = IsValid || this->CheckDirection(EDirection::HORIZONTAL, Pawn, NewGridPosition, CurrGridPosition);
 				break;
-
-			case EPawnType::KNIGHT:
-				IsValid = this->CheckDirection(EDirection::KNIGHT, Pawn, NewGridPosition, CurrGridPosition);
-				break;
-
-			case EPawnType::BISHOP:
-				IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
-				break;
-
-			case EPawnType::QUEEN: // so it works like an OR for Queen and King
-			case EPawnType::KING:
-				IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
-				IsValid = IsValid || this->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);
-				IsValid = IsValid || this->CheckDirection(EDirection::HORIZONTAL, Pawn, NewGridPosition, CurrGridPosition);
-				IsValid = IsValid || this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
-				break;
+			
 			}
+
+
+			/*switch (Pawn->GetMovement())
+			{
+				// TODO: can be a mix of them
+				// array of possible movements
+			case EPawnMovement::FORWARD:
+
+
+				if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
+				{
+					// TODO => unione solo tipo senza colore
+					if (Pawn->GetType() == EPawnType::PAWN)
+					{
+						Pawn->SetMaxNumberSteps(1);
+					}
+					IsValid = true;
+				}
+
+				break;
+				case EPawnMovement::BACKWARD: break;
+				case EPawnMovement::LEFT: break;
+				case EPawnMovement::RIGHT: break;
+				case EPawnMovement::DIAGONAL: break;
+
+			}*/
 		}
 	}
+
 
 	return IsValid;
 }
@@ -225,14 +237,13 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 	EPawnColor DirectionFlag = Pawn->GetColor();
 	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
 	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
-	int8 MaxSteps = (Pawn->GetType() == EPawnType::PAWN) ? 1 : Pawn->GetMaxNumberSteps();
 
 	switch (Direction)
 	{
 	case EDirection::FORWARD:
 		if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
 		{
-			if (!this->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY))
+			if (!IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX))
 				return false;
 
 			if (Pawn->GetType() == EPawnType::PAWN)
@@ -243,17 +254,15 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 		break;
 
 	case EDirection::BACKWARD:
-		return DeltaY == 0 && -DeltaX >= 0 && -DeltaX <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
+		return DeltaY == 0 && -DeltaX >= 0 && -DeltaX <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX);
 		
 	case EDirection::HORIZONTAL:
-		return DeltaX == 0 && FMath::Abs(DeltaY) >= 0 && FMath::Abs(DeltaY) <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY);
+		return DeltaX == 0 && FMath::Abs(DeltaY) >= 0 && FMath::Abs(DeltaY) <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaY);
 
 	case EDirection::DIAGONAL:
+		int8 MaxSteps = (Pawn->GetType() == EPawnType::PAWN) ? 1 : Pawn->GetMaxNumberSteps();
 		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= MaxSteps)
 		{
-			if (!this->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
-				return false;
-
 			if (Pawn->GetType() == EPawnType::PAWN)
 				Pawn->SetMaxNumberSteps(1);
 			
@@ -261,9 +270,10 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 		}
 		break;
 
-	case EDirection::KNIGHT:
-		return (FMath::Abs(DeltaX) == 1 && FMath::Abs(DeltaY) == 2) || (FMath::Abs(DeltaX) == 2 && FMath::Abs(DeltaY) == 1);
+	/*case EDirection::KNIGHT:
+		break; */
 	}
+
 	
 	return false;
 }
@@ -271,33 +281,29 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 /*
 * return false if there is a pawn along the movement
 */
-bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const
+bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const int8 Delta) const
 {
 	switch (Line)
 	{
 	case ELine::HORIZONTAL:	
-		for (int8 YOffset = 1; YOffset < FMath::Abs(DeltaY); YOffset++)
+		for (int8 YOffset = 1; YOffset < FMath::Abs(Delta); YOffset++)
 		{
-			if (!GField->TileArray[CurrGridPosition[0] * GField->Size + CurrGridPosition[1] + YOffset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
+			if (!GField->TileArray[CurrGridPosition[0] * GField->Size + CurrGridPosition[1] + YOffset * FMath::Sign(Delta)]->GetTileStatus().EmptyFlag)
 				return false;
 		}
 		break;
 
 	case ELine::VERTICAL:
-		for (int8 XOffset = 1; XOffset < FMath::Abs(DeltaX); XOffset++)
+		for (int8 XOffset = 1; XOffset < FMath::Abs(Delta); XOffset++)
 		{
-			if (!GField->TileArray[(CurrGridPosition[0] + XOffset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1]]->GetTileStatus().EmptyFlag)
+			if (!GField->TileArray[(CurrGridPosition[0] + XOffset * FMath::Sign(Delta)) * GField->Size + CurrGridPosition[1]]->GetTileStatus().EmptyFlag)
 				return false;
 		}
 		break;
 
-	case ELine::DIAGONAL:
-		for (int8 Offset = 1; Offset < FMath::Abs(DeltaX); Offset++)
-		{
-			if (!GField->TileArray[(CurrGridPosition[0] + Offset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1] + Offset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
-				return false;
-		}
-		break; 
+	/*case ELine::DIAGONAL:
+		// TODO
+		break; */
 	}
 
 	return true;

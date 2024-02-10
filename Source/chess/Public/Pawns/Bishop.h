@@ -14,4 +14,6 @@ class CHESS_API ABishop : public ABasePawn
 {
 	GENERATED_BODY()
 	
+public:
+	ABishop();
 };

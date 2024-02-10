@@ -3,9 +3,3 @@
 
 #include "Pawns/Bishop.h"
 
-
-ABishop::ABishop()
-{
-	Type = EPawnType::BISHOP;
-	MaxNumberSteps = 8; // TODO magic number
-}

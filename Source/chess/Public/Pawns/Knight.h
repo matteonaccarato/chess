@@ -14,4 +14,6 @@ class CHESS_API AKnight : public ABasePawn
 {
 	GENERATED_BODY()
 	
+public:
+	AKnight();
 };

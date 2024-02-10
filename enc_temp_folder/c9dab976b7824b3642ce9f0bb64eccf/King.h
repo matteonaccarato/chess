@@ -14,6 +14,4 @@ class CHESS_API AKing : public ABasePawn
 {
 	GENERATED_BODY()
 	
-public:
-	AKing();
 };

@@ -14,4 +14,6 @@ class CHESS_API AQueen : public ABasePawn
 {
 	GENERATED_BODY()
 	
+public:
+	AQueen();
 };

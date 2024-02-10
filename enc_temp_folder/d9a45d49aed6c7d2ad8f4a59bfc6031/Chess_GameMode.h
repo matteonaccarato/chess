@@ -113,5 +113,5 @@ public:
 	void ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY);
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag);
 	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition) const;
-	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
+	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 Delta) const;
 };

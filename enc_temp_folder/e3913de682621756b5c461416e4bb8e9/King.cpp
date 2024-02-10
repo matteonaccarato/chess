@@ -3,8 +3,3 @@
 
 #include "Pawns/King.h"
 
-AKing::AKing()
-{
-	Type = EPawnType::KING;
-	MaxNumberSteps = 1; // TODO magic number
-}

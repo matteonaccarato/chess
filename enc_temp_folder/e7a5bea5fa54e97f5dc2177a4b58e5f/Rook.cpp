@@ -10,7 +10,7 @@ ARook::ARook()
 	/*AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode != nullptr)
 	{ */
-	MaxNumberSteps = 8; // TODO magic number
+		MaxNumberSteps = 8; // TODO magic number
 	/* }
 	else
 	{
