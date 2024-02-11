@@ -12,6 +12,24 @@
 #include "Kismet/GameplayStatics.h"
 #include "Chess_RandomPlayer.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSteps
+{
+	GENERATED_BODY()
+
+	int8 Number;
+	ECardinalDirection CardinalDirection;
+};
+
+USTRUCT(BlueprintType)
+struct FPawnsPossibilites
+{
+	GENERATED_BODY()
+
+	ABasePawn* Pawn;
+	std::vector<FSteps> PossibleSteps;
+};
+
 UCLASS()
 class CHESS_API AChess_RandomPlayer : public APawn, public IChess_PlayerInterface
 {

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "vector"
 #include "Chess_GameMode.h"
 // #include "Tile.h"
 #include "CoreMinimal.h"
@@ -38,15 +39,20 @@ enum class EPawnMovement : uint8
 	LEFT,
 	RIGHT,
 	DIAGONAL
+};
 
-	/* NORTH, // 0
-	NORTHEAST, // 1
-	EAST, // 2 
-	SOUTHEAST, // 3
-	SOUTH, // 4
-	SOUTHWEST, // 5
-	WEST, // 6
-	NORTHWEST // 7 */
+
+UENUM()
+enum class ECardinalDirection : uint8
+{
+	NORTH,
+	NORTHEAST,
+	EAST,
+	SOUTHEAST,
+	SOUTH,
+	SOUTHWEST,
+	WEST,
+	NORTHWEST
 };
 
 UENUM()
@@ -69,6 +75,8 @@ public:
 	FString GetTileId() const; */
 
 	// EPawnMovement GetMovement() const;
+
+	std::vector<ECardinalDirection> GetCardinalDirections() const;
 
 	void SetMaxNumberSteps(int32 NumberSteps);
 	int32 GetMaxNumberSteps() const;
@@ -105,13 +113,16 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnMovement Movement;
 
-	// TODO uint8 ?
+	// TODO int8 ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 MaxNumberSteps;
 
 	// Type (e.g. Rook)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnType Type;
+
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	std::vector<ECardinalDirection> CardinalDirections;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnStatus Status;

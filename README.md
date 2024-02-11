@@ -1,6 +1,10 @@
 # CHESS
 
 #### TODO:
+- [ ] RandomPlayer / actually to implement eat opponent's pawns
+
+
+
 - [ ] togliere texture dal lato dei cubi
 
 - [ ] aggiornare vettore tile/pedine ad ogni spostamento

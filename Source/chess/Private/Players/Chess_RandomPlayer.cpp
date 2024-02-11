@@ -46,13 +46,33 @@ void AChess_RandomPlayer::OnTurn()
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 			if (GameMode != nullptr)
 			{
-				TArray<ABasePawn*> MyPawns;
+				// <PAWN, <DELTAX, DELTAY>>
+				TArray<FPawnsPossibilites> MyPawns;
 				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
 				{
 					// TODO: third condition is test only
-					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE && CurrPawn->GetType() == EPawnType::PAWN)
+					// TODO => eat possibility
+					std::vector<FSteps> PossibleSteps;
+					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE /*  && CurrPawn->GetType() == EPawnType::PAWN */)
 					{
-						MyPawns.Add(CurrPawn);
+						for (const auto& direction : CurrPawn->GetCardinalDirections())
+						{
+							// ECardinalDirection CurrDirection = *it;
+							FSteps Steps{};
+
+							for (int i = 0; i < CurrPawn->GetMaxNumberSteps(); i++)
+							{
+								Steps.CardinalDirection = direction;
+								Steps.Number = i + 1;
+								PossibleSteps.push_back(Steps);
+							}
+						}
+						
+
+						FPawnsPossibilites PawnPossibilites;
+						PawnPossibilites.Pawn = CurrPawn;
+						PawnPossibilites.PossibleSteps = PossibleSteps;
+						MyPawns.Add(PawnPossibilites);
 					}
 				}
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), MyPawns.Num()));
@@ -69,33 +89,60 @@ void AChess_RandomPlayer::OnTurn()
 
 					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI got %d."), RandIdx));
 
-					int32 OldX = MyPawns[RandIdx]->GetGridPosition()[0];
-					int32 OldY = MyPawns[RandIdx]->GetGridPosition()[1];
+					int32 OldX = MyPawns[RandIdx].Pawn->GetGridPosition()[0];
+					int32 OldY = MyPawns[RandIdx].Pawn->GetGridPosition()[1];
 					int32 NewX = OldX;
 					int32 NewY = OldY;
+					bool EatFlag = false;
 
-					switch (MyPawns[RandIdx]->GetType())
+					switch (MyPawns[RandIdx].Pawn->GetType())
 					{
 					case EPawnType::PAWN:
-						int32 RandSteps = (FMath::Rand() % MyPawns[RandIdx]->GetMaxNumberSteps()) + 1;
-						NewX -= RandSteps;
+
+						int8 RandStepIdx = FMath::Rand() % MyPawns[RandIdx].PossibleSteps.size();
+						int8 RandStepsNumber = MyPawns[RandIdx].PossibleSteps[RandStepIdx].Number;
+						ECardinalDirection RandStepDirection = MyPawns[RandIdx].PossibleSteps[RandStepIdx].CardinalDirection;
+						
+						MyPawns[RandIdx].PossibleSteps.erase(MyPawns[RandIdx].PossibleSteps.begin() + RandStepIdx); // delete this movement possibility
+
+						// TODO looking to cardinal direction, i will move x and y
+						switch (RandStepDirection)
+						{
+						case ECardinalDirection::NORTH:
+							NewX -= RandStepsNumber;
+							break;
+						case ECardinalDirection::NORTHEAST:
+							EatFlag = true;
+							NewX -= RandStepsNumber;
+							NewY -= RandStepsNumber;
+						case ECardinalDirection::NORTHWEST:
+							EatFlag = true;
+							NewX -= RandStepsNumber;
+							NewY += RandStepsNumber;
+						}
 						break;
+
+					/* case EPawnType::ROOK:
+					case EPawnType::KNIGHT:
+					case EPawnType::BISHOP:
+					case EPawnType::QUEEN: 
+					case EPawnType::KING:	 */
 					}
 
 
-					if (GameMode->IsValidMove(MyPawns[RandIdx], NewX, NewY, false))
+					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY, EatFlag))
 					{
 
 						Tiles[OldX * GameMode->GField->Size + OldY]->SetTileStatus(PlayerNumber, { 1, EPawnColor::NONE, EPawnType::NONE });
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO EMPTY"), OldX, OldY));
 
 
-						Tiles[NewX * GameMode->GField->Size + NewY]->SetTileStatus(PlayerNumber, { 0, MyPawns[RandIdx]->GetColor(), MyPawns[RandIdx]->GetType() });
+						Tiles[NewX * GameMode->GField->Size + NewY]->SetTileStatus(PlayerNumber, { 0, MyPawns[RandIdx].Pawn->GetColor(), MyPawns[RandIdx].Pawn->GetType() });
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO PAWN"), NewX, NewY));
 
-						FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0, 0, MyPawns[RandIdx]->GetActorLocation()[2]);
-						MyPawns[RandIdx]->SetActorLocation(SpawnPosition);
-						MyPawns[RandIdx]->SetGridPosition(NewX, NewY);
+						FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0, 0, MyPawns[RandIdx].Pawn->GetActorLocation()[2]);
+						MyPawns[RandIdx].Pawn->SetActorLocation(SpawnPosition);
+						MyPawns[RandIdx].Pawn->SetGridPosition(NewX, NewY);
 
 						MoveMade = true;
 						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
@@ -105,7 +152,8 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Invalid move")));
-						MyPawns.RemoveAt(RandIdx);
+						if (MyPawns[RandIdx].PossibleSteps.size() == 0)
+							MyPawns.RemoveAt(RandIdx);
 					}
 
 					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("MyPawns Num %d"), MyPawns.Num()));

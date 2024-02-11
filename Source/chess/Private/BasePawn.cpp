@@ -41,6 +41,11 @@ EPawnColor ABasePawn::GetColor() const
 	return Color;
 }
 
+std::vector<ECardinalDirection> ABasePawn::GetCardinalDirections() const
+{
+	return CardinalDirections;
+}
+
 void ABasePawn::SetType(EPawnType PawnType)
 {
 	Type = PawnType;

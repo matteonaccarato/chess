@@ -181,7 +181,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 
 
-		if (NewTile->GetTileStatus().EmptyFlag || EatFlag)
+		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) || (EatFlag && !NewTile->GetTileStatus().EmptyFlag))
 		{
 			switch (Pawn->GetType())
 			{
