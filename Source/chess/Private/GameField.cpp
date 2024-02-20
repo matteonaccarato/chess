@@ -171,6 +171,8 @@ void AGameField::GenerateField()
 					{
 						UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
 					}
+
+					TileObj->SetPawn(BasePawnObj);
 				}
 
 				TileObj->SetTileStatus(PlayerOwner, TileStatus);

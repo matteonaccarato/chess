@@ -149,10 +149,14 @@ void AChess_HumanPlayer::OnClick()
 
 							// Stops the Actor from ticking
 							PawnToEat->SetActorTickEnabled(false);
+
+
 						}
 
 
 						NewTile->SetTileStatus(PlayerNumber, { 0, PawnTemp->GetColor(), PawnTemp->GetType() });
+						NewTile->SetPawn(PawnTemp);
+						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->SetPawn(nullptr);
 						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->SetTileStatus(-1, { 1, EPawnColor::NONE, EPawnType::NONE });
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);

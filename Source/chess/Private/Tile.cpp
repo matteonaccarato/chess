@@ -23,6 +23,16 @@ ATile::ATile()
 
 }
 
+void ATile::SetPawn(ABasePawn* TilePawn)
+{
+	Pawn = TilePawn;
+}
+
+ABasePawn* ATile::GetPawn() const
+{
+	return Pawn;
+}
+
 void ATile::SetId(const FString TileId)
 {
 	Id = TileId;

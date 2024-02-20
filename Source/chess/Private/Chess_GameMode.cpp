@@ -160,7 +160,8 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 	bool IsValid = false;
 
 	if (NewX >= 0 && NewX < GField->Size
-		&& NewY >= 0 && NewY < GField->Size)
+		&& NewY >= 0 && NewY < GField->Size
+		&& NewX != Pawn->GetGridPosition()[0] && NewY != Pawn->GetGridPosition()[1])
 	{
 		TArray<ATile*> TileArray = GField->GetTileArray();
 		ATile* NewTile = TileArray[NewX * GField->Size + NewY];
@@ -181,7 +182,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 
 
-		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) || (EatFlag && !NewTile->GetTileStatus().EmptyFlag))
+		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) || (EatFlag && !NewTile->GetTileStatus().EmptyFlag && (NewTile->GetTileStatus().PawnColor != Pawn->GetColor())))
 		{
 			switch (Pawn->GetType())
 			{

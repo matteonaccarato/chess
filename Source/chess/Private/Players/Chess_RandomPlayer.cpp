@@ -68,7 +68,7 @@ void AChess_RandomPlayer::OnTurn()
 							}
 						}
 						
-
+						// TODO descrivere funzionamento
 						FPawnsPossibilites PawnPossibilites;
 						PawnPossibilites.Pawn = CurrPawn;
 						PawnPossibilites.PossibleSteps = PossibleSteps;
@@ -123,7 +123,11 @@ void AChess_RandomPlayer::OnTurn()
 						break;
 
 					/* case EPawnType::ROOK:
-					case EPawnType::KNIGHT:
+					case ECardinalDirection::NORTH:
+						NewX -= RandStepsNumber;
+						NewY -= 
+						break; */
+					/*case EPawnType::KNIGHT:
 					case EPawnType::BISHOP:
 					case EPawnType::QUEEN: 
 					case EPawnType::KING:	 */
@@ -133,11 +137,32 @@ void AChess_RandomPlayer::OnTurn()
 					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY, EatFlag))
 					{
 
+						if (EatFlag)
+						{
+							// TODO => c'è qualcosa da fare come destroy / deallocazione ?
+							ABasePawn* PawnToEat = GameMode->GField->GetTileArray()[NewX * 8 + NewY]->GetPawn();
+
+							PawnToEat->SetStatus(EPawnStatus::DEAD);
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
+							// Hides visible components
+							PawnToEat->SetActorHiddenInGame(true);
+
+							// Disables collision components
+							PawnToEat->SetActorEnableCollision(false);
+
+							// Stops the Actor from ticking
+							PawnToEat->SetActorTickEnabled(false);
+						}
+
+
+
 						Tiles[OldX * GameMode->GField->Size + OldY]->SetTileStatus(PlayerNumber, { 1, EPawnColor::NONE, EPawnType::NONE });
+						Tiles[OldX * GameMode->GField->Size + OldY]->SetPawn(nullptr);
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO EMPTY"), OldX, OldY));
 
 
 						Tiles[NewX * GameMode->GField->Size + NewY]->SetTileStatus(PlayerNumber, { 0, MyPawns[RandIdx].Pawn->GetColor(), MyPawns[RandIdx].Pawn->GetType() });
+						Tiles[NewX * GameMode->GField->Size + NewY]->SetPawn(MyPawns[RandIdx].Pawn);
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO PAWN"), NewX, NewY));
 
 						FVector SpawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0, 0, MyPawns[RandIdx].Pawn->GetActorLocation()[2]);

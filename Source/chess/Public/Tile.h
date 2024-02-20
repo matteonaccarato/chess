@@ -46,6 +46,9 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	void SetPawn(ABasePawn* TilePawn);
+	ABasePawn* GetPawn() const;
+
 	void SetId(const FString TileId);
 	FString GetId() const;
 
@@ -66,6 +69,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ABasePawn* Pawn;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Id;
