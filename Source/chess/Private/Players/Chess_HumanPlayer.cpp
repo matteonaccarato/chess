@@ -95,7 +95,21 @@ void AChess_HumanPlayer::OnClick()
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-		std::vector<std::pair<int8, int8>> PossibleMoves;
+		
+
+
+
+
+		// clean last possible moves
+		// vecchio material tramite pari/dispari della posizione
+		// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
+
+		for (const auto& move : PossibleMoves)
+		{
+			UMaterialInterface* Material = ((move.first + move.second) % 2)? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
+			GameMode->GField->GetTileArray()[move.first * GameMode->FieldSize + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
+		}
+
 
 		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
@@ -133,7 +147,7 @@ void AChess_HumanPlayer::OnClick()
 			if (NewTile)
 			{
 
-				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1], PawnToEat?true:false))
+				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1] /*, PawnToEat ? true : false*/))
 				{
 					if (GameMode != nullptr)
 					{
@@ -162,7 +176,7 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-
+						// vecchio material tramite pari/dispari della posizione
 						// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
 
 

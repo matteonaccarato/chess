@@ -136,7 +136,95 @@ void AChess_GameMode::TurnNextPlayer()
 std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
 {
 	std::vector<std::pair<int8, int8>> PossibleMoves;
-	switch (Pawn->GetType())
+	std::vector<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
+	int8 MaxSteps = Pawn->GetMaxNumberSteps();
+	int8 FlagDirection = 0;
+	int8 XOffset = 0, YOffset = 0;
+	for (const auto& PawnDirection : PawnDirections)
+	{
+		for (int8 i = 1; i <= MaxSteps; i++)
+		{
+			XOffset = 0, YOffset = 0;
+			switch (PawnDirection)
+			{
+			case ECardinalDirection::NORTH:
+				FlagDirection = 1;
+			case ECardinalDirection::SOUTH:
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
+				FlagDirection = FlagDirection ? FlagDirection : -1;
+				XOffset = i * FlagDirection;
+				YOffset = 0;
+				break; 
+
+			case ECardinalDirection::NORTHEAST:
+				FlagDirection = 1;
+			case ECardinalDirection::SOUTHWEST:
+				FlagDirection = FlagDirection ? FlagDirection : -1;
+				XOffset = i * FlagDirection;
+				YOffset = i * FlagDirection;
+				break;
+
+			case ECardinalDirection::EAST:
+				FlagDirection = 1;
+			case ECardinalDirection::WEST:
+				FlagDirection = FlagDirection ? FlagDirection : -1;
+				XOffset = 0;
+				YOffset = i * FlagDirection;
+				break;
+
+			case ECardinalDirection::NORTHWEST:
+				FlagDirection = 1;
+			case ECardinalDirection::SOUTHEAST: 
+				FlagDirection = FlagDirection ? FlagDirection : -1;
+				XOffset = i * FlagDirection;
+				YOffset = i * (- FlagDirection);
+				break;
+
+			case ECardinalDirection::KNIGHT_TL:
+				YOffset = -1;
+			case ECardinalDirection::KNIGHT_TR:
+				XOffset = 2;
+				YOffset = YOffset ? YOffset : 1;
+				break;
+
+			case ECardinalDirection::KNIGHT_RT:
+				XOffset = 1;
+			case ECardinalDirection::KNIGHT_RB:
+				XOffset = XOffset ? XOffset : -1;
+				YOffset = 2;
+				break;
+
+			case ECardinalDirection::KNIGHT_BR:
+				YOffset = 1;
+			case ECardinalDirection::KNIGHT_BL:
+				XOffset = -2;
+				YOffset = YOffset ? YOffset : -1;
+				break;
+
+			case ECardinalDirection::KNIGHT_LT:
+				XOffset = 1;
+			case ECardinalDirection::KNIGHT_LB:
+				XOffset = XOffset ? XOffset : -1;
+				YOffset = -2;
+				break;
+
+			} 
+
+			
+			//ATile* Tile = GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset];
+			// bool EatFlag = Tile->GetTileStatus().PawnColor == EPawnColor::BLACK;
+			if (IsValidMove(Pawn, NewX + XOffset, NewY + YOffset, /*EatFlag, */true))
+			{
+				PossibleMoves.push_back(std::make_pair(NewX + XOffset, NewY + YOffset));
+				GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
+			}
+			FlagDirection = 0;
+			
+		}
+	}
+
+
+	/* switch (Pawn->GetType())
 	{
 	case EPawnType::PAWN:
 		int8 MaxSteps = Pawn->GetMaxNumberSteps();
@@ -150,12 +238,12 @@ std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn*
 			}
 		}
 		break;
-	}
+	} */
 	return PossibleMoves;
 }
 
 // TODO make it const
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag, const bool TestFlag)
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, /*const bool EatFlag,*/ const bool TestFlag)
 {
 	bool IsValid = false;
 
@@ -165,7 +253,8 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 	{
 		TArray<ATile*> TileArray = GField->GetTileArray();
 		ATile* NewTile = TileArray[NewX * GField->Size + NewY];
-
+		// it means that colors are -1 and 1 or viceversa
+		bool EatFlag = static_cast<int>(NewTile->GetTileStatus().PawnColor) == -static_cast<int>(Pawn->GetColor());
 	
 
 		// CurrTile => remove it

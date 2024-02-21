@@ -31,7 +31,7 @@ enum class EPawnColor : int8
 	BLACK = -1
 };
 
-UENUM()
+/*UENUM()
 enum class EPawnMovement : uint8
 {
 	FORWARD,
@@ -39,7 +39,7 @@ enum class EPawnMovement : uint8
 	LEFT,
 	RIGHT,
 	DIAGONAL
-};
+};*/
 
 
 UENUM()
@@ -52,7 +52,16 @@ enum class ECardinalDirection : uint8
 	SOUTH,
 	SOUTHWEST,
 	WEST,
-	NORTHWEST
+	NORTHWEST,
+	KNIGHT_TR, // top-right
+	KNIGHT_TL, // top-left
+	KNIGHT_RT, // TODO gli altri
+	KNIGHT_RB,
+	KNIGHT_BR,
+	KNIGHT_BL,
+	KNIGHT_LB,
+	KNIGHT_LT
+	 // KNIGHT
 };
 
 UENUM()
@@ -110,8 +119,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnColor Color;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnMovement Movement;
+	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPawnMovement Movement; */
 
 	// TODO int8 ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

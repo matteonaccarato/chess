@@ -88,7 +88,7 @@ void AChess_RandomPlayer::OnTurn()
 					TArray<ATile*> Tiles = GameMode->GField->GetTileArray();
 					int32 RandIdx = FMath::Rand() % MyPawns.Num();
 
-					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI got %d."), RandIdx));
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI got %d."), RandIdx));
 
 					int32 OldX = MyPawns[RandIdx].Pawn->GetGridPosition()[0];
 					int32 OldY = MyPawns[RandIdx].Pawn->GetGridPosition()[1];
@@ -96,6 +96,16 @@ void AChess_RandomPlayer::OnTurn()
 					int32 NewY = OldY;
 					bool EatFlag = false;
 
+
+
+
+
+
+
+
+
+					// TODO => 
+					// in random player => toglliere case epawntype@101, gestire tutti i movimenti nelle direzioni cardinali, eat flag dipende da se in newx e newy è NON occupata (occupata da bianco)
 					switch (MyPawns[RandIdx].Pawn->GetType())
 					{
 					case EPawnType::PAWN:
@@ -135,7 +145,12 @@ void AChess_RandomPlayer::OnTurn()
 					}
 
 
-					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY, EatFlag))
+
+
+
+
+
+					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY/*, EatFlag*/))
 					{
 
 						if (EatFlag)

@@ -1,13 +1,14 @@
 # CHESS
 
 #### TODO:
-- [ ] SHOW POSSIBLE MOVES => reset color when you select another pawn or you complete the move (in vector di possible moves)
-human player @166
+- [ ] RandomPlayer / actually to implement choose and eat opponent's pawns
+- [ ] GameMode / Check function
+
+- [ ] in random player => toglliere case epawntype@101, gestire tutti i movimenti nelle direzioni cardinali, eat flag dipende da se in newx e newy è NON occupata (occupata da bianco)
 
 
 
-- [ ] RandomPlayer / actually to implement eat opponent's pawns
-
+- [ ] Pawns / MaxNumberSteps => to split by X and by Y
 
 
 - [ ] togliere texture dal lato dei cubi

@@ -111,7 +111,7 @@ public:
 	void TurnNextPlayer();
 
 	std::vector<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY);
-	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag, const bool TestFlag = false);
+	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, /*const bool EatFlag,*/ const bool TestFlag = false);
 	// test flag => to do not decrement pawn max moves if just for showing possible moves
 	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;
 	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
