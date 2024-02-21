@@ -60,6 +60,15 @@ public:
 
 
 	// Tile Classes
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* MaterialLight;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* MaterialDark;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* MaterialGreen;
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> B_TileClass;
 

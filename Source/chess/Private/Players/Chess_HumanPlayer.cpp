@@ -95,6 +95,7 @@ void AChess_HumanPlayer::OnClick()
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+		std::vector<std::pair<int8, int8>> PossibleMoves;
 
 		if (Cast<ABasePawn>(Hit.GetActor()))
 		{
@@ -105,8 +106,11 @@ void AChess_HumanPlayer::OnClick()
 				PawnTemp = PawnSelected;
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
-				// GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
+				PossibleMoves = GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
 				SelectedPawnFlag = 1;
+				
+				
+				// GameMode->GField->GetTileArray()[CurrPawnGridPosition[0]*8 + CurrPawnGridPosition[1]]->GetStaticMeshComponent()->SetMaterial(0, GameMode->GField->MaterialDark);
 			}
 			else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
 			{
@@ -128,7 +132,7 @@ void AChess_HumanPlayer::OnClick()
 			}
 			if (NewTile)
 			{
-				
+
 				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1], PawnToEat?true:false))
 				{
 					if (GameMode != nullptr)
@@ -155,6 +159,15 @@ void AChess_HumanPlayer::OnClick()
 
 
 						}
+
+
+
+
+						// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
+
+
+
+
 
 
 						NewTile->SetTileStatus(PlayerNumber, { 0, PawnTemp->GetColor(), PawnTemp->GetType() });

@@ -133,9 +133,9 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
+void AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
 {
-	std::vector<std::pair<int8, int8>> PossibleMoves;
+
 	switch (Pawn->GetType())
 	{
 	case EPawnType::PAWN:
@@ -143,19 +143,19 @@ std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn*
 		for (int8 i = 1; i <= MaxSteps; i++)
 		{
 			// TODO, manage eatflag
-			if (IsValidMove(Pawn, NewX + i, NewY, false, true))
+			if (IsValidMove(Pawn, NewX + i, NewY, false))
 			{
-				PossibleMoves.push_back(std::make_pair(NewX + i, NewY));
-				GField->GetTileArray()[(NewX+i) * GField->Size + NewY]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
+				GField->GetTileArray()[NewX * GField->Size + NewY + i]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
 			}
 		}
 		break;
 	}
-	return PossibleMoves;
+
+
 }
 
 // TODO make it const
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag, const bool TestFlag)
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool EatFlag)
 {
 	bool IsValid = false;
 
@@ -188,9 +188,9 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			{
 			case EPawnType::PAWN:
 				if (EatFlag)
-					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
+					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
 				else
-					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
+					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
 				break;
 
 			case EPawnType::ROOK:
@@ -221,7 +221,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 	return IsValid;
 }
 
-bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag) const
+bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition) const
 {
 	EPawnColor DirectionFlag = Pawn->GetColor();
 	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
@@ -236,7 +236,7 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 			if (!this->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;
 
-			if (Pawn->GetType() == EPawnType::PAWN && !TestFlag)
+			if (Pawn->GetType() == EPawnType::PAWN)
 				Pawn->SetMaxNumberSteps(1);
 			
 			return true;

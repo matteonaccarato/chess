@@ -53,17 +53,20 @@ void AChess_HumanPlayer::OnTurn()
 {
 	IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
-	// GameInstance->SetTurnMessage(TEXT("Human Turn"));
+	GameInstance->SetTurnMessage(TEXT("Human Turn"));
 }
 
 void AChess_HumanPlayer::OnWin()
 {
 	// TODO
+	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+	GameInstance->IncrementScoreHumanPlayer();
 }
 
 void AChess_HumanPlayer::OnLose()
 {
 	// TODO
+	GameInstance->SetTurnMessage(TEXT("Human Loses!"));
 }
 
 void AChess_HumanPlayer::OnClick()
@@ -102,8 +105,11 @@ void AChess_HumanPlayer::OnClick()
 				PawnTemp = PawnSelected;
 				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
-				// GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
+				GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
 				SelectedPawnFlag = 1;
+				
+				
+				// GameMode->GField->GetTileArray()[CurrPawnGridPosition[0]*8 + CurrPawnGridPosition[1]]->GetStaticMeshComponent()->SetMaterial(0, GameMode->GField->MaterialDark);
 			}
 			else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
 			{
@@ -125,7 +131,7 @@ void AChess_HumanPlayer::OnClick()
 			}
 			if (NewTile)
 			{
-				
+
 				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1], PawnToEat?true:false))
 				{
 					if (GameMode != nullptr)

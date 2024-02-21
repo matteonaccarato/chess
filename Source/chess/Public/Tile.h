@@ -46,6 +46,8 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	UStaticMeshComponent* GetStaticMeshComponent() const;
+
 	void SetPawn(ABasePawn* TilePawn);
 	ABasePawn* GetPawn() const;
 
@@ -69,6 +71,21 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* MaterialLight;
+
+	UPROPERTY(EditAnywhere, Category="Materials")
+	UMaterialInterface* MaterialDark;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* MaterialGreen;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterial* Material;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInstance* MaterialInstance;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ABasePawn* Pawn;

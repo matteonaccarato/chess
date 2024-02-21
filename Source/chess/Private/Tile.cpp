@@ -12,6 +12,9 @@ ATile::ATile()
 	// template function which creates a component
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	MaterialLight = CreateDefaultSubobject<UMaterialInterface>("MaterialLight");
+	MaterialDark = CreateDefaultSubobject<UMaterialInterface>("MaterialDark");
+	MaterialGreen = CreateDefaultSubobject<UMaterialInterface>("MaterialGreen");
 
 	SetRootComponent(Scene);
 	StaticMeshComponent->SetupAttachment(Scene);
@@ -21,6 +24,11 @@ ATile::ATile()
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 
+}
+
+UStaticMeshComponent* ATile::GetStaticMeshComponent() const
+{
+	return StaticMeshComponent;
 }
 
 void ATile::SetPawn(ABasePawn* TilePawn)
