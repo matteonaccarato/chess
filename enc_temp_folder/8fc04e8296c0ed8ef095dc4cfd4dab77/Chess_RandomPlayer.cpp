@@ -8,7 +8,7 @@ AChess_RandomPlayer::AChess_RandomPlayer()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GameInstace = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
 // Called when the game starts or when spawned
@@ -32,7 +32,6 @@ void AChess_RandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void AChess_RandomPlayer::OnTurn()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI (Random) Turn"));
-	GameInstance->SetTurnMessage(TEXT("AI (Random) Turn"));
 
 	FTimerHandle TimerHandle;
 	// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
@@ -204,13 +203,10 @@ void AChess_RandomPlayer::OnTurn()
 void AChess_RandomPlayer::OnWin()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("AI Wins"));
-	GameInstance->IncrementScoreAiPlayer();
 }
 
 void AChess_RandomPlayer::OnLose()
 {
 	/// TODO
-	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }
 

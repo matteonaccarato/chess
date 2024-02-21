@@ -53,20 +53,17 @@ void AChess_HumanPlayer::OnTurn()
 {
 	IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
-	GameInstance->SetTurnMessage(TEXT("Human Turn"));
+	// GameInstance->SetTurnMessage(TEXT("Human Turn"));
 }
 
 void AChess_HumanPlayer::OnWin()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-	GameInstance->IncrementScoreHumanPlayer();
 }
 
 void AChess_HumanPlayer::OnLose()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("Human Loses!"));
 }
 
 void AChess_HumanPlayer::OnClick()

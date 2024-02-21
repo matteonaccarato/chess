@@ -39,7 +39,7 @@ public:
 	// Sets default values for this pawn's properties
 	AChess_RandomPlayer();
 
-	UChess_GameInstance* GameInstance;
+	UChess_GameInstance* GameInstace;
 
 protected:
 	// Called when the game starts or when spawned

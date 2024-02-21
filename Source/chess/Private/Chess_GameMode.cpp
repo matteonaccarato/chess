@@ -161,7 +161,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 	if (NewX >= 0 && NewX < GField->Size
 		&& NewY >= 0 && NewY < GField->Size
-		&& NewX != Pawn->GetGridPosition()[0] && NewY != Pawn->GetGridPosition()[1])
+		&& !(NewX == Pawn->GetGridPosition()[0] && NewY == Pawn->GetGridPosition()[1]))
 	{
 		TArray<ATile*> TileArray = GField->GetTileArray();
 		ATile* NewTile = TileArray[NewX * GField->Size + NewY];
