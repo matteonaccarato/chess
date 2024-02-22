@@ -358,6 +358,12 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 	return false;
 }
 
+bool AChess_GameMode::IsValidTile(const int8 X, const int8 Y) const
+{
+	return X >= 0 && X < GField->Size
+		&& Y >= 0 && X < GField->Size;
+}
+
 /*
 * return false if there is a pawn along the movement
 */
@@ -368,7 +374,8 @@ bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, 
 	case ELine::HORIZONTAL:	
 		for (int8 YOffset = 1; YOffset < FMath::Abs(DeltaY); YOffset++)
 		{
-			if (!GField->TileArray[CurrGridPosition[0] * GField->Size + CurrGridPosition[1] + YOffset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
+			if (IsValidTile(CurrGridPosition[0], CurrGridPosition[1] + YOffset) 
+				&& !GField->TileArray[CurrGridPosition[0] * GField->Size + CurrGridPosition[1] + YOffset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
 				return false;
 		}
 		break;
@@ -376,7 +383,8 @@ bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, 
 	case ELine::VERTICAL:
 		for (int8 XOffset = 1; XOffset < FMath::Abs(DeltaX); XOffset++)
 		{
-			if (!GField->TileArray[(CurrGridPosition[0] + XOffset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1]]->GetTileStatus().EmptyFlag)
+			if (IsValidTile(CurrGridPosition[0] + XOffset * FMath::Sign(DeltaX), CurrGridPosition[1])
+				&& !GField->TileArray[(CurrGridPosition[0] + XOffset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1]]->GetTileStatus().EmptyFlag)
 				return false;
 		}
 		break;
@@ -384,7 +392,8 @@ bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, 
 	case ELine::DIAGONAL:
 		for (int8 Offset = 1; Offset < FMath::Abs(DeltaX); Offset++)
 		{
-			if (!GField->TileArray[(CurrGridPosition[0] + Offset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1] + Offset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
+			if (IsValidTile(CurrGridPosition[0] + Offset * FMath::Sign(DeltaX), CurrGridPosition[1] + Offset * FMath::Sign(DeltaY))
+				&& !GField->TileArray[(CurrGridPosition[0] + Offset * FMath::Sign(DeltaX)) * GField->Size + CurrGridPosition[1] + Offset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
 				return false;
 		}
 		break; 

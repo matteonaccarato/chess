@@ -1,6 +1,7 @@
 # CHESS
 
 #### TODO:
+- [ ] => Mettere punti cardinali corretti (anche rispetto a neri => NORTH implica andare indietro)
 - [ ] RandomPlayer / actually to implement choose and eat opponent's pawns
 - [ ] GameMode / Check function
 

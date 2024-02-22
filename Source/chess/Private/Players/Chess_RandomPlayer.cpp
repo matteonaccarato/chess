@@ -92,9 +92,106 @@ void AChess_RandomPlayer::OnTurn()
 
 					int32 OldX = MyPawns[RandIdx].Pawn->GetGridPosition()[0];
 					int32 OldY = MyPawns[RandIdx].Pawn->GetGridPosition()[1];
-					int32 NewX = OldX;
-					int32 NewY = OldY;
-					bool EatFlag = false;
+					// int32 NewX = OldX;
+					// int32 NewY = OldY;
+					// bool EatFlag = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					int8 RandStepIdx = FMath::Rand() % MyPawns[RandIdx].PossibleSteps.size();
+					int8 RandStepsNumber = MyPawns[RandIdx].PossibleSteps[RandStepIdx].Number;
+					ECardinalDirection RandStepDirection = MyPawns[RandIdx].PossibleSteps[RandStepIdx].CardinalDirection;
+					int8 XOffset = 0, YOffset = 0;
+					int8 FlagDirection = 0;
+
+					MyPawns[RandIdx].PossibleSteps.erase(MyPawns[RandIdx].PossibleSteps.begin() + RandStepIdx); // delete this movement possibility
+
+					switch(RandStepDirection)
+					{
+
+					case ECardinalDirection::NORTH:
+						FlagDirection = -1;
+					case ECardinalDirection::SOUTH:
+						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
+						FlagDirection = FlagDirection ? FlagDirection : 1;
+						XOffset = RandStepsNumber * FlagDirection;
+						YOffset = 0;
+						break;
+
+					case ECardinalDirection::NORTHEAST:
+						FlagDirection = -1;
+					case ECardinalDirection::SOUTHWEST:
+						FlagDirection = FlagDirection ? FlagDirection : 1;
+						XOffset = RandStepsNumber * FlagDirection;
+						YOffset = RandStepsNumber * FlagDirection;
+						break;
+
+					case ECardinalDirection::EAST:
+						FlagDirection = 1;
+					case ECardinalDirection::WEST:
+						FlagDirection = FlagDirection ? FlagDirection : -1;
+						XOffset = 0;
+						YOffset = RandStepsNumber * FlagDirection;
+						break;
+
+					case ECardinalDirection::NORTHWEST:
+						FlagDirection = -1;
+					case ECardinalDirection::SOUTHEAST:
+						FlagDirection = FlagDirection ? FlagDirection : 1;
+						XOffset = RandStepsNumber * FlagDirection;
+						// TODO => why -FlagDirection
+						YOffset = RandStepsNumber * (-FlagDirection);
+						break;
+
+					case ECardinalDirection::KNIGHT_TL:
+						YOffset = -1;
+					case ECardinalDirection::KNIGHT_TR:
+						XOffset = -2;
+						YOffset = YOffset ? YOffset : 1;
+						break;
+
+					case ECardinalDirection::KNIGHT_RT:
+						XOffset = -1;
+					case ECardinalDirection::KNIGHT_RB:
+						XOffset = XOffset ? XOffset : 1;
+						YOffset = 2;
+						break;
+
+					case ECardinalDirection::KNIGHT_BR:
+						YOffset = 1;
+					case ECardinalDirection::KNIGHT_BL:
+						XOffset = 2;
+						YOffset = YOffset ? YOffset : -1;
+						break;
+
+					case ECardinalDirection::KNIGHT_LT:
+						XOffset = -1;
+					case ECardinalDirection::KNIGHT_LB:
+						XOffset = XOffset ? XOffset : 1;
+						YOffset = -2;
+						break;
+
+					}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -106,7 +203,7 @@ void AChess_RandomPlayer::OnTurn()
 
 					// TODO => 
 					// in random player => toglliere case epawntype@101, gestire tutti i movimenti nelle direzioni cardinali, eat flag dipende da se in newx e newy è NON occupata (occupata da bianco)
-					switch (MyPawns[RandIdx].Pawn->GetType())
+					/* switch (MyPawns[RandIdx].Pawn->GetType())
 					{
 					case EPawnType::PAWN:
 
@@ -133,30 +230,32 @@ void AChess_RandomPlayer::OnTurn()
 						}
 						break;
 
-					/* case EPawnType::ROOK:
+					case EPawnType::ROOK:
 					case ECardinalDirection::NORTH:
 						NewX -= RandStepsNumber;
 						NewY -= 
-						break; */
+						break;
 					/*case EPawnType::KNIGHT:
 					case EPawnType::BISHOP:
 					case EPawnType::QUEEN: 
-					case EPawnType::KING:	 */
-					}
+					case EPawnType::KING:	
+					} */
 
 
 
 
 
+					int8 NewX = OldX + XOffset;
+					int8 NewY = OldY + YOffset;
 
-
-					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY/*, EatFlag*/))
+					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY /*, EatFlag*/))
 					{
 
+						bool EatFlag = static_cast<int>(GameMode->GField->GetTileArray()[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(MyPawns[RandIdx].Pawn->GetColor());
 						if (EatFlag)
 						{
 							// TODO => c'è qualcosa da fare come destroy / deallocazione ?
-							ABasePawn* PawnToEat = GameMode->GField->GetTileArray()[NewX * 8 + NewY]->GetPawn();
+							ABasePawn* PawnToEat = GameMode->GField->GetTileArray()[NewX * GameMode->GField->Size + NewY]->GetPawn();
 
 							PawnToEat->SetStatus(EPawnStatus::DEAD);
 							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));

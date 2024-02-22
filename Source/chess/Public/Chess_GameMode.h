@@ -115,4 +115,5 @@ public:
 	// test flag => to do not decrement pawn max moves if just for showing possible moves
 	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;
 	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
+	bool IsValidTile(const int8 X, const int8 Y) const;
 };
