@@ -120,19 +120,22 @@ void AChess_RandomPlayer::OnTurn()
 					switch(RandStepDirection)
 					{
 
+					
+
+
 					case ECardinalDirection::NORTH:
-						FlagDirection = -1;
+						FlagDirection = 1;
 					case ECardinalDirection::SOUTH:
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
-						FlagDirection = FlagDirection ? FlagDirection : 1;
+						FlagDirection = FlagDirection ? FlagDirection : -1;
 						XOffset = RandStepsNumber * FlagDirection;
 						YOffset = 0;
 						break;
 
 					case ECardinalDirection::NORTHEAST:
-						FlagDirection = -1;
+						FlagDirection = 1;
 					case ECardinalDirection::SOUTHWEST:
-						FlagDirection = FlagDirection ? FlagDirection : 1;
+						FlagDirection = FlagDirection ? FlagDirection : -1;
 						XOffset = RandStepsNumber * FlagDirection;
 						YOffset = RandStepsNumber * FlagDirection;
 						break;
@@ -146,49 +149,50 @@ void AChess_RandomPlayer::OnTurn()
 						break;
 
 					case ECardinalDirection::NORTHWEST:
-						FlagDirection = -1;
+						FlagDirection = 1;
 					case ECardinalDirection::SOUTHEAST:
-						FlagDirection = FlagDirection ? FlagDirection : 1;
+						FlagDirection = FlagDirection ? FlagDirection : -1;
 						XOffset = RandStepsNumber * FlagDirection;
-						// TODO => why -FlagDirection
 						YOffset = RandStepsNumber * (-FlagDirection);
 						break;
 
 					case ECardinalDirection::KNIGHT_TL:
 						YOffset = -1;
 					case ECardinalDirection::KNIGHT_TR:
-						XOffset = -2;
+						XOffset = 2;
 						YOffset = YOffset ? YOffset : 1;
 						break;
 
 					case ECardinalDirection::KNIGHT_RT:
-						XOffset = -1;
+						XOffset = 1;
 					case ECardinalDirection::KNIGHT_RB:
-						XOffset = XOffset ? XOffset : 1;
+						XOffset = XOffset ? XOffset : -1;
 						YOffset = 2;
 						break;
 
 					case ECardinalDirection::KNIGHT_BR:
 						YOffset = 1;
 					case ECardinalDirection::KNIGHT_BL:
-						XOffset = 2;
+						XOffset = -2;
 						YOffset = YOffset ? YOffset : -1;
 						break;
 
 					case ECardinalDirection::KNIGHT_LT:
-						XOffset = -1;
+						XOffset = 1;
 					case ECardinalDirection::KNIGHT_LB:
-						XOffset = XOffset ? XOffset : 1;
+						XOffset = XOffset ? XOffset : -1;
 						YOffset = -2;
 						break;
-
+						
 					}
 
 
 
 
 
-
+					// TODO => vedere se ho fatto solo su X o Y la moltiplicazione per il colore
+					XOffset = XOffset * static_cast<int>(MyPawns[RandIdx].Pawn->GetColor());
+					// YOffset = YOffset * static_cast<int>(MyPawns[RandIdx].Pawn->GetColor());
 
 
 
@@ -245,11 +249,31 @@ void AChess_RandomPlayer::OnTurn()
 
 
 
+					if (MyPawns[RandIdx].Pawn->GetType() == EPawnType::PAWN && RandStepDirection == ECardinalDirection::NORTH)
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("DEBUG")));
+
+					}
+
+
+
 					int8 NewX = OldX + XOffset;
 					int8 NewY = OldY + YOffset;
 
+
+
+
+
+
 					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY /*, EatFlag*/))
 					{
+
+						if (MyPawns[RandIdx].Pawn->GetType() != EPawnType::KNIGHT
+							&& MyPawns[RandIdx].Pawn->GetType() != EPawnType::PAWN)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("DEBUG")));
+
+						}
 
 						bool EatFlag = static_cast<int>(GameMode->GField->GetTileArray()[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(MyPawns[RandIdx].Pawn->GetColor());
 						if (EatFlag)

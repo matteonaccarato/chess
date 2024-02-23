@@ -266,7 +266,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 		// NewGridPosition , CurrPawnPosition
 		EPawnColor DirectionFlag = Pawn->GetColor();
-		int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
+		int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]); //* static_cast<double>(DirectionFlag);
 		int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
 
 
@@ -313,14 +313,14 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag) const
 {
 	EPawnColor DirectionFlag = Pawn->GetColor();
-	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]) * static_cast<double>(DirectionFlag);
+	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]); // * static_cast<double>(DirectionFlag);
 	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
 	int8 MaxSteps = (Pawn->GetType() == EPawnType::PAWN) ? 1 : Pawn->GetMaxNumberSteps();
 
 	switch (Direction)
 	{
 	case EDirection::FORWARD:
-		if (DeltaY == 0 && DeltaX >= 0 && DeltaX <= Pawn->GetMaxNumberSteps())
+		if (DeltaY == 0 && (DeltaX* static_cast<double>(DirectionFlag)) >= 0 && (DeltaX* static_cast<double>(DirectionFlag)) <= Pawn->GetMaxNumberSteps())
 		{
 			if (!this->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;
@@ -333,7 +333,7 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 		break;
 
 	case EDirection::BACKWARD:
-		return DeltaY == 0 && -DeltaX >= 0 && -DeltaX <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
+		return DeltaY == 0 && ((- DeltaX)* static_cast<double>(DirectionFlag)) >= 0 && ((- DeltaX)* static_cast<double>(DirectionFlag)) <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
 		
 	case EDirection::HORIZONTAL:
 		return DeltaX == 0 && FMath::Abs(DeltaY) >= 0 && FMath::Abs(DeltaY) <= Pawn->GetMaxNumberSteps() && IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY);
