@@ -158,7 +158,7 @@ void AGameField::GenerateField()
 					{
 						BasePawnObj->SetGridPosition(x, y);
 						// TODO: 0.8 da mettere come attributo
-						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.05));
+						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));
 						
 						BasePawnObj->SetType(TileStatus.PawnType);
 						BasePawnObj->SetColor(TileStatus.PawnColor);

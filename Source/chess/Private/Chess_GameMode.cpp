@@ -150,7 +150,7 @@ std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn*
 			case ECardinalDirection::NORTH:
 				FlagDirection = 1;
 			case ECardinalDirection::SOUTH:
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
+				// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
 				FlagDirection = FlagDirection ? FlagDirection : -1;
 				XOffset = i * FlagDirection;
 				YOffset = 0;
@@ -344,7 +344,7 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 			if (!this->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;
 
-			if (Pawn->GetType() == EPawnType::PAWN)
+			if (Pawn->GetType() == EPawnType::PAWN && !TestFlag)
 				Pawn->SetMaxNumberSteps(1);
 			
 			return true;

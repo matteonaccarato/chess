@@ -126,7 +126,7 @@ void AChess_RandomPlayer::OnTurn()
 					case ECardinalDirection::NORTH:
 						FlagDirection = 1;
 					case ECardinalDirection::SOUTH:
-						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
+						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
 						FlagDirection = FlagDirection ? FlagDirection : -1;
 						XOffset = RandStepsNumber * FlagDirection;
 						YOffset = 0;
@@ -249,11 +249,11 @@ void AChess_RandomPlayer::OnTurn()
 
 
 
-					if (MyPawns[RandIdx].Pawn->GetType() == EPawnType::PAWN && RandStepDirection == ECardinalDirection::NORTH)
+					/*if (MyPawns[RandIdx].Pawn->GetType() == EPawnType::PAWN && RandStepDirection == ECardinalDirection::NORTH)
 					{
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("DEBUG")));
 
-					}
+					}*/
 
 
 
@@ -268,12 +268,12 @@ void AChess_RandomPlayer::OnTurn()
 					if (GameMode->IsValidMove(MyPawns[RandIdx].Pawn, NewX, NewY /*, EatFlag*/))
 					{
 
-						if (MyPawns[RandIdx].Pawn->GetType() != EPawnType::KNIGHT
+						/* if (MyPawns[RandIdx].Pawn->GetType() != EPawnType::KNIGHT
 							&& MyPawns[RandIdx].Pawn->GetType() != EPawnType::PAWN)
 						{
 							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("DEBUG")));
 
-						}
+						} */
 
 						bool EatFlag = static_cast<int>(GameMode->GField->GetTileArray()[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(MyPawns[RandIdx].Pawn->GetColor());
 						if (EatFlag)
