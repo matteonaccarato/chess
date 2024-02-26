@@ -86,7 +86,27 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 		if (IsGameOver || PlayerNumber != CurrentPlayer)
 			return;
 
-		TurnNextPlayer();
+
+
+		if (GField->IsCheck())
+		{
+			IsGameOver = true;
+			Players[CurrentPlayer]->OnWin();
+			for (int32 i = 0; i < Players.Num(); i++)
+			{
+				if (i != CurrentPlayer)
+				{
+					Players[i]->OnLose();
+				}
+			}
+		} 
+		else
+		{
+			TurnNextPlayer();
+		}
+
+
+
 	}
 
 	/*
@@ -133,10 +153,10 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
 {
-	std::vector<std::pair<int8, int8>> PossibleMoves;
-	std::vector<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
+	TArray<std::pair<int8, int8>> PossibleMoves;
+	TArray<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
 	int8 MaxSteps = Pawn->GetMaxNumberSteps();
 	int8 FlagDirection = 0;
 	int8 XOffset = 0, YOffset = 0;
@@ -215,7 +235,7 @@ std::vector<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn*
 			// bool EatFlag = Tile->GetTileStatus().PawnColor == EPawnColor::BLACK;
 			if (IsValidMove(Pawn, NewX + XOffset, NewY + YOffset, /*EatFlag, */true))
 			{
-				PossibleMoves.push_back(std::make_pair(NewX + XOffset, NewY + YOffset));
+				PossibleMoves.Add(std::make_pair(NewX + XOffset, NewY + YOffset));
 				GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
 			}
 			FlagDirection = 0;
@@ -247,8 +267,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 {
 	bool IsValid = false;
 
-	if (NewX >= 0 && NewX < GField->Size
-		&& NewY >= 0 && NewY < GField->Size
+	if (IsValidTile(NewX, NewY)
 		&& !(NewX == Pawn->GetGridPosition()[0] && NewY == Pawn->GetGridPosition()[1]))
 	{
 		TArray<ATile*> TileArray = GField->GetTileArray();
@@ -361,7 +380,7 @@ bool AChess_GameMode::CheckDirection(const EDirection Direction, ABasePawn* Pawn
 bool AChess_GameMode::IsValidTile(const int8 X, const int8 Y) const
 {
 	return X >= 0 && X < GField->Size
-		&& Y >= 0 && X < GField->Size;
+		&& Y >= 0 && Y < GField->Size;
 }
 
 /*

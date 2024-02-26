@@ -85,7 +85,7 @@ public:
 
 	// EPawnMovement GetMovement() const;
 
-	std::vector<ECardinalDirection> GetCardinalDirections() const;
+	TArray<ECardinalDirection> GetCardinalDirections() const;
 
 	void SetMaxNumberSteps(int32 NumberSteps);
 	int32 GetMaxNumberSteps() const;
@@ -131,7 +131,7 @@ protected:
 	EPawnType Type;
 
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	std::vector<ECardinalDirection> CardinalDirections;
+	TArray<ECardinalDirection> CardinalDirections;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnStatus Status;

@@ -27,7 +27,7 @@ struct FPawnsPossibilites
 	GENERATED_BODY()
 
 	ABasePawn* Pawn;
-	std::vector<FSteps> PossibleSteps;
+	TArray<FSteps> PossibleSteps;
 };
 
 UCLASS()

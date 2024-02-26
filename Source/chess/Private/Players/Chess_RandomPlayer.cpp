@@ -53,7 +53,7 @@ void AChess_RandomPlayer::OnTurn()
 				{
 					// TODO: third condition is test only
 					// TODO => eat possibility
-					std::vector<FSteps> PossibleSteps;
+					TArray<FSteps> PossibleSteps;
 					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE /*  && CurrPawn->GetType() == EPawnType::PAWN */)
 					{
 						for (const auto& direction : CurrPawn->GetCardinalDirections())
@@ -65,7 +65,7 @@ void AChess_RandomPlayer::OnTurn()
 							{
 								Steps.CardinalDirection = direction;
 								Steps.Number = i + 1;
-								PossibleSteps.push_back(Steps);
+								PossibleSteps.Add(Steps);
 							}
 						}
 						
@@ -109,13 +109,13 @@ void AChess_RandomPlayer::OnTurn()
 
 
 
-					int8 RandStepIdx = FMath::Rand() % MyPawns[RandIdx].PossibleSteps.size();
+					int8 RandStepIdx = FMath::Rand() % MyPawns[RandIdx].PossibleSteps.Num();
 					int8 RandStepsNumber = MyPawns[RandIdx].PossibleSteps[RandStepIdx].Number;
 					ECardinalDirection RandStepDirection = MyPawns[RandIdx].PossibleSteps[RandStepIdx].CardinalDirection;
 					int8 XOffset = 0, YOffset = 0;
 					int8 FlagDirection = 0;
 
-					MyPawns[RandIdx].PossibleSteps.erase(MyPawns[RandIdx].PossibleSteps.begin() + RandStepIdx); // delete this movement possibility
+					MyPawns[RandIdx].PossibleSteps.RemoveAt(RandStepIdx); // delete this movement possibility
 
 					switch(RandStepDirection)
 					{
@@ -316,7 +316,7 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Invalid move")));
-						if (MyPawns[RandIdx].PossibleSteps.size() == 0)
+						if (MyPawns[RandIdx].PossibleSteps.Num() == 0)
 							MyPawns.RemoveAt(RandIdx);
 					}
 

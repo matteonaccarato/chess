@@ -8,7 +8,7 @@ AMy_Pawn::AMy_Pawn()
 	Type = EPawnType::PAWN;
 	// Movement = EPawnMovement::FORWARD;
 	MaxNumberSteps = 2;
-	CardinalDirections.push_back(ECardinalDirection::NORTH);
-	CardinalDirections.push_back(ECardinalDirection::NORTHEAST);
-	CardinalDirections.push_back(ECardinalDirection::NORTHWEST);
+	CardinalDirections.Add(ECardinalDirection::NORTH);
+	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
+	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
 }

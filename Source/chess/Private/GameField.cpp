@@ -151,7 +151,7 @@ void AGameField::GenerateField()
 					TileObj->GetActorBounds(false, Origin, BoxExtent);
 
 
-					FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2*BoxExtent.GetComponentForAxis(EAxis::Z));
+					FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2*BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1);
 					ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0,90,0));
 					// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
 					if (BasePawnObj != nullptr)
@@ -215,6 +215,11 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 	const double y = Location[1] / (TileSize * NormalizedCellPadding);
 
 	return FVector2D(x, y);
+}
+
+bool AGameField::IsCheck()
+{
+	return false;
 }
 
 /* TArray<int32> AGameField::GetLine(const FVector2D Begin, const FVector2D End) const

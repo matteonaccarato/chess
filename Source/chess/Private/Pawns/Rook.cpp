@@ -16,8 +16,8 @@ ARook::ARook()
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 	}*/
-	CardinalDirections.push_back(ECardinalDirection::NORTH);
-	CardinalDirections.push_back(ECardinalDirection::EAST);
-	CardinalDirections.push_back(ECardinalDirection::SOUTH);
-	CardinalDirections.push_back(ECardinalDirection::WEST);
+	CardinalDirections.Add(ECardinalDirection::NORTH);
+	CardinalDirections.Add(ECardinalDirection::EAST);
+	CardinalDirections.Add(ECardinalDirection::SOUTH);
+	CardinalDirections.Add(ECardinalDirection::WEST);
 }

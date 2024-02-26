@@ -41,7 +41,7 @@ EPawnColor ABasePawn::GetColor() const
 	return Color;
 }
 
-std::vector<ECardinalDirection> ABasePawn::GetCardinalDirections() const
+TArray<ECardinalDirection> ABasePawn::GetCardinalDirections() const
 {
 	return CardinalDirections;
 }
