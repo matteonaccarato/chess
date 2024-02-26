@@ -219,15 +219,6 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 
 bool AGameField::IsCheck()
 {
-
-	// for tutte le pedine del !current player
-	//		check tutte le mosse possibili (ShowPossibleMoves(pawn, x, y))
-	//			se una può mangiare re, SET EUNUM under_check { BLACK, WHITE, NONE }
-	//			pedine_eating = {...} || se > 0 => esistono pedine che possono mangiare re
-	//	show possible moves dipenderà da attributo under_check (se true, bisogna spostare il re o mangiare pedina che minaccia, ma dopo è necessario ricontrollare)
-
-	// NON è possibile mangiare i re
-
 	return false;
 }
 
