@@ -183,11 +183,15 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-
-						NewTile->SetTileStatus(PlayerNumber, { 0, PawnTemp->GetColor(), PawnTemp->GetType() });
+						NewTile->SetPlayerOwner(PlayerNumber);
+						NewTile->SetTileStatus({ 0, EPawnColor::NONE, PawnTemp->GetColor(), PawnTemp->GetType() });
 						NewTile->SetPawn(PawnTemp);
-						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->SetPawn(nullptr);
-						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->SetTileStatus(-1, { 1, EPawnColor::NONE, EPawnType::NONE });
+						
+						ATile* OldTile = GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
+						OldTile->SetPawn(nullptr);
+						OldTile->SetPlayerOwner(-1);
+						OldTile->SetTileStatus({ 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE });
+						
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
 						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);

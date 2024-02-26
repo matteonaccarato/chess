@@ -54,14 +54,8 @@ void AChess_RandomPlayer::OnTurn()
 					// TODO: third condition is test only
 					// TODO => eat possibility
 					TArray<FSteps> PossibleSteps;
-					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
+					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE /*  && CurrPawn->GetType() == EPawnType::PAWN */)
 					{
-						// se il nero è sottoscacco, può muovere solo il re
-						// NON è vero perché posso usare altre pedine per mangiare la pedina che minaccia il re
-						/* if (GameMode->CheckFlag == EPawnColor::BLACK && CurrPawn->GetType() != EPawnType::KING)
-						{
-							continue;
-						} */
 						for (const auto& direction : CurrPawn->GetCardinalDirections())
 						{
 							// ECardinalDirection CurrDirection = *it;

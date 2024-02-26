@@ -115,7 +115,7 @@ public:
 
 	bool IsCheck();
 
-	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const int8 X, const int8 Y, const bool CheckTest = false);
+	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const int8 X, const int8 Y);
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, /*const bool EatFlag,*/ const bool TestFlag = false);
 	// test flag => to do not decrement pawn max moves if just for showing possible moves
 	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;

@@ -142,8 +142,6 @@ public:
 
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
-	bool IsCheck();
-
 	/*
 	isWinPosition
 	isWinLine

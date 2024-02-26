@@ -103,16 +103,6 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 		} 
 		else
 		{
-			for (ATile* Tile : GField->GetTileArray())
-			{
-				EPawnColor PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
-				FTileStatus TileStatus = Tile->GetTileStatus();
-				if (TileStatus.AttackableFrom != PlayerColor)
-				{
-					TileStatus.AttackableFrom = EPawnColor::NONE;
-					Tile->SetTileStatus(TileStatus);
-				}
-			}
 			TurnNextPlayer();
 		}
 
@@ -164,7 +154,7 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 X, const int8 Y, const bool CheckTest)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const int8 X, const int8 Y)
 {
 	TArray<std::pair<int8, int8>> PossibleMoves;
 	TArray<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
@@ -252,7 +242,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				TileStatus.AttackableFrom = Pawn->GetColor();
 				GField->GetTileArray()[X * GField->Size + Y]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 
-				if (CurrentPlayer == 0 && !CheckTest)
+				if (CurrentPlayer == 0)
 					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
 			}
 			FlagDirection = 0;
@@ -285,7 +275,7 @@ bool AChess_GameMode::IsCheck()
 
 			FVector2D CurrPawnGridPosition = CurrPawn->GetGridPosition();
 			
-			TArray<std::pair<int8, int8>> PossibleMoves = ShowPossibleMoves(CurrPawn, CurrPawnGridPosition[0], CurrPawnGridPosition[1], true);
+			TArray<std::pair<int8, int8>> PossibleMoves = ShowPossibleMoves(CurrPawn, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
 			for (auto& move : PossibleMoves)
 			{
 				ABasePawn* Pawn = GField->GetTileArray()[move.first * GField->Size + move.second]->GetPawn();
@@ -347,14 +337,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 
 
-
-
-		// TODO => se IsCheck e dopo la potenziale mossa è ancora IsCheck => mossa non valida (a meno di checkmate)
-
-
-
 		// TODO => se il pawn è king e la cella è attackable from the opposite color, invalid move
-		// EPawnColor CheckFlag; // which color is under check
 
 
 		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) || (EatFlag && !NewTile->GetTileStatus().EmptyFlag && (NewTile->GetTileStatus().PawnColor != Pawn->GetColor())))
@@ -460,7 +443,7 @@ bool AChess_GameMode::IsLineClear(ELine Line, const FVector2D CurrGridPosition, 
 	case ELine::HORIZONTAL:	
 		for (int8 YOffset = 1; YOffset < FMath::Abs(DeltaY); YOffset++)
 		{
-			if (IsValidTile(CurrGridPosition[0], CurrGridPosition[1] + YOffset * FMath::Sign(DeltaY))
+			if (IsValidTile(CurrGridPosition[0], CurrGridPosition[1] + YOffset) 
 				&& !GField->TileArray[CurrGridPosition[0] * GField->Size + CurrGridPosition[1] + YOffset * FMath::Sign(DeltaY)]->GetTileStatus().EmptyFlag)
 				return false;
 		}

@@ -33,6 +33,7 @@ struct FTileStatus
 	GENERATED_BODY()
 
 	bool EmptyFlag; // 1 => Empty, 0 => Occupied
+	EPawnColor AttackableFrom; // 0 => Not, 1 => From White, 2 => From Black
 	EPawnColor PawnColor;
 	EPawnType PawnType;
 };
@@ -54,10 +55,11 @@ public:
 	void SetId(const FString TileId);
 	FString GetId() const;
 
-	void SetTileStatus(const int32 TileOwner, const FTileStatus TileStatus);
+	void SetTileStatus(const FTileStatus TileStatus);
 	FTileStatus GetTileStatus() const;
 
-	int32 GetOwner() const;
+	void SetPlayerOwner(const int32 P_Owner);
+	int32 GetPlayerOwner() const;
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;

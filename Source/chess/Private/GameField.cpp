@@ -38,7 +38,8 @@ void AGameField::ResetField()
 {
 	for (ATile* Obj : TileArray)
 	{
-		Obj->SetTileStatus(NOT_ASSIGNED, { 1, EPawnColor::NONE, EPawnType::NONE });
+		Obj->SetPlayerOwner(NOT_ASSIGNED);
+		Obj->SetTileStatus({ 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE });
 	}
 
 	OnResetEvent.Broadcast();
@@ -92,7 +93,7 @@ void AGameField::GenerateField()
 
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
 
-				FTileStatus TileStatus = { 1, EPawnColor::NONE, EPawnType::NONE };
+				FTileStatus TileStatus = { 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE };
 				int32 PlayerOwner = -1;
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
@@ -175,7 +176,8 @@ void AGameField::GenerateField()
 					TileObj->SetPawn(BasePawnObj);
 				}
 
-				TileObj->SetTileStatus(PlayerOwner, TileStatus);
+				TileObj->SetPlayerOwner(PlayerOwner);
+				TileObj->SetTileStatus(TileStatus);
 				
 
 				flag = !flag;
@@ -217,19 +219,7 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 	return FVector2D(x, y);
 }
 
-bool AGameField::IsCheck()
-{
 
-	// for tutte le pedine del !current player
-	//		check tutte le mosse possibili (ShowPossibleMoves(pawn, x, y))
-	//			se una può mangiare re, SET EUNUM under_check { BLACK, WHITE, NONE }
-	//			pedine_eating = {...} || se > 0 => esistono pedine che possono mangiare re
-	//	show possible moves dipenderà da attributo under_check (se true, bisogna spostare il re o mangiare pedina che minaccia, ma dopo è necessario ricontrollare)
-
-	// NON è possibile mangiare i re
-
-	return false;
-}
 
 /* TArray<int32> AGameField::GetLine(const FVector2D Begin, const FVector2D End) const
 {
