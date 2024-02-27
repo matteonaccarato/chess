@@ -64,13 +64,10 @@ public:
 	UMaterialInterface* MaterialLight;
 
 	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialLightRed;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInterface* MaterialDark;
 
 	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialDarkRed;
+	UMaterialInterface* MaterialGreen;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> B_TileClass;

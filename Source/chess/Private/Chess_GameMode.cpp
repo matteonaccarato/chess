@@ -253,7 +253,11 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				GField->GetTileArray()[X * GField->Size + Y]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 
 				if (CurrentPlayer == 0 && !CheckTest)
-					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, GField->MaterialGreen);
+				{
+					UMaterialInterface* Material = ((X + XOffset + Y + YOffset) % 2) ? GField->MaterialLightRed : GField->MaterialDarkRed;
+					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, Material);
+
+				}
 			}
 			FlagDirection = 0;
 			

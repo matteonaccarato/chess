@@ -4,6 +4,10 @@
 AGGIORNARE DA IPHONE NOTES E NOTION
 GameMode.cpp@353
 
+settare ogni cella attaccabile come attaccabile (evitare che il re ci vada dentro)
+se tutte le mosse possibili del re sono attackable => check mate
+e non riesco a mangiare quegli attaccanti
+
 
 #### Main Feature
 - [ ] Check and CheckMate (look at iphone notes)
