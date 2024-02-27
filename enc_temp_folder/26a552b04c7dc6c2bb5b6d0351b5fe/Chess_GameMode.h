@@ -53,7 +53,6 @@ public:
 	int32 MoveCounter;
 
 	EPawnColor CheckFlag; // which color is under check
-	EPawnColor CheckMateFlag;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGameField> GameFieldClass;

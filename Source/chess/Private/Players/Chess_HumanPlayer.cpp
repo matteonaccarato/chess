@@ -27,7 +27,8 @@ AChess_HumanPlayer::AChess_HumanPlayer()
 
 	// init values
 	PlayerNumber = -1;
-	Color = EColor::E;
+	// Color = EColor::E;
+	Color = EPawnColor::WHITE;
 }
 
 // Called when the game starts or when spawned
@@ -54,6 +55,24 @@ void AChess_HumanPlayer::OnTurn()
 	IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
 	GameInstance->SetTurnMessage(TEXT("Human Turn"));
+
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode != nullptr)
+	{
+		for (auto& CurrPawn : GameMode->GField->GetPawnArray())
+		{
+			if (CurrPawn->GetColor() == GameMode->Players[GameMode->CurrentPlayer]->Color)
+			{
+				// TODO it returns a value but it is useless
+				AttackableTiles.Add(GameMode->ShowPossibleMoves(CurrPawn, true));
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+	}
+
 }
 
 void AChess_HumanPlayer::OnWin()
@@ -95,62 +114,58 @@ void AChess_HumanPlayer::OnClick()
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-		
-
-
-
-
-		// clean last possible moves
-		// vecchio material tramite pari/dispari della posizione
-		// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
-
-		for (const auto& move : PossibleMoves)
+		if (GameMode != nullptr)
 		{
-			UMaterialInterface* Material = ((move.first + move.second) % 2)? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
-			GameMode->GField->GetTileArray()[move.first * GameMode->FieldSize + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
-		}
+			// clean last possible moves
+			// vecchio material tramite pari/dispari della posizione
+			// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
 
-
-		if (Cast<ABasePawn>(Hit.GetActor()))
-		{
-			// TODO => PawnTemp as variabile locale
-			ABasePawn* PawnSelected = Cast<ABasePawn>(Hit.GetActor());
-			if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
+			for (const auto& move : PossibleMoves)
 			{
-				PawnTemp = PawnSelected;
-				FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
-				PossibleMoves = GameMode->ShowPossibleMoves(PawnTemp, CurrPawnGridPosition[0], CurrPawnGridPosition[1]);
-				SelectedPawnFlag = 1;
-				
-				
-				// GameMode->GField->GetTileArray()[CurrPawnGridPosition[0]*8 + CurrPawnGridPosition[1]]->GetStaticMeshComponent()->SetMaterial(0, GameMode->GField->MaterialDark);
+				UMaterialInterface* Material = ((move.first + move.second) % 2)? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
+				GameMode->GField->GetTileArray()[move.first * GameMode->FieldSize + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 			}
-			else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
+
+
+			if (Cast<ABasePawn>(Hit.GetActor()))
 			{
-				// Pawn to eat
-				PawnToEat = PawnSelected;
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("PAWN TO EAT IS IN X: %f Y: %f FROM %f %f"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], PawnTemp->GetGridPosition()[0], PawnTemp->GetGridPosition()[1]));
-			}
-		}
-
-
-
-
-		if (SelectedPawnFlag == 1)
-		{
-			ATile* NewTile = Cast<ATile>(Hit.GetActor());
-			if (PawnToEat)
-			{
-				NewTile = GameMode->GField->GetTileArray()[PawnToEat->GetGridPosition()[0] * GameMode->GField->Size + PawnToEat->GetGridPosition()[1]];
-			}
-			if (NewTile)
-			{
-
-				if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1] /*, PawnToEat ? true : false*/))
+				// TODO => PawnTemp as variabile locale
+				ABasePawn* PawnSelected = Cast<ABasePawn>(Hit.GetActor());
+				if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
 				{
-					if (GameMode != nullptr)
+					PawnTemp = PawnSelected;
+					// FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
+					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
+					PossibleMoves = GameMode->ShowPossibleMoves(PawnTemp);
+					SelectedPawnFlag = 1;
+				
+				
+					// GameMode->GField->GetTileArray()[CurrPawnGridPosition[0]*8 + CurrPawnGridPosition[1]]->GetStaticMeshComponent()->SetMaterial(0, GameMode->GField->MaterialDark);
+				}
+				else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
+				{
+					// Pawn to eat
+					PawnToEat = PawnSelected;
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("PAWN TO EAT IS IN X: %f Y: %f FROM %f %f"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], PawnTemp->GetGridPosition()[0], PawnTemp->GetGridPosition()[1]));
+				}
+			}
+
+
+
+
+			if (SelectedPawnFlag == 1)
+			{
+				ATile* NewTile = Cast<ATile>(Hit.GetActor());
+				if (PawnToEat)
+				{
+					NewTile = GameMode->GField->GetTileArray()[PawnToEat->GetGridPosition()[0] * GameMode->GField->Size + PawnToEat->GetGridPosition()[1]];
+				}
+				if (NewTile)
+				{
+
+					if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1] /*, PawnToEat ? true : false*/))
 					{
+						
 						/*
 						* Elaborate new x,y in function of eligible moves of the pawn
 						*
@@ -203,22 +218,25 @@ void AChess_HumanPlayer::OnClick()
 
 						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
+						
 					}
 					else
 					{
-						UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
 					}
-				}
-				else
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
-				}
 				
 
 
 
+				}
 			}
 		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+		}
+
+
 
 
 

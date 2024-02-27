@@ -7,13 +7,15 @@
 #include "Chess_PlayerInterface.generated.h"
 
 
-UENUM()
+/* UENUM()
 enum class EColor : uint8
 {
 	W,	// white
 	B,	// black
 	E	// empty
-};
+}; */
+
+enum class EPawnColor : int8;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -32,7 +34,8 @@ class CHESS_API IChess_PlayerInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	int32 PlayerNumber;
-	EColor Color;
+	EPawnColor Color;
+	TArray<TArray<std::pair<int8, int8>>> AttackableTiles;
 
 	virtual void OnTurn() {};
 	virtual void OnWin() {};
