@@ -59,12 +59,22 @@ void AChess_HumanPlayer::OnTurn()
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode != nullptr)
 	{
+		for (auto& Tile : GameMode->GField->GetTileArray())
+		{
+			FTileStatus TileStatus = Tile->GetTileStatus();
+			TArray<bool> TmpFalse; 
+			TmpFalse.SetNum(2, false);
+			TileStatus.AttackableFrom = TmpFalse;
+			// TileStatus.AttackableFrom = TArray<bool>(false, 2);
+			Tile->SetTileStatus(TileStatus);
+		}
+
 		for (auto& CurrPawn : GameMode->GField->GetPawnArray())
 		{
-			if (CurrPawn->GetColor() == GameMode->Players[GameMode->CurrentPlayer]->Color)
+			if (CurrPawn->GetColor() != GameMode->Players[GameMode->CurrentPlayer]->Color && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 			{
 				// TODO it returns a value but it is useless
-				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true);
+				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true);
 				if (Tmp.Num() > 0)
 					AttackableTiles.Add(Tmp);
 			}
@@ -199,15 +209,19 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-
+						FTileStatus TileStatus = NewTile->GetTileStatus();
 						NewTile->SetPlayerOwner(PlayerNumber);
-						NewTile->SetTileStatus({ 0, EPawnColor::NONE, PawnTemp->GetColor(), PawnTemp->GetType() });
+						// NewTile->SetTileStatus({ 0, EPawnColor::NONE, PawnTemp->GetColor(), PawnTemp->GetType() });
+						TArray<bool> TmpFalse;
+						TmpFalse.Add(false); TmpFalse.Add(false);
+						NewTile->SetTileStatus({ 0, TmpFalse, PawnTemp->GetColor(), PawnTemp->GetType()});
 						NewTile->SetPawn(PawnTemp);
 						
 						ATile* OldTile = GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
 						OldTile->SetPawn(nullptr);
 						OldTile->SetPlayerOwner(-1);
-						OldTile->SetTileStatus({ 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE });
+						TileStatus = OldTile->GetTileStatus();
+						OldTile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
 						
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
@@ -218,7 +232,7 @@ void AChess_HumanPlayer::OnClick()
 						{
 							PawnTemp->SetMaxNumberSteps(1);
 						}
-						GameMode->ShowPossibleMoves(PawnTemp, true);
+						// GameMode->ShowPossibleMoves(PawnTemp, true);
 
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;

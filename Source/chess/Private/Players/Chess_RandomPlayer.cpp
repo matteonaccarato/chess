@@ -49,6 +49,42 @@ void AChess_RandomPlayer::OnTurn()
 			{
 				// <PAWN, <DELTAX, DELTAY>>
 				// TArray<FPawnsPossibilites> MyPawns;
+				// TArray<ABasePawn*> MyPawns; // pawns che si possono muovere 
+				for (auto& Tile : GameMode->GField->GetTileArray())
+				{
+					FTileStatus TileStatus = Tile->GetTileStatus();
+					TArray<bool> TmpFalse;
+					TmpFalse.SetNum(2, false);
+					TileStatus.AttackableFrom = TmpFalse;
+					Tile->SetTileStatus(TileStatus);
+				}
+
+				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
+				{
+					// TODO: third condition is test only
+					// TODO => eat possibility
+					if (CurrPawn->GetColor() == EPawnColor::WHITE && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
+					{
+
+						// il primo tarray corrisponde al pawn che può effettuare la mossa, 
+						// il secondo tarray indica le tiles attaccabili
+						// TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true);
+
+						// just update tilearray (Attackable)
+						GameMode->ShowPossibleMoves(CurrPawn, true, true);
+						/* 
+						if (Tmp.Num() > 0)
+						{
+							AttackableTiles.Add(Tmp);
+							MyPawns.Add(CurrPawn);
+						} */
+						
+					}
+				}
+
+
+
+
 				TArray<ABasePawn*> MyPawns; // pawns che si possono muovere 
 
 				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
@@ -60,17 +96,22 @@ void AChess_RandomPlayer::OnTurn()
 
 						// il primo tarray corrisponde al pawn che può effettuare la mossa, 
 						// il secondo tarray indica le tiles attaccabili
-						TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true);
+
+						// compute real next possible moves
+						TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, false);
 						if (Tmp.Num() > 0)
 						{
 							AttackableTiles.Add(Tmp);
 							MyPawns.Add(CurrPawn);
 						}
-						
+
 					}
 				}
 
+
+
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), MyPawns.Num()));
+
 
 
 
@@ -105,13 +146,17 @@ void AChess_RandomPlayer::OnTurn()
 
 
 					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPlayerOwner(PlayerNumber);
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetTileStatus({ 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE });
+					FTileStatus TileStatus = TilesArray[OldX * GameMode->GField->Size + OldY]->GetTileStatus();
+					TArray<bool> TmpFalse;
+					TmpFalse.Add(false); TmpFalse.Add(false);
+					TilesArray[OldX * GameMode->GField->Size + OldY]->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
 					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPawn(nullptr);
 					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO EMPTY"), OldX, OldY));
 
 
 					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPlayerOwner(PlayerNumber);
-					TilesArray[NewX * GameMode->GField->Size + NewY]->SetTileStatus({ 0, EPawnColor::NONE, MyPawns[RandPawnIdx]->GetColor(), MyPawns[RandPawnIdx]->GetType() });
+					TileStatus = TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus();
+					TilesArray[NewX * GameMode->GField->Size + NewY]->SetTileStatus({ 0, TmpFalse, MyPawns[RandPawnIdx]->GetColor(), MyPawns[RandPawnIdx]->GetType() });
 					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPawn(MyPawns[RandPawnIdx]);
 					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET %d %d TO PAWN"), NewX, NewY));
 
@@ -124,7 +169,7 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						MyPawns[RandPawnIdx]->SetMaxNumberSteps(1);
 					}
-					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true);
+					// GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true);
 
 				
 					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);

@@ -20,7 +20,11 @@ ATile::ATile()
 	StaticMeshComponent->SetupAttachment(Scene);
 
 	Id = TEXT("");
-	Status = { 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE };
+
+	TArray<bool> TmpFalse;
+	TmpFalse.Add(false);
+	TmpFalse.Add(false);
+	Status = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE};
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 

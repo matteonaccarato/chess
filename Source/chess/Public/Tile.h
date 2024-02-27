@@ -33,7 +33,7 @@ struct FTileStatus
 	GENERATED_BODY()
 
 	bool EmptyFlag; // 1 => Empty, 0 => Occupied
-	EPawnColor AttackableFrom; // 0 => Not, 1 => From White, 2 => From Black
+	TArray<bool> AttackableFrom; // true/false, 0-cell => from WHITE, 1-cell => from BLACK
 	EPawnColor PawnColor;
 	EPawnType PawnType;
 };

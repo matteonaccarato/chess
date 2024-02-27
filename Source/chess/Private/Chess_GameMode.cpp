@@ -113,11 +113,11 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 
 		for (ATile* Tile : GField->GetTileArray())
 		{
-			EPawnColor PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
+			// int8 PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
 			FTileStatus TileStatus = Tile->GetTileStatus();
-			if (TileStatus.AttackableFrom != EPawnColor::NONE && TileStatus.AttackableFrom != PlayerColor) // reset attackable from of the opponent
+			if (TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)]) // reset attackable from of the opponent
 			{
-				TileStatus.AttackableFrom = EPawnColor::NONE;
+				TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)] = false;
 				Tile->SetTileStatus(TileStatus);
 			}
 		}
@@ -172,7 +172,7 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest, const bool ShowAttackable)
 {
 	FVector2D CurrPawnGridPosition = Pawn->GetGridPosition();
 	const int8 X = CurrPawnGridPosition[0];
@@ -259,13 +259,19 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 			
 			//ATile* Tile = GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset];
 			// bool EatFlag = Tile->GetTileStatus().PawnColor == EPawnColor::BLACK;
-			if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true))
+			if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable))
 			{
 				PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
 				
-				FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
-				TileStatus.AttackableFrom = Pawn->GetColor();
-				GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+				// avoid eating warning pawns on straight line
+				if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
+				{
+					FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
+					TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; // idx 0 means attackable from whites, idx 1 means attackable from blacks 
+					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+				}
+
+
 
 				if (CurrentPlayer == 0 && !CheckTest)
 				{
@@ -333,7 +339,7 @@ bool AChess_GameMode::IsCheck()
 }
 
 // TODO make it const
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, /*const bool EatFlag,*/ const bool TestFlag)
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, /*const bool EatFlag,*/ const bool TestFlag, const bool ShowAttackable)
 {
 	bool IsValid = false;
 
@@ -377,7 +383,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			switch (Pawn->GetType())
 			{
 			case EPawnType::PAWN:
-				if (EatFlag)
+				if (EatFlag || ShowAttackable)
 					IsValid = this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
 				else
 					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
@@ -399,9 +405,11 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 			case EPawnType::QUEEN: // so it works like an OR for Queen and King
 			case EPawnType::KING:
-				// se king è attaccabile da una pedina di un avversario, mossa non lecita
-				EPawnColor AttackableFrom = GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom;
-				if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom != EPawnColor::NONE && AttackableFrom != Pawn->GetColor()))
+				// se king si vuole muovere in una pedina attaccabile da avversario, mossa non lecita
+				// EPawnColor AttackableFrom = GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom;
+				TArray<bool> AttackableFrom = GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom;
+				// if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom != EPawnColor::NONE && AttackableFrom != Pawn->GetColor()))
+				if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0]))
 				{
 					IsValid = this->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
 					IsValid = IsValid || this->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);

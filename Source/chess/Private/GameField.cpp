@@ -39,7 +39,10 @@ void AGameField::ResetField()
 	for (ATile* Obj : TileArray)
 	{
 		Obj->SetPlayerOwner(NOT_ASSIGNED);
-		Obj->SetTileStatus({ 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE });
+		TArray<bool> TmpFalse;
+		TmpFalse.Add(false);
+		TmpFalse.Add(false);
+		Obj->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE});
 	}
 
 	OnResetEvent.Broadcast();
@@ -93,7 +96,10 @@ void AGameField::GenerateField()
 
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
 
-				FTileStatus TileStatus = { 1, EPawnColor::NONE, EPawnColor::NONE, EPawnType::NONE };
+				TArray<bool> TmpFalse;
+				TmpFalse.Add(false);
+				TmpFalse.Add(false);
+				FTileStatus TileStatus = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE};
 				int32 PlayerOwner = -1;
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
