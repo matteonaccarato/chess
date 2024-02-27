@@ -105,19 +105,23 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 		else
 		{ */
 			// reset attackable from fla
-			Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
+		for (auto& InnerTArray : Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles)
+		{
+			InnerTArray.Empty();
+		} 
+		Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
 
-			for (ATile* Tile : GField->GetTileArray())
+		for (ATile* Tile : GField->GetTileArray())
+		{
+			EPawnColor PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
+			FTileStatus TileStatus = Tile->GetTileStatus();
+			if (TileStatus.AttackableFrom != EPawnColor::NONE && TileStatus.AttackableFrom != PlayerColor) // reset attackable from of the opponent
 			{
-				EPawnColor PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
-				FTileStatus TileStatus = Tile->GetTileStatus();
-				if (TileStatus.AttackableFrom != EPawnColor::NONE && TileStatus.AttackableFrom != PlayerColor) // reset attackable from of the opponent
-				{
-					TileStatus.AttackableFrom = EPawnColor::NONE;
-					Tile->SetTileStatus(TileStatus);
-				}
+				TileStatus.AttackableFrom = EPawnColor::NONE;
+				Tile->SetTileStatus(TileStatus);
 			}
-			TurnNextPlayer();
+		}
+		TurnNextPlayer();
 		// }
 
 
@@ -259,9 +263,9 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 			{
 				PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
 				
-				FTileStatus TileStatus = GField->GetTileArray()[X * GField->Size + Y]->GetTileStatus();
+				FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
 				TileStatus.AttackableFrom = Pawn->GetColor();
-				GField->GetTileArray()[X * GField->Size + Y]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+				GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 
 				if (CurrentPlayer == 0 && !CheckTest)
 				{

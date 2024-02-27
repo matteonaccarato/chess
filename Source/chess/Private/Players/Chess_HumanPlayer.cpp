@@ -64,7 +64,9 @@ void AChess_HumanPlayer::OnTurn()
 			if (CurrPawn->GetColor() == GameMode->Players[GameMode->CurrentPlayer]->Color)
 			{
 				// TODO it returns a value but it is useless
-				AttackableTiles.Add(GameMode->ShowPossibleMoves(CurrPawn, true));
+				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true);
+				if (Tmp.Num() > 0)
+					AttackableTiles.Add(Tmp);
 			}
 		}
 	}
@@ -211,6 +213,12 @@ void AChess_HumanPlayer::OnClick()
 						PawnTemp->SetActorLocation(SpawnPosition);
 						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
+						// update with last move
+						if (PawnTemp->GetType() == EPawnType::PAWN)
+						{
+							PawnTemp->SetMaxNumberSteps(1);
+						}
+						GameMode->ShowPossibleMoves(PawnTemp, true);
 
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;

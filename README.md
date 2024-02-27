@@ -1,6 +1,13 @@
 # CHESS
 
 
+
+Attaccabile solo se può mangiare, i pedoni anche se si muovono in avanti, non possono attaccare (solo diagonale)
+Quando faccio check della nuova mossa, devo aggiornare gli step del pedone
+
+
+
+
 AGGIORNARE DA IPHONE NOTES E NOTION
 GameMode.cpp@353
 

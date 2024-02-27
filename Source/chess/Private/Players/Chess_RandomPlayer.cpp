@@ -119,6 +119,13 @@ void AChess_RandomPlayer::OnTurn()
 					MyPawns[RandPawnIdx]->SetActorLocation(SpawnPosition);
 					MyPawns[RandPawnIdx]->SetGridPosition(NewX, NewY);
 
+					// update with last move
+					if (MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
+					{
+						MyPawns[RandPawnIdx]->SetMaxNumberSteps(1);
+					}
+					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true);
+
 				
 					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
