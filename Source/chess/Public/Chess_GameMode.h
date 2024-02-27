@@ -52,7 +52,7 @@ public:
 
 	int32 MoveCounter;
 
-	EPawnColor CheckFlag; // which color is under check
+	EPawnColor CheckFlag; // which color is under check || NONE || WHITE || BLACK
 	EPawnColor CheckMateFlag;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -115,7 +115,7 @@ public:
 
 	void TurnNextPlayer();
 
-	bool IsCheck();
+	void IsCheck();
 
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest = false, const bool ShowAttackable = false);
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false);

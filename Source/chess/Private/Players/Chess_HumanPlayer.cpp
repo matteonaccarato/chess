@@ -73,7 +73,6 @@ void AChess_HumanPlayer::OnTurn()
 		{
 			if (CurrPawn->GetColor() != GameMode->Players[GameMode->CurrentPlayer]->Color && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 			{
-				// TODO it returns a value but it is useless
 				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true);
 				if (Tmp.Num() > 0)
 					AttackableTiles.Add(Tmp);

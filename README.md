@@ -1,6 +1,25 @@
 # CHESS
 
 
+
+quando il re può essere mangiato (king_tile == attackable_from),
+bool IsCheck = true
+in gamemode => uniche valid move (a meno del coprire la traiettoria) sono il re che scappa; se tutte sono attackable from opponent, checkmate
+(poi gestire possibilità di coprire e mangiare con altre pedine quello che mette sotto scacco)
+
+=>
+
+IsValidMove() {
+	if (IsCheck())
+		simulateMove
+		ShowPossibleMoves(all black)
+		if king_tile == attackable_from => still in check
+}
+=> ma crea loop infinito
+
+
+
+
 AGGIORNARE DA IPHONE NOTES E NOTION
 GameMode.cpp@353
 
@@ -17,6 +36,7 @@ e non riesco a mangiare quegli attaccanti
 - [ ] Replay
 
 #### TODO:
+toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] Leggere regolamento (e implementare regole particolari di mangiare e proteggere re)
 - [ ] => Mettere punti cardinali corretti (anche rispetto a neri => NORTH implica andare indietro)
 - [ ] RandomPlayer / actually to implement choose and eat opponent's pawns

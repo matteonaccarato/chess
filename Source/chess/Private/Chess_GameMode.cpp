@@ -90,7 +90,7 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 
 
 
-		/* if (IsCheck())
+		/* if (IsCheckMate())
 		{
 			IsGameOver = true;
 			Players[CurrentPlayer]->OnWin();
@@ -105,6 +105,9 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 		else
 		{ */
 			// reset attackable from fla
+
+		IsCheck();
+
 		for (auto& InnerTArray : Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles)
 		{
 			InnerTArray.Empty();
@@ -288,7 +291,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 	return PossibleMoves;
 }
 
-bool AChess_GameMode::IsCheck()
+void AChess_GameMode::IsCheck()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("IsCheck() - %d"), CurrentPlayer));
 	UE_LOG(LogTemp, Warning, TEXT("Here i am in check"));
@@ -335,7 +338,7 @@ bool AChess_GameMode::IsCheck()
 
 	// NON è possibile mangiare i re
 
-	return CheckFlag != EPawnColor::NONE;
+	// return CheckFlag != EPawnColor::NONE;
 }
 
 // TODO make it const
@@ -421,6 +424,20 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 				break;
 			}
 		}
+
+
+
+		if (IsValid && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE))
+		{
+			EPawnColor PreviousCheckFlag = CheckFlag;
+			IsCheck();
+			IsValid = IsValid || (PreviousCheckFlag != CheckFlag);
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("ricalcolo ischeck"));
+		}
+
+
+
+
 	}
 
 	return IsValid;
