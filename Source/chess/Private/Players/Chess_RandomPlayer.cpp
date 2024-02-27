@@ -55,7 +55,6 @@ void AChess_RandomPlayer::OnTurn()
 				{
 					// TODO: third condition is test only
 					// TODO => eat possibility
-					TArray<FSteps> PossibleSteps;
 					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 					{
 
