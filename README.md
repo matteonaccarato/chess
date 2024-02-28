@@ -43,6 +43,8 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] id in ciascuna tile
 - [ ] Pawns / MaxNumberSteps => to split by X and by Y
 - [ ] ogni tipo di pedina ha una classe per identitificare codice e mosse possibili (base pawn => team, eligible_moves)
+- [ ] aggiungere controlli nei parametri per != nullptr
+- [ ] calcolo ischeck 1° for superfluo se gli passo un pawn (vuol dire che è sottoscacco e voglio provare a liberarmi)
 
 
 #### TO REVIEW (if already implemented)

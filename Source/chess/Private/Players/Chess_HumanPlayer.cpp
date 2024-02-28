@@ -231,7 +231,7 @@ void AChess_HumanPlayer::OnClick()
 						{
 							PawnTemp->SetMaxNumberSteps(1);
 						}
-						// GameMode->ShowPossibleMoves(PawnTemp, true);
+						GameMode->ShowPossibleMoves(PawnTemp, true, true);
 
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;

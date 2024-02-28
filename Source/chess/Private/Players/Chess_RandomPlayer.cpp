@@ -169,7 +169,7 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						MyPawns[RandPawnIdx]->SetMaxNumberSteps(1);
 					}
-					// GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true);
+					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true);
 
 				
 					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
