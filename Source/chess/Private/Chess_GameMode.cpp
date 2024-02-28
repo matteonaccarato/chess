@@ -291,18 +291,34 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 	return PossibleMoves;
 }
 
-void AChess_GameMode::IsCheck()
+bool AChess_GameMode::IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("IsCheck() - %d"), CurrentPlayer));
 	UE_LOG(LogTemp, Warning, TEXT("Here i am in check"));
 
 
+	// TArray<ATile*>
+	
 	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
+
+	for (auto& CurrPawn : GField->GetPawnArray())
+	{
+		// TArray<FSteps> PossibleSteps;
+		if (CurrPawn->GetType() == EPawnType::KING && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
+		{
+			FVector2D PawnGrid = CurrPawn->GetGridPosition();
+			int8 OpponentIdx = (static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0;
+			if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
+			{
+
+			}
+		}
+	}
 
 
 	// <PAWN, <DELTAX, DELTAY>>
 	// TArray<FPawnsPossibilites> PawnsAttackers;
-	TArray<ABasePawn*> PawnsAttackers; // it contains pawn which can attack king
+	/* TArray<ABasePawn*> PawnsAttackers; // it contains pawn which can attack king
 	for (auto& CurrPawn : GField->GetPawnArray())
 	{
 		// TArray<FSteps> PossibleSteps;
@@ -321,7 +337,7 @@ void AChess_GameMode::IsCheck()
 				}
 			}
 		}
-	}
+	} */
 
 	
 
@@ -430,7 +446,12 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 		if (IsValid && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE))
 		{
 			EPawnColor PreviousCheckFlag = CheckFlag;
-			IsCheck();
+			IsCheck(); 
+			// it must return new checkflag calculated with the new move passed as param
+			// body => new tilearray, all false, then apply show possible moves del pawn in newtile
+			// verify if king is attackable
+
+
 			IsValid = IsValid || (PreviousCheckFlag != CheckFlag);
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("ricalcolo ischeck"));
 		}
