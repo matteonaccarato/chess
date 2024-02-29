@@ -46,6 +46,7 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] aggiungere controlli nei parametri per != nullptr
 - [ ] calcolo ischeck 1° for superfluo se gli passo un pawn (vuol dire che è sottoscacco e voglio provare a liberarmi)
 - [ ] std::pair va bene o unreal si offende
+- [ ] king se mangia una pedina e poi può essere mangiato, non viene notato come mossa non lecita (perché appunto c'è una pedina sulla tile che diventerebbe attackable)
 
 
 #### TO REVIEW (if already implemented)

@@ -313,6 +313,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 	// if pawn != nullptr => it means that someone is under check
 	if (Pawn == nullptr)
 	{
+		CheckFlag = EPawnColor::NONE;
 		for (auto& CurrPawn : GField->GetPawnArray())
 		{
 			// TArray<FSteps> PossibleSteps;
@@ -325,10 +326,10 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check - %d"), CurrPawn->GetColor()));
 					CheckFlag = CurrPawn->GetColor();
 				}
-				else
+				/* else
 				{
 					CheckFlag = EPawnColor::NONE;
-				}
+				} */
 			}
 		}
 		return CheckFlag;
@@ -355,16 +356,34 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 
 
 			ABasePawn* PawnToEat = NewTile->GetPawn();
-			TArray<std::pair<int8, int8>> PawnToEatAttackableTiles = ShowPossibleMoves(PawnToEat, true, false, false);
+			EPawnStatus PawnToEatStatus;
+			FVector2D PawnToEatGridPosition;
+			if (PawnToEat != nullptr)
+			{
+				PawnToEatStatus = PawnToEat->GetStatus();
+				PawnToEatGridPosition = PawnToEat->GetGridPosition();
+				PawnToEat->SetStatus(EPawnStatus::DEAD);
+				PawnToEat->SetGridPosition(-1, -1);
+			}
+			// TArray<std::pair<int8, int8>> PawnToEatAttackableTiles = ShowPossibleMoves(PawnToEat, true, false, false);
 			TArray<std::pair<std::pair<int8, int8>, FTileStatus>> TileStatusBackup;
 			for (ATile* Tile : GField->GetTileArray())
 			{
-				if (PawnToEatAttackableTiles.Contains(std::pair<int8, int8>(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1])))
+				int8 X = Tile->GetGridPosition()[0];
+				int8 Y = Tile->GetGridPosition()[1];
+				FTileStatus TileStatus = Tile->GetTileStatus();
+				TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), TileStatus));
+
+				TArray<bool> TmpFalse;
+				TmpFalse.Add(false); TmpFalse.Add(false);
+				TileStatus.AttackableFrom = TmpFalse;
+				Tile->SetTileStatus(TileStatus);
+				/* if (PawnToEatAttackableTiles.Contains(std::pair<int8, int8>(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1])))
 				{
 					int8 X = Tile->GetGridPosition()[0];
 					int8 Y = Tile->GetGridPosition()[1];
 					TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), Tile->GetTileStatus()));
-				}
+				} */
 			}
 
 			OldTile->SetPawn(nullptr);
@@ -378,10 +397,21 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			NewTile->SetPawn(Pawn);
 			Pawn->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-			ShowPossibleMoves(Pawn, true, false, false);
+
+			// recalculate show possible moves
+			// TODO => const auto& o solo auto&
+			for (auto& PawnInArray : GField->GetPawnArray())
+			{
+				if (PawnInArray->GetStatus() == EPawnStatus::ALIVE) // TODO => solo del colore che difende (di pawn)
+				{
+					ShowPossibleMoves(PawnInArray, true, true, false);
+				}
+			}
+
+			// ShowPossibleMoves(Pawn, true, false, false);
 
 
-			// EPawnColor OldCheckFlag = CheckFlag;
+			EPawnColor OldCheckFlag = CheckFlag;
 			EPawnColor NewCheckFlag = IsCheck();
 			
 			for (const auto& pair : TileStatusBackup)
@@ -399,6 +429,13 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			NewTile->SetTileStatus(NewTileStatus);
 			Pawn->SetGridPosition(OldPosition[0], OldPosition[1]);
 
+			if (PawnToEat != nullptr)
+			{
+				PawnToEat->SetStatus(PawnToEatStatus);
+				PawnToEat->SetGridPosition(PawnToEatGridPosition[0], PawnToEatGridPosition[1]);
+			}
+
+			CheckFlag = OldCheckFlag;
 
 			
 
