@@ -73,7 +73,7 @@ void AChess_HumanPlayer::OnTurn()
 		{
 			if (CurrPawn->GetColor() != GameMode->Players[GameMode->CurrentPlayer]->Color && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 			{
-				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true);
+				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true, true);
 				if (Tmp.Num() > 0)
 					AttackableTiles.Add(Tmp);
 			}
@@ -231,7 +231,7 @@ void AChess_HumanPlayer::OnClick()
 						{
 							PawnTemp->SetMaxNumberSteps(1);
 						}
-						GameMode->ShowPossibleMoves(PawnTemp, true, true);
+						GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;

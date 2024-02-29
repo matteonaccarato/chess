@@ -175,116 +175,119 @@ void AChess_GameMode::TurnNextPlayer()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest, const bool ShowAttackable)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest, const bool ShowAttackable, const bool CheckCheckFlag)
 {
-	FVector2D CurrPawnGridPosition = Pawn->GetGridPosition();
-	const int8 X = CurrPawnGridPosition[0];
-	const int8 Y = CurrPawnGridPosition[1];
-
 	TArray<std::pair<int8, int8>> PossibleMoves;
-	TArray<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
-	int8 MaxSteps = Pawn->GetMaxNumberSteps();
-	int8 FlagDirection = 0;
-	int8 XOffset = 0, YOffset = 0;
-	for (const auto& PawnDirection : PawnDirections)
+	if (Pawn != nullptr)
 	{
-		for (int8 i = 1; i <= MaxSteps; i++)
+		FVector2D CurrPawnGridPosition = Pawn->GetGridPosition();
+		const int8 X = CurrPawnGridPosition[0];
+		const int8 Y = CurrPawnGridPosition[1];
+
+		TArray<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
+		int8 MaxSteps = Pawn->GetMaxNumberSteps();
+		int8 FlagDirection = 0;
+		int8 XOffset = 0, YOffset = 0;
+		for (const auto& PawnDirection : PawnDirections)
 		{
-			XOffset = 0, YOffset = 0;
-			switch (PawnDirection)
+			for (int8 i = 1; i <= MaxSteps; i++)
 			{
-			case ECardinalDirection::NORTH:
-				FlagDirection = 1;
-			case ECardinalDirection::SOUTH:
-				// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
-				FlagDirection = FlagDirection ? FlagDirection : -1;
-				XOffset = i * FlagDirection;
-				YOffset = 0;
-				break; 
+				XOffset = 0, YOffset = 0;
+				switch (PawnDirection)
+				{
+				case ECardinalDirection::NORTH:
+					FlagDirection = 1;
+				case ECardinalDirection::SOUTH:
+					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("FlagDirection %d"), FlagDirection));
+					FlagDirection = FlagDirection ? FlagDirection : -1;
+					XOffset = i * FlagDirection;
+					YOffset = 0;
+					break; 
 
-			case ECardinalDirection::NORTHEAST:
-				FlagDirection = 1;
-			case ECardinalDirection::SOUTHWEST:
-				FlagDirection = FlagDirection ? FlagDirection : -1;
-				XOffset = i * FlagDirection;
-				YOffset = i * FlagDirection;
-				break;
+				case ECardinalDirection::NORTHEAST:
+					FlagDirection = 1;
+				case ECardinalDirection::SOUTHWEST:
+					FlagDirection = FlagDirection ? FlagDirection : -1;
+					XOffset = i * FlagDirection;
+					YOffset = i * FlagDirection;
+					break;
 
-			case ECardinalDirection::EAST:
-				FlagDirection = 1;
-			case ECardinalDirection::WEST:
-				FlagDirection = FlagDirection ? FlagDirection : -1;
-				XOffset = 0;
-				YOffset = i * FlagDirection;
-				break;
+				case ECardinalDirection::EAST:
+					FlagDirection = 1;
+				case ECardinalDirection::WEST:
+					FlagDirection = FlagDirection ? FlagDirection : -1;
+					XOffset = 0;
+					YOffset = i * FlagDirection;
+					break;
 
-			case ECardinalDirection::NORTHWEST:
-				FlagDirection = 1;
-			case ECardinalDirection::SOUTHEAST: 
-				FlagDirection = FlagDirection ? FlagDirection : -1;
-				XOffset = i * FlagDirection;
-				YOffset = i * (- FlagDirection);
-				break;
+				case ECardinalDirection::NORTHWEST:
+					FlagDirection = 1;
+				case ECardinalDirection::SOUTHEAST: 
+					FlagDirection = FlagDirection ? FlagDirection : -1;
+					XOffset = i * FlagDirection;
+					YOffset = i * (- FlagDirection);
+					break;
 
-			case ECardinalDirection::KNIGHT_TL:
-				YOffset = -1;
-			case ECardinalDirection::KNIGHT_TR:
-				XOffset = 2;
-				YOffset = YOffset ? YOffset : 1;
-				break;
+				case ECardinalDirection::KNIGHT_TL:
+					YOffset = -1;
+				case ECardinalDirection::KNIGHT_TR:
+					XOffset = 2;
+					YOffset = YOffset ? YOffset : 1;
+					break;
 
-			case ECardinalDirection::KNIGHT_RT:
-				XOffset = 1;
-			case ECardinalDirection::KNIGHT_RB:
-				XOffset = XOffset ? XOffset : -1;
-				YOffset = 2;
-				break;
+				case ECardinalDirection::KNIGHT_RT:
+					XOffset = 1;
+				case ECardinalDirection::KNIGHT_RB:
+					XOffset = XOffset ? XOffset : -1;
+					YOffset = 2;
+					break;
 
-			case ECardinalDirection::KNIGHT_BR:
-				YOffset = 1;
-			case ECardinalDirection::KNIGHT_BL:
-				XOffset = -2;
-				YOffset = YOffset ? YOffset : -1;
-				break;
+				case ECardinalDirection::KNIGHT_BR:
+					YOffset = 1;
+				case ECardinalDirection::KNIGHT_BL:
+					XOffset = -2;
+					YOffset = YOffset ? YOffset : -1;
+					break;
 
-			case ECardinalDirection::KNIGHT_LT:
-				XOffset = 1;
-			case ECardinalDirection::KNIGHT_LB:
-				XOffset = XOffset ? XOffset : -1;
-				YOffset = -2;
-				break;
+				case ECardinalDirection::KNIGHT_LT:
+					XOffset = 1;
+				case ECardinalDirection::KNIGHT_LB:
+					XOffset = XOffset ? XOffset : -1;
+					YOffset = -2;
+					break;
 
-			} 
+				} 
 
-			XOffset = XOffset * static_cast<int>(Pawn->GetColor());
-			YOffset = YOffset * static_cast<int>(Pawn->GetColor());
+				XOffset = XOffset * static_cast<int>(Pawn->GetColor());
+				YOffset = YOffset * static_cast<int>(Pawn->GetColor());
 
 			
-			//ATile* Tile = GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset];
-			// bool EatFlag = Tile->GetTileStatus().PawnColor == EPawnColor::BLACK;
-			if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable))
-			{
-				PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+				//ATile* Tile = GField->GetTileArray()[(NewX + XOffset) * GField->Size + NewY + YOffset];
+				// bool EatFlag = Tile->GetTileStatus().PawnColor == EPawnColor::BLACK;
+				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+				{
+					PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
 				
-				// avoid eating warning pawns on straight line
-				if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
-				{
-					FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
-					TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; // idx 0 means attackable from whites, idx 1 means attackable from blacks 
-					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+					// avoid eating warning pawns on straight line
+					if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
+					{
+						FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
+						TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; // idx 0 means attackable from whites, idx 1 means attackable from blacks 
+						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+					}
+
+
+
+					if (CurrentPlayer == 0 && !CheckTest)
+					{
+						UMaterialInterface* Material = ((X + XOffset + Y + YOffset) % 2) ? GField->MaterialLightRed : GField->MaterialDarkRed;
+						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, Material);
+
+					}
 				}
-
-
-
-				if (CurrentPlayer == 0 && !CheckTest)
-				{
-					UMaterialInterface* Material = ((X + XOffset + Y + YOffset) % 2) ? GField->MaterialLightRed : GField->MaterialDarkRed;
-					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, Material);
-
-				}
-			}
-			FlagDirection = 0;
+				FlagDirection = 0;
 			
+			}
 		}
 	}
 
@@ -293,36 +296,48 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 
 EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("IsCheck() - %d"), CurrentPlayer));
+	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("IsCheck() - %d"), CurrentPlayer));
 	UE_LOG(LogTemp, Warning, TEXT("Here i am in check"));
 
 
 	// TArray<ATile*>
 	
-	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
+	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;	
 
+	/* if (CheckFlag != EPawnColor::NONE && Pawn != nullptr)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("BRO")));
+	} */
 
 	// check if king is under attack
-	for (auto& CurrPawn : GField->GetPawnArray())
+	// if pawn != nullptr => it means that someone is under check
+	if (Pawn == nullptr)
 	{
-		// TArray<FSteps> PossibleSteps;
-		if (CurrPawn->GetType() == EPawnType::KING && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
+		for (auto& CurrPawn : GField->GetPawnArray())
 		{
-			FVector2D PawnGrid = CurrPawn->GetGridPosition();
-			int8 OpponentIdx = (static_cast<int>(CurrPawn->GetColor()) == 1) ? 1 : 0;
-			if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
+			// TArray<FSteps> PossibleSteps;
+			if (CurrPawn->GetType() == EPawnType::KING && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check - %d"), CurrPawn->GetColor()));
-				CheckFlag = CurrPawn->GetColor();
+				FVector2D PawnGrid = CurrPawn->GetGridPosition();
+				int8 OpponentIdx = (static_cast<int>(CurrPawn->GetColor()) == 1) ? 1 : 0;
+				if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check - %d"), CurrPawn->GetColor()));
+					CheckFlag = CurrPawn->GetColor();
+				}
+				else
+				{
+					CheckFlag = EPawnColor::NONE;
+				}
 			}
 		}
+		return CheckFlag;
 	}
-
-	if (Pawn != nullptr)
+	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("Simulo mossa param")));
-
-		if (IsValidMove(Pawn, NewX, NewY, true, true, true))
+		
+		if (IsValidMove(Pawn, NewX, NewY, true, false, false))
 		{
 			// update tile array
 
@@ -339,6 +354,19 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			FTileStatus NewTileStatus = NewTile->GetTileStatus();
 
 
+			ABasePawn* PawnToEat = NewTile->GetPawn();
+			TArray<std::pair<int8, int8>> PawnToEatAttackableTiles = ShowPossibleMoves(PawnToEat, true, false, false);
+			TArray<std::pair<std::pair<int8, int8>, FTileStatus>> TileStatusBackup;
+			for (ATile* Tile : GField->GetTileArray())
+			{
+				if (PawnToEatAttackableTiles.Contains(std::pair<int8, int8>(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1])))
+				{
+					int8 X = Tile->GetGridPosition()[0];
+					int8 Y = Tile->GetGridPosition()[1];
+					TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), Tile->GetTileStatus()));
+				}
+			}
+
 			OldTile->SetPawn(nullptr);
 			OldTile->SetPlayerOwner(-1);
 			TArray<bool> TmpFalse;
@@ -350,29 +378,37 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			NewTile->SetPawn(Pawn);
 			Pawn->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-			ShowPossibleMoves(Pawn, true, false);
+			ShowPossibleMoves(Pawn, true, false, false);
 
 
-			EPawnColor OldCheckFlag = CheckFlag;
-			CheckFlag = IsCheck();
-			if (OldCheckFlag == CheckFlag)
+			// EPawnColor OldCheckFlag = CheckFlag;
+			EPawnColor NewCheckFlag = IsCheck();
+			
+			for (const auto& pair : TileStatusBackup)
 			{
-				// undo
-				OldTile->SetPawn(OldPawn);
-				OldTile->SetPlayerOwner(OldPlayerOwner);
-				OldTile->SetTileStatus(OldTileStatus);
-
-				NewTile->SetPawn(nullptr);
-				NewTile->SetPlayerOwner(NewPlayerOwner);
-				NewTile->SetTileStatus(NewTileStatus);
-				Pawn->SetGridPosition(OldPosition[0], OldPosition[1]);
-
+				GField->GetTileArray()[pair.first.first * GField->Size + pair.first.second]->SetTileStatus(pair.second);
 			}
+
+			// undo
+			OldTile->SetPawn(OldPawn);
+			OldTile->SetPlayerOwner(OldPlayerOwner);
+			OldTile->SetTileStatus(OldTileStatus);
+
+			NewTile->SetPawn(nullptr);
+			NewTile->SetPlayerOwner(NewPlayerOwner);
+			NewTile->SetTileStatus(NewTileStatus);
+			Pawn->SetGridPosition(OldPosition[0], OldPosition[1]);
+
+
+			
+
+			return NewCheckFlag;
 		}
+		return CheckFlag;
 
 	}
 
-	return CheckFlag;
+	
 
 	// return false;
 
@@ -504,13 +540,12 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 		}
 
 
-
+		if (CheckFlag != EPawnColor::NONE && Pawn->GetColor() == EPawnColor::BLACK)
+		{
+			IsValid = IsValid;
+		}
 		if (CheckCheckFlag && IsValid && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE))
 		{
-			if (Pawn->GetType() == EPawnType::KING)
-			{
-				IsValid = IsValid;
-			}
 			// EPawnColor PreviousCheckFlag = CheckFlag;
 			EPawnColor NewCheckFlag = IsCheck(Pawn, NewGridPosition[0], NewGridPosition[1]);
 			// it must return new checkflag calculated with the new move passed as param

@@ -45,6 +45,7 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] ogni tipo di pedina ha una classe per identitificare codice e mosse possibili (base pawn => team, eligible_moves)
 - [ ] aggiungere controlli nei parametri per != nullptr
 - [ ] calcolo ischeck 1° for superfluo se gli passo un pawn (vuol dire che è sottoscacco e voglio provare a liberarmi)
+- [ ] std::pair va bene o unreal si offende
 
 
 #### TO REVIEW (if already implemented)

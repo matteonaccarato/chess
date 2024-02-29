@@ -71,7 +71,7 @@ void AChess_RandomPlayer::OnTurn()
 						// TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true);
 
 						// just update tilearray (Attackable)
-						GameMode->ShowPossibleMoves(CurrPawn, true, true);
+						GameMode->ShowPossibleMoves(CurrPawn, true, true, true);
 						/* 
 						if (Tmp.Num() > 0)
 						{
@@ -98,7 +98,9 @@ void AChess_RandomPlayer::OnTurn()
 						// il secondo tarray indica le tiles attaccabili
 
 						// compute real next possible moves
-						TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, false);
+						EPawnColor TmpCheckFlag = GameMode->CheckFlag;
+						TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, false, true);
+						GameMode->CheckFlag = TmpCheckFlag;
 						if (Tmp.Num() > 0)
 						{
 							AttackableTiles.Add(Tmp);
@@ -130,22 +132,24 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						// TODO => c'è qualcosa da fare come destroy / deallocazione ?
 						ABasePawn* PawnToEat = TilesArray[NewX * GameMode->GField->Size + NewY]->GetPawn();
+						if (PawnToEat != nullptr)
+						{
+							PawnToEat->SetStatus(EPawnStatus::DEAD);
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
+							// Hides visible components
+							PawnToEat->SetActorHiddenInGame(true);
 
-						PawnToEat->SetStatus(EPawnStatus::DEAD);
-						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
-						// Hides visible components
-						PawnToEat->SetActorHiddenInGame(true);
+							// Disables collision components
+							PawnToEat->SetActorEnableCollision(false);
 
-						// Disables collision components
-						PawnToEat->SetActorEnableCollision(false);
-
-						// Stops the Actor from ticking
-						PawnToEat->SetActorTickEnabled(false);
+							// Stops the Actor from ticking
+							PawnToEat->SetActorTickEnabled(false);
+						}
 					}
 
 
 
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPlayerOwner(PlayerNumber);
+					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPlayerOwner(-1);
 					FTileStatus TileStatus = TilesArray[OldX * GameMode->GField->Size + OldY]->GetTileStatus();
 					TArray<bool> TmpFalse;
 					TmpFalse.Add(false); TmpFalse.Add(false);
@@ -169,7 +173,7 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						MyPawns[RandPawnIdx]->SetMaxNumberSteps(1);
 					}
-					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true);
+					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true, false);
 
 				
 					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
