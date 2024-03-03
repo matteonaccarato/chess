@@ -31,8 +31,8 @@ void AChess_RandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AChess_RandomPlayer::OnTurn()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI (Random) Turn"));
-	GameInstance->SetTurnMessage(TEXT("AI (Random) Turn"));
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI (Random)"));
+	GameInstance->SetTurnMessage(TEXT("AI (Random)"));
 
 	FTimerHandle TimerHandle;
 	// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
@@ -227,6 +227,7 @@ void AChess_RandomPlayer::OnTurn()
 				else
 				{
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
+					GameMode->CheckMateFlag = EPawnColor::BLACK;
 					GameMode->SetCellPawn(-1, FVector());
 				}
 			}

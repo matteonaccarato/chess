@@ -53,7 +53,7 @@ void AChess_HumanPlayer::OnTurn()
 {
 	IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
-	GameInstance->SetTurnMessage(TEXT("Human Turn"));
+	GameInstance->SetTurnMessage(TEXT("Human"));
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode != nullptr)

@@ -73,11 +73,18 @@ void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& Spawn
 {
 	
 
-	// -1 to notify draw
+	// -1 to notify checkmate
 	if (PlayerNumber == -1)
 	{
 		IsGameOver = true;
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("DRAW"));
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d under CHECK MATE"), CheckMateFlag));
+
+		Players[CurrentPlayer]->OnWin();
+		for (int32 i = 0; i < Players.Num(); i++)
+			if (i != CurrentPlayer)
+				Players[i]->OnLose();
+			
+		
 
 		FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
@@ -687,6 +694,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) || (EatFlag && !NewTile->GetTileStatus().EmptyFlag && (NewTile->GetTileStatus().PawnColor != Pawn->GetColor())))
 		{
+			
 			switch (Pawn->GetType())
 			{
 			case EPawnType::PAWN:
@@ -724,10 +732,9 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 					IsValid = IsValid || this->CheckDirection(EDirection::HORIZONTAL, Pawn, NewGridPosition, CurrGridPosition);
 					IsValid = IsValid || this->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
 				}
-				
-				
 				break;
 			}
+		
 		}
 
 		if (CheckCheckFlag && IsValid && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE))
