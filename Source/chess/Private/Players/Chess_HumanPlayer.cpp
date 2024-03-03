@@ -263,10 +263,10 @@ void AChess_HumanPlayer::OnClick()
 
 
 
-						// TODO => to put when a pawn touches the opposite line
+						
 						// IF (...)
 						// ELSE SetcellPawn
-						if (1)
+						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 && PawnTemp->GetType() == EPawnType::PAWN)
 						{
 							UWorld* World = GetWorld();
 							if (World && GameMode->PawnPromotionMenuWidgetRef)

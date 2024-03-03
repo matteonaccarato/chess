@@ -193,14 +193,14 @@ void AChess_RandomPlayer::OnTurn()
 
 					// IF (...)
 					// ELSE SetcellPawn
-					if (NewX == 0 && MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
+					if (MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
 					{
 						int8 RandSpawnPawn = FMath::Rand() % 4;
 						switch (RandPawnIdx)
 						{
 						case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
 						case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
-						case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
+				case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
 						case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
 						}						
 					}
@@ -208,7 +208,7 @@ void AChess_RandomPlayer::OnTurn()
 					{
 						// GameMode->LastGridPosition = FVector2D(NewX, NewY);
 					}
-					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+						GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
 
 

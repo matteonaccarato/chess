@@ -193,7 +193,8 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 	DespawnPawn(X, Y);
 	ABasePawn* PawnTemp = SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
 	ShowPossibleMoves(PawnTemp, true, true, false);
-	PawnPromotionWidget->RemoveFromParent();
+	if (PawnPromotionWidget != nullptr)
+		PawnPromotionWidget->RemoveFromParent();
 
 
 	SetCellPawn(CurrentPlayer, FVector());
@@ -325,47 +326,53 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 	if (IsValidTile(X, Y))
 	{
 		ATile* TileObj = GField->GetTileArray()[X * GField->Size + Y];
+		TileObj->SetPlayerOwner(CurrentPlayer);
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		FTileStatus TileStatus = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE };
+		FTileStatus TileStatus = { 0, TmpFalse, EPawnColor::NONE, EPawnType::NONE };
+
+		TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_PawnClass };
+		TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_PawnClass };
+		
 		switch (PawnType)
 		{
 		case EPawnType::ROOK: 
-			BasePawnClass = W_RookClass; 
+			//BasePawnClass = W_RookClass; 
 			TileStatus.PawnType = EPawnType::ROOK;
 			break;
 		case EPawnType::KNIGHT:
-			BasePawnClass = W_KnightClass;
+			//BasePawnClass = W_KnightClass;
 			TileStatus.PawnType = EPawnType::KNIGHT;
 			break;
 		case EPawnType::BISHOP:
-			BasePawnClass = W_BishopClass; 
+			//BasePawnClass = W_BishopClass; 
 			TileStatus.PawnType = EPawnType::BISHOP;
 			break;
 		case EPawnType::QUEEN: 
-			BasePawnClass = W_QueenClass;
+			//BasePawnClass = W_QueenClass;
 			TileStatus.PawnType = EPawnType::QUEEN;
 			break;
 		case EPawnType::KING: 
-			BasePawnClass = W_KingClass; 
+			//BasePawnClass = W_KingClass; 
 			TileStatus.PawnType = EPawnType::KING;
 			break;
 		case EPawnType::PAWN: 
-			BasePawnClass = W_PawnClass;
+			//BasePawnClass = W_PawnClass;
 			TileStatus.PawnType = EPawnType::PAWN;
 			break;
 
 		}
 
 		// set material
+		// UMaterialInterface* Material = nullptr;
 		switch (PawnColor)
 		{
 		case EPawnColor::WHITE:
 			TileStatus.PawnColor = EPawnColor::WHITE;
-			// material
+			BasePawnClass = W_PawnsClasses[static_cast<int>(PawnType) - 1];
 			break;
 		case EPawnColor::BLACK: 
 			TileStatus.PawnColor = EPawnColor::BLACK;
-			// material
+			BasePawnClass = B_PawnsClasses[static_cast<int>(PawnType) - 1];
 			break;
 		}
 
@@ -396,6 +403,7 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 			UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
 		}
 
+		TileObj->SetTileStatus(TileStatus);
 		TileObj->SetPawn(BasePawnObj);
 		
 
@@ -406,25 +414,28 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 
 void AChess_GameMode::DespawnPawn(int8 X, int8 Y)
 {
-	ATile* Tile = GField->GetTileArray()[X * GField->Size + Y];
-	ABasePawn* Pawn = Tile->GetPawn();
-	if (Pawn != nullptr)
+	if (IsValidTile(X, Y))
 	{
-		Tile->SetPawn(nullptr);
-		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		Tile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
-		Tile->SetPlayerOwner(-1);
+		ATile* Tile = GField->GetTileArray()[X * GField->Size + Y];
+		ABasePawn* Pawn = Tile->GetPawn();
+		if (Tile != nullptr && Pawn != nullptr)
+		{
+			Tile->SetPawn(nullptr);
+			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
+			Tile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
+			Tile->SetPlayerOwner(-1);
 
-		Pawn->SetStatus(EPawnStatus::DEAD);
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
-		// Hides visible components
-		Pawn->SetActorHiddenInGame(true);
+			Pawn->SetStatus(EPawnStatus::DEAD);
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
+			// Hides visible components
+			Pawn->SetActorHiddenInGame(true);
 
-		// Disables collision components
-		Pawn->SetActorEnableCollision(false);
+			// Disables collision components
+			Pawn->SetActorEnableCollision(false);
 
-		// Stops the Actor from ticking
-		Pawn->SetActorTickEnabled(false);
+			// Stops the Actor from ticking
+			Pawn->SetActorTickEnabled(false);
+		}
 	}
 }
 
@@ -447,6 +458,15 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 	// if pawn != nullptr => it means that someone is under check
 	if (Pawn == nullptr)
 	{
+
+		for (auto& PawnInArray : GField->GetPawnArray())
+		{
+			if (PawnInArray->GetStatus() == EPawnStatus::ALIVE) // TODO => solo del colore che difende (di pawn)
+			{
+				ShowPossibleMoves(PawnInArray, true, true, false);
+			}
+		}
+
 		CheckFlag = EPawnColor::NONE;
 		for (auto& CurrPawn : GField->GetPawnArray())
 		{
@@ -457,7 +477,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 				int8 OpponentIdx = (static_cast<int>(CurrPawn->GetColor()) == 1) ? 1 : 0;
 				if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check - %d"), CurrPawn->GetColor()));
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CurrPawn->GetColor()));
 					CheckFlag = CurrPawn->GetColor();
 				}
 				/* else
@@ -470,7 +490,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("Simulo mossa param")));
+		// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("Simulo mossa param")));
 		
 		if (IsValidMove(Pawn, NewX, NewY, true, false, false))
 		{
@@ -484,7 +504,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			FTileStatus OldTileStatus = OldTile->GetTileStatus();
 
 			ATile* NewTile = GField->GetTileArray()[NewX * GField->Size + NewY];
-			ABasePawn* NewPawn = NewTile->GetPawn();
+			// ABasePawn* NewPawn = NewTile->GetPawn();
 			int32 NewPlayerOwner = NewTile->GetPlayerOwner();
 			FTileStatus NewTileStatus = NewTile->GetTileStatus();
 
@@ -558,7 +578,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			OldTile->SetPlayerOwner(OldPlayerOwner);
 			OldTile->SetTileStatus(OldTileStatus);
 
-			NewTile->SetPawn(nullptr);
+			NewTile->SetPawn(PawnToEat);
 			NewTile->SetPlayerOwner(NewPlayerOwner);
 			NewTile->SetTileStatus(NewTileStatus);
 			Pawn->SetGridPosition(OldPosition[0], OldPosition[1]);
@@ -710,11 +730,6 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			}
 		}
 
-
-		if (CheckFlag != EPawnColor::NONE && Pawn->GetColor() == EPawnColor::BLACK)
-		{
-			IsValid = IsValid;
-		}
 		if (CheckCheckFlag && IsValid && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE))
 		{
 			// EPawnColor PreviousCheckFlag = CheckFlag;
@@ -727,7 +742,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			IsValid = NewCheckFlag == EPawnColor::NONE 
 				|| (CheckFlag == EPawnColor::WHITE && NewCheckFlag == EPawnColor::BLACK)
 				|| (CheckFlag == EPawnColor::BLACK && NewCheckFlag == EPawnColor::WHITE);
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("ricalcolo ischeck"));
+			// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("ricalcolo ischeck"));
 		}
 
 
