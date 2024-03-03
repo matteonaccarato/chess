@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "../Chess_GameMode.h"
 #include "../GameField.h"
 #include "../BasePawn.h"
 #include "../Chess_GameInstance.h"

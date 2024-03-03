@@ -139,7 +139,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetPawnPromotionChoice(EPawnType PawnType);
 
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
+	void SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
 	void DespawnPawn(int8 X, int8 Y);
 
 	EPawnColor IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1);

@@ -191,8 +191,8 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 
 	// SPAWN & DISABLE PAWNS
 	DespawnPawn(X, Y);
-	ABasePawn* PawnTemp = SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
-	ShowPossibleMoves(PawnTemp, true, true, false);
+	SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
+
 	PawnPromotionWidget->RemoveFromParent();
 
 
@@ -318,10 +318,9 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 	return PossibleMoves;
 }
 
-ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y)
+void AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y)
 {
 	TSubclassOf<ABasePawn> BasePawnClass;
-	ABasePawn* BasePawnObj = nullptr;
 	if (IsValidTile(X, Y))
 	{
 		ATile* TileObj = GField->GetTileArray()[X * GField->Size + Y];
@@ -375,7 +374,7 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 		FVector Location = GField->GetRelativeLocationByXYPosition(X, Y);
 		FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1);
 
-		BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
+		ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
 		// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
 		if (BasePawnObj != nullptr)
 		{
@@ -397,10 +396,8 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 		}
 
 		TileObj->SetPawn(BasePawnObj);
-		
 
 	}
-	return BasePawnObj;
 
 }
 

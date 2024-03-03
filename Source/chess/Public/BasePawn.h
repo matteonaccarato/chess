@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include "vector"
-#include "Chess_GameMode.h"
+// #include "vector"
+// #include "Chess_GameMode.h"
 // #include "Tile.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
+class AChess_GameMode;
 
 UENUM()
 enum class EPawnType : uint8

@@ -176,6 +176,7 @@ void AChess_RandomPlayer::OnTurn()
 					GameMode->ShowPossibleMoves(MyPawns[RandPawnIdx], true, true, false);
 
 				
+					GameMode->LastGridPosition = FVector2D(NewX, NewY);
 					GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 
 				}

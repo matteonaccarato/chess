@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Chess_GameMode.h"
 #include "CoreMinimal.h"
 #include "Tile.h"
 #include "BasePawn.h"

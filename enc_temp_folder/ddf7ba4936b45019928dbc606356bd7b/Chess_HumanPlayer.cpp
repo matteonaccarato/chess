@@ -241,7 +241,7 @@ void AChess_HumanPlayer::OnClick()
 						{
 							PawnTemp->SetMaxNumberSteps(1);
 						}
-						// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
+						GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
 						SelectedPawnFlag = 0;
@@ -303,7 +303,6 @@ void AChess_HumanPlayer::OnClick()
 						}
 						else
 						{
-							GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 							GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
 						}
 

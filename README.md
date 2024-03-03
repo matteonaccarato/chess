@@ -28,6 +28,13 @@ se tutte le mosse possibili del re sono attackable => check mate
 e non riesco a mangiare quegli attaccanti
 
 
+How To Create UMG UI in Unreal Engine - Animating Widgets 
+https://youtu.be/SD66UgyHiMM?si=ZoCKFO_R1YV-gRLk
+
+
+il pawn promotion è obbligatorio o l'utente può non farlo?
+
+
 #### Main Feature
 - [ ] Check and CheckMate (look at iphone notes)
 - [ ] Pawn Promotion
