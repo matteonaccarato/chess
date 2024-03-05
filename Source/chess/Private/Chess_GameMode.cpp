@@ -52,6 +52,22 @@ void AChess_GameMode::BeginPlay()
 	Players.Add(AI);
 
 
+	
+
+
+
+	UWorld* World = GetWorld();
+	if (World && ReplayWidgetRef)
+	{
+		ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
+		ReplayWidget->AddToViewport(0);
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("aa")));
+	}
+
+
+
+
+
 	this->ChoosePlayerAndStartGame();
 }
 
@@ -814,6 +830,13 @@ bool AChess_GameMode::IsValidTile(const int8 X, const int8 Y) const
 {
 	return X >= 0 && X < GField->Size
 		&& Y >= 0 && Y < GField->Size;
+}
+
+
+void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
+{
+	FString BtnName = TxtBlock->GetText().ToString();
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("ii %s"), *BtnName));
 }
 
 /*

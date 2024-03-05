@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "Blueprint/UserWidget.h"
+#include "Components/Button.h"
+
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "../BasePawn.h"

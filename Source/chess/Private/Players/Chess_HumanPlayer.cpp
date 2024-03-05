@@ -252,6 +252,21 @@ void AChess_HumanPlayer::OnClick()
 
 
 
+						
+						UWorld* World = GetWorld();
+						UVerticalBox* VerticalBox = Cast<UVerticalBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("vb_Replay")));
+						if (World && VerticalBox)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("eheh"));
+							UUserWidget* WidgetBtn = CreateWidget(World, GameMode->ButtonWidgetRef);
+							VerticalBox->AddChildToVerticalBox(WidgetBtn);
+							UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName("txtBlock"));
+							if (BtnText)
+							{
+								// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("setto"));
+								BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. aa"), GameMode->MoveCounter)));
+							}					
+						}
 
 
 
@@ -268,7 +283,7 @@ void AChess_HumanPlayer::OnClick()
 						// ELSE SetcellPawn
 						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 && PawnTemp->GetType() == EPawnType::PAWN)
 						{
-							UWorld* World = GetWorld();
+							// UWorld* World = GetWorld();							
 							if (World && GameMode->PawnPromotionMenuWidgetRef)
 							{
 								GameMode->PawnPromotionWidget = CreateWidget<UUserWidget>(World, GameMode->PawnPromotionMenuWidgetRef, FName("Name"));

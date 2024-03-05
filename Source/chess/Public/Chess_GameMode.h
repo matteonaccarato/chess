@@ -6,6 +6,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
+#include "Components/VerticalBox.h"
+#include "Components/TextBlock.h"
+
 
 #include "CoreMinimal.h"
 #include "Players/Chess_PlayerInterface.h"
@@ -117,6 +120,23 @@ public:
 	UPROPERTY()
 	UUserWidget* PawnPromotionWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
+	TSubclassOf<class UUserWidget> ReplayWidgetRef;
+
+	UPROPERTY()
+	UUserWidget* ReplayWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
+	TSubclassOf<class UUserWidget> ButtonWidgetRef;
+
+	UPROPERTY()
+	UUserWidget* ButtonWidget;
+
+
+
+
+
+
 	EPawnType PawnPromotionType;
 	// Used to remember which pawn to promote
 	FVector2D LastGridPosition;
@@ -138,6 +158,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetPawnPromotionChoice(EPawnType PawnType);
+
+	UFUNCTION(BlueprintCallable)
+	void ReplayMove(UTextBlock* TxtBlock);
 
 	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
 	void DespawnPawn(int8 X, int8 Y);

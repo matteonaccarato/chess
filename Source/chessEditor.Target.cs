@@ -9,7 +9,7 @@ public class chessEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("chess");
+        IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
+        ExtraModuleNames.Add("chess");
 	}
 }
