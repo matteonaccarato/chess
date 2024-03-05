@@ -146,16 +146,7 @@ public:
 
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
-	/*
-	isWinPosition
-	isWinLine
-	isValidPosition
-	*/
-
-	// TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
-
-	// allEqual
-	// 
+	
 //protected:
 	// Called when the game starts or when spawned
 	//virtual void BeginPlay() override;

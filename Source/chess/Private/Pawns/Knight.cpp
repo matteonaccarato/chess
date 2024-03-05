@@ -6,12 +6,7 @@
 AKnight::AKnight()
 {
 	Type = EPawnType::KNIGHT;
-	MaxNumberSteps = 1; // TODO magic number AND maybe useless
-	/* CardinalDirections.Add(ECardinalDirection::NORTHEAST);
-	CardinalDirections.Add(ECardinalDirection::SOUTHEAST);
-	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
-	CardinalDirections.Add(ECardinalDirection::NORTHWEST); */ 
-	// CardinalDirections.Add(ECardinalDirection::KNIGHT);
+	MaxNumberSteps = 1; // TODO magic number 
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TL);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TR);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_RT);

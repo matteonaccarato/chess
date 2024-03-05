@@ -7,25 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
-/* UENUM()
-enum class ETileStatus : uint8
-{
-	EMPTY UMETA(DisplayName = "Empty"), // 0
-	OCCUPIED UMETA(DisplayName = "Occupied"), // 1
-	B_BISHOP, // 2
-	B_KING, // 3
-	B_KNIGHT, // 4
-	B_PAWN, // 5
-	B_QUEEN, // 6
-	B_ROOK, // 7
-	W_BISHOP, // 8
-	W_KING, // 9
-	W_KNIGHT, // 10
-	W_PAWN, // 11
-	W_QUEEN, // 12
-	W_ROOK, // 13 
-}; */
-
 
 USTRUCT(BlueprintType)
 struct FTileStatus
@@ -33,7 +14,7 @@ struct FTileStatus
 	GENERATED_BODY()
 
 	bool EmptyFlag; // 1 => Empty, 0 => Occupied
-	TArray<bool> AttackableFrom; // true/false, 0-cell => from WHITE, 1-cell => from BLACK
+	TArray<bool> AttackableFrom; // 0-cell => from WHITE, 1-cell => from BLACK
 	EPawnColor PawnColor;
 	EPawnType PawnType;
 };

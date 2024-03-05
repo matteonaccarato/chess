@@ -6,15 +6,6 @@
 #include "UObject/Interface.h"
 #include "Chess_PlayerInterface.generated.h"
 
-
-/* UENUM()
-enum class EColor : uint8
-{
-	W,	// white
-	B,	// black
-	E	// empty
-}; */
-
 enum class EPawnColor : int8;
 
 // This class does not need to be modified.

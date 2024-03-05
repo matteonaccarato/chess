@@ -32,17 +32,6 @@ enum class EPawnColor : int8
 	BLACK = -1
 };
 
-/*UENUM()
-enum class EPawnMovement : uint8
-{
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT,
-	DIAGONAL
-};*/
-
-
 UENUM()
 enum class ECardinalDirection : uint8
 {
@@ -56,13 +45,12 @@ enum class ECardinalDirection : uint8
 	NORTHWEST,
 	KNIGHT_TR, // top-right
 	KNIGHT_TL, // top-left
-	KNIGHT_RT, // TODO gli altri
-	KNIGHT_RB,
-	KNIGHT_BR,
-	KNIGHT_BL,
-	KNIGHT_LB,
-	KNIGHT_LT
-	 // KNIGHT
+	KNIGHT_RT, // right-top
+	KNIGHT_RB, // right-bottom
+	KNIGHT_BR, // bottom-right
+	KNIGHT_BL, // bottom-left
+	KNIGHT_LB, // left-bottom
+	KNIGHT_LT // left-top
 };
 
 UENUM()
@@ -80,11 +68,6 @@ class CHESS_API ABasePawn : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABasePawn();
-
-	/* void SetTileId(const FString TileId);
-	FString GetTileId() const; */
-
-	// EPawnMovement GetMovement() const;
 
 	TArray<ECardinalDirection> GetCardinalDirections() const;
 
@@ -120,18 +103,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnColor Color;
 
-	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnMovement Movement; */
-
 	// TODO int8 ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 MaxNumberSteps;
 
-	// Type (e.g. Rook)
+	// Type (e.g. ROOK)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnType Type;
 
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<ECardinalDirection> CardinalDirections;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

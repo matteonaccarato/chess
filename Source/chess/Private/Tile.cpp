@@ -22,8 +22,7 @@ ATile::ATile()
 	Id = TEXT("");
 
 	TArray<bool> TmpFalse;
-	TmpFalse.Add(false);
-	TmpFalse.Add(false);
+	TmpFalse.Add(false); TmpFalse.Add(false);
 	Status = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE};
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
@@ -57,7 +56,6 @@ FString ATile::GetId() const
 
 void ATile::SetTileStatus(const FTileStatus TileStatus)
 {
-	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SETTO TILE CON %d %d"), TileOwner, TileStatus));
 	Status = TileStatus;
 }
 

@@ -2,8 +2,6 @@
 
 
 #include "BasePawn.h"
-// #include "GameField.h"
-// #include "Chess_GameMode.h"
 
 // Sets default values
 ABasePawn::ABasePawn()
@@ -14,11 +12,6 @@ ABasePawn::ABasePawn()
 	// TODO: forse da settare su true per movimento dinamico (come cono)
 
 }
-
-/* EPawnMovement ABasePawn::GetMovement() const
-{
-	return Movement;
-} */
 
 void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
 {
@@ -76,15 +69,6 @@ FVector2D ABasePawn::GetGridPosition() const
 	return TileGridPosition;
 }
 
-/* void ABasePawn::SetTileId(const FString TileIdParam)
-{
-	TileId = TileIdParam;
-}
-
-FString ABasePawn::GetTileId() const
-{
-	return TileId;
-} */
 
 // Called when the game starts or when spawned
 void ABasePawn::BeginPlay()

@@ -84,7 +84,7 @@ void AChess_HumanPlayer::OnTurn()
 		if (!CanMove)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("HUMAN cannot move anything"));
-			GameMode->SetCellPawn(-1, FVector());
+			GameMode->EndTurn(-1);
 
 			// TODO => checkFlag => WHITE
 		}
@@ -280,7 +280,7 @@ void AChess_HumanPlayer::OnClick()
 
 						
 						// IF (...)
-						// ELSE SetcellPawn
+						// ELSE EndTurn
 						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 && PawnTemp->GetType() == EPawnType::PAWN)
 						{
 							// UWorld* World = GetWorld();							
@@ -319,7 +319,7 @@ void AChess_HumanPlayer::OnClick()
 						else
 						{
 							GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
-							GameMode->SetCellPawn(PlayerNumber, SpawnPosition);
+							GameMode->EndTurn(PlayerNumber);
 						}
 
 

@@ -85,7 +85,7 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	Players[CurrentPlayer]->OnTurn();
 }
 
-void AChess_GameMode::SetCellPawn(const int32 PlayerNumber, const FVector& SpawnPosition)
+void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 {
 	
 
@@ -220,7 +220,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 		PawnPromotionWidget->RemoveFromParent();
 
 
-	SetCellPawn(CurrentPlayer, FVector());
+	EndTurn(CurrentPlayer);
 }
 
 TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest, const bool ShowAttackable, const bool CheckCheckFlag)
@@ -353,8 +353,8 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 		FTileStatus TileStatus = { 0, TmpFalse, EPawnColor::NONE, EPawnType::NONE };
 
-		TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_PawnClass };
-		TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_PawnClass };
+		TSubclassOf<ABasePawn> W_PawnsClasses[] = { GField->W_RookClass, GField->W_KnightClass, GField->W_BishopClass, GField->W_QueenClass, GField->W_KingClass, GField->W_PawnClass };
+		TSubclassOf<ABasePawn> B_PawnsClasses[] = { GField->B_RookClass, GField->B_KnightClass, GField->B_BishopClass, GField->B_QueenClass, GField->B_KingClass, GField->B_PawnClass };
 		
 		switch (PawnType)
 		{
