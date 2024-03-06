@@ -43,6 +43,8 @@ il pawn promotion è obbligatorio o l'utente può non farlo?
 - [X] Pawn Promotion
 
 #### TODO:
+segnalazione di elementi null tramite UE_LOG()
+controllare nomenclatura con scacco matto
 toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] Leggere regolamento (e implementare regole particolari di mangiare e proteggere re)
 - [ ] => Mettere punti cardinali corretti (anche rispetto a neri => NORTH implica andare indietro)

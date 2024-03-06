@@ -7,7 +7,10 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
-#include "Components/VerticalBox.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "Components/ScrollBox.h"
+#include "Components/ScrollBoxSlot.h"
 #include "Components/TextBlock.h"
 
 #include "CoreMinimal.h"
@@ -83,6 +86,8 @@ public:
 
 	UPROPERTY()
 	UUserWidget* ReplayWidget;
+
+	static const int8 MAX_REPLAY_SHOW_MOVES = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<class UUserWidget> ButtonWidgetRef;

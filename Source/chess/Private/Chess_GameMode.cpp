@@ -884,16 +884,63 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
 
 	// Update Replay widget content
 	UWorld* World = GetWorld();
-	UVerticalBox* VerticalBox = Cast<UVerticalBox>(ReplayWidget->GetWidgetFromName(TEXT("vb_Replay")));
-	if (World && VerticalBox)
+	// UUniformGridPanel* UniformGridPanel = Cast<UUniformGridPanel>(ReplayWidget->GetWidgetFromName(TEXT("ufg_Replay")));
+	UScrollBox* ScrollBox = Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay")));
+	if (World && /* UniformGridPanel  && */ ScrollBox && ButtonWidgetRef)
 	{
 		UUserWidget* WidgetBtn = CreateWidget(World, ButtonWidgetRef);
-		VerticalBox->AddChildToVerticalBox(WidgetBtn);
-		UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(TEXT("txtBlock")));
-		if (BtnText)
+		if (WidgetBtn)
 		{
-			// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("setto"));
-			BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), MoveCounter, *MoveStr)));
+			UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(TEXT("txtBlock")));
+			if (BtnText)
+			{
+				// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("setto"));
+				BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), MoveCounter, *MoveStr)));
+			}
+
+			
+			/* FRotator Rotation(0.f, 180.f, 0.f);
+			FQuat RotationQuat = FQuat(Rotation); */
+			FWidgetTransform Transform; 
+			Transform.Angle = 180;
+			WidgetBtn->SetRenderTransform(Transform);
+			UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
+			ScrollSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
+			ScrollSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Top);
+
+		
+			/* ScrollSlot->SetRow(0);
+			ScrollSlot->SetColumn(0); */
+
+			// UUniformGridSlot* GridSlot = UniformGridPanel->AddChildToUniformGrid(WidgetBtn);
+
+			/* if (ScrollBox->GetChildrenCount() > AChess_GameMode::MAX_REPLAY_SHOW_MOVES)
+			{
+				ScrollBox->SetScrollBarVisibility(ESlateVisibility::Visible);
+				// collapse
+				UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
+			}
+			else
+			{
+				for (int8 i = UniformGridPanel->GetChildrenCount() - 1; i >= 0; i--)
+				{
+					UWidget* ChildWidget = UniformGridPanel->GetChildAt(i);
+					if (ChildWidget)
+					{
+						UUniformGridSlot* ChildSlot = Cast<UUniformGridSlot>(UniformGridPanel->GetChildAt(i)->Slot);
+						if (ChildSlot)
+						{
+							int8 NewRow = ChildSlot->GetRow() + 1;
+							ChildSlot->SetRow(NewRow);
+						}
+					}
+				}
+				GridSlot->SetRow(0);
+				GridSlot->SetColumn(0); 
+			} */
+
+
+			
 		}
 	}
 }
@@ -923,7 +970,7 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 }
 
 
-void AChess_GameMode::ComputeCheck()
+/* void AChess_GameMode::ComputeCheck()
 {
 	for (const auto& Pawn : GField->PawnArray)
 	{
@@ -931,7 +978,7 @@ void AChess_GameMode::ComputeCheck()
 			ShowPossibleMoves(Pawn, true, false, false);
 	}
 	IsCheck();
-}
+} */
 
 /*
 * return false if there is a pawn along the movement
