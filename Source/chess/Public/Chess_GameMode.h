@@ -55,6 +55,7 @@ public:
 	int32 CurrentPlayer;
 
 	int32 MoveCounter;
+	TArray<FString> RecordMoves;
 
 	// Who is under check || NONE || WHITE || BLACK
 	EPawnColor CheckFlag; 
@@ -96,6 +97,9 @@ public:
 	// Used to remember which pawn to promote
 	FVector2D LastGridPosition;
 
+	// Used to remember previous grid position in notation
+	FVector2D PreviousGridPosition;
+
 
 
 	AChess_GameMode();
@@ -110,6 +114,8 @@ public:
 
 	void TurnNextPlayer();
 
+	void ComputeCheck();
+
 	/*
 	*/
 	UFUNCTION(BlueprintCallable)
@@ -119,6 +125,9 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 	void ReplayMove(UTextBlock* TxtBlock);
+
+	void AddToReplay(const ABasePawn* Pawn, const bool EatFlag = false);
+	FString ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag = false) const;
 
 	/*
 	*/
@@ -133,6 +142,7 @@ public:
 	EPawnColor IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1);
 
 	/*
+	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
 

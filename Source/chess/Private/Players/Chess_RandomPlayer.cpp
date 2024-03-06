@@ -156,6 +156,7 @@ void AChess_RandomPlayer::OnTurn()
 
 					// Update last move (useful when doing pawn promotion)
 					GameMode->LastGridPosition = FVector2D(NewX, NewY);
+					GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
 					
 
 					// Pawn promotion handling
@@ -173,6 +174,9 @@ void AChess_RandomPlayer::OnTurn()
 					}
 
 					// End Turn
+					// GameMode->ComputeCheck();
+					GameMode->IsCheck();
+					GameMode->AddToReplay(MyPawns[RandPawnIdx], EatFlag);
 					GameMode->EndTurn(PlayerNumber);
 
 				}

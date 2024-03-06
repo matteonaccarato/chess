@@ -60,6 +60,12 @@ public:
 	int32 WinSize;
 
 
+	UPROPERTY()
+	UUserWidget* TileIdWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
+	TSubclassOf<class UUserWidget> TileIdWidgetRef;
+
 	// Tile Classes
 	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInterface* MaterialLight;

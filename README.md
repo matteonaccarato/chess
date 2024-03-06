@@ -36,11 +36,11 @@ il pawn promotion è obbligatorio o l'utente può non farlo?
 
 
 #### Main Feature
-- [ ] Check and CheckMate (look at iphone notes)
-- [ ] Pawn Promotion
+- [?] Check and CheckMate (look at iphone notes)
 - [ ] Reset
 - [ ] MiniMax Player
 - [ ] Replay
+- [X] Pawn Promotion
 
 #### TODO:
 toimplement NON è POSSIBILE MANGIARE I RE
@@ -65,6 +65,10 @@ toimplement NON è POSSIBILE MANGIARE I RE
 
 
 #### EXTRA
+- [ ] Rinominare la classe ABasePawn in AChessPiece (Pawn è solo pedone)
+- [ ] MEttere tutte le stringhe in TEXT("...")
+- [ ] vedere bene quali metodi possono essere definiti costanti (const)
+- [ ] al posto di const Class* => const Class&
 - [ ] Fare menu in cui si sceglie il colore delle tile, delle pedine e del tavolo da gioco (sfondo, piuttosto che vuoto)
 - [ ] togliere texture dal lato dei cubi
 - [ ] Material dei blueprint pezzi dinamico => non 6 e 6 ma solo 6

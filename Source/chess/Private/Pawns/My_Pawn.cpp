@@ -10,4 +10,5 @@ AMy_Pawn::AMy_Pawn()
 	CardinalDirections.Add(ECardinalDirection::NORTH);
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
+	Id = TEXT("P");
 }

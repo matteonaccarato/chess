@@ -69,6 +69,8 @@ public:
 	// Sets default values for this actor's properties
 	ABasePawn();
 
+	FString GetId() const;
+
 	TArray<ECardinalDirection> GetCardinalDirections() const;
 
 	void SetMaxNumberSteps(int32 NumberSteps);
@@ -91,13 +93,14 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// TODO uproperty a cosa serve, va messo a tutti?
 	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString TileId; */
 
 	// TODO => FString ID per log
 
-
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString Id;
 
 	// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

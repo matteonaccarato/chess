@@ -11,4 +11,5 @@ ARook::ARook()
 	CardinalDirections.Add(ECardinalDirection::EAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTH);
 	CardinalDirections.Add(ECardinalDirection::WEST);
+	Id = TEXT("R");
 }

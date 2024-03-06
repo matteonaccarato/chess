@@ -33,8 +33,13 @@ public:
 	void SetPawn(ABasePawn* TilePawn);
 	ABasePawn* GetPawn() const;
 
-	void SetId(const FString TileId);
 	FString GetId() const;
+
+	void SetLetterId(const FString TileLetter);
+	FString GetLetterId() const;
+
+	void SetNumberId(const int8 TileNumber);
+	int8 GetNumberId() const;
 
 	void SetTileStatus(const FTileStatus TileStatus);
 	FTileStatus GetTileStatus() const;
@@ -74,7 +79,10 @@ protected:
 	ABasePawn* Pawn;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FString Id;
+	FString LetterId;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int NumberId;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FTileStatus Status;

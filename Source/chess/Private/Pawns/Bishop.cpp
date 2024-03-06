@@ -12,4 +12,5 @@ ABishop::ABishop()
 	CardinalDirections.Add(ECardinalDirection::SOUTHEAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
+	Id = TEXT("B");
 }

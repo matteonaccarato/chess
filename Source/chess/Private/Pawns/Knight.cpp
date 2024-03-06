@@ -15,4 +15,5 @@ AKnight::AKnight()
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_BL);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_LB);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_LT);
+	Id = TEXT("N");
 }

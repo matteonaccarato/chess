@@ -13,6 +13,11 @@ ABasePawn::ABasePawn()
 
 }
 
+FString ABasePawn::GetId() const
+{
+	return Id;
+}
+
 void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
 {
 	MaxNumberSteps = NumberSteps;

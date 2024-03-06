@@ -15,4 +15,5 @@ AQueen::AQueen()
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
 	CardinalDirections.Add(ECardinalDirection::WEST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
+	Id = TEXT("Q");
 }

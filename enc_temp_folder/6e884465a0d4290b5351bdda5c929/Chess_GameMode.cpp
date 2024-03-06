@@ -533,7 +533,6 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 					{
 						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CurrPawn->GetColor()));
 						CheckFlag = CurrPawn->GetColor();
-						break;
 					}
 					/* else
 					{
@@ -788,20 +787,17 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 		if (CheckCheckFlag && IsValid /* && Pawn->GetColor() == CheckFlag && CheckFlag == ((CurrentPlayer) ? EPawnColor::BLACK : EPawnColor::WHITE */)
 		{
-			EPawnColor PreviousCheckFlag = CheckFlag;
+			// EPawnColor PreviousCheckFlag = CheckFlag;
 			EPawnColor NewCheckFlag = IsCheck(Pawn, NewGridPosition[0], NewGridPosition[1]);
-			CheckFlag = PreviousCheckFlag;
 			// it must return new checkflag calculated with the new move passed as param
 			// body => new tilearray, all false, then apply show possible moves del pawn in newtile
 			// verify if king is attackable
 
 
-			// terza condizione necessaria per evitare che un pawn metta in scacco la proprio squadra
-			IsValid = NewCheckFlag == EPawnColor::NONE
-				|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::BLACK && Pawn->GetColor() != EPawnColor::BLACK)
-				|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::WHITE && Pawn->GetColor() != EPawnColor::WHITE); 
+			IsValid = NewCheckFlag == EPawnColor::NONE;
+				/* || (CheckFlag == EPawnColor::WHITE && NewCheckFlag == EPawnColor::BLACK)
+				|| (CheckFlag == EPawnColor::BLACK && NewCheckFlag == EPawnColor::WHITE)*/
 			// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("ricalcolo ischeck"));
-
 		}
 
 

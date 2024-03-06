@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include <string>
 
+
 // Sets default values
 AGameField::AGameField()
 {
@@ -60,7 +61,7 @@ void AGameField::GenerateField()
 	TSubclassOf<ABasePawn> BasePawnClass;
 
 
-
+	UWorld* World = GetWorld();
 	bool flag = false;
 	for (int32 x = 0; x < Size; x++)
 	{
@@ -87,7 +88,59 @@ void AGameField::GenerateField()
 				const int32 IdNum = x + 1;
 
 				
-				TileObj->SetId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
+				TileObj->SetLetterId(FString::Printf(TEXT("%c"), IdChar));
+				TileObj->SetNumberId(IdNum);
+
+
+
+
+
+
+
+				// Bottom (Letters)
+				if (x == 0 && World)
+				{
+					UUserWidget* WidgetTxt = CreateWidget(World, TileIdWidgetRef);
+					if (WidgetTxt)
+					{
+						WidgetTxt->AddToViewport(1);
+
+						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
+						if (BtnText)
+						{
+							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%c"), IdChar)));
+						}
+
+						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]); 
+						WidgetTxt->SetPositionInViewport(WidgetPosition);
+					}
+				}
+				
+				// Left (Numbers)
+				if (y == 0 && World)
+				{
+					UUserWidget* WidgetTxt = CreateWidget(World, TileIdWidgetRef);
+					if (WidgetTxt)
+					{
+						WidgetTxt->AddToViewport(1);
+
+						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
+						if (BtnText)
+						{
+							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d"), IdNum)));
+						}
+
+						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]);
+						WidgetTxt->SetPositionInViewport(WidgetPosition);
+					}
+				}
+
+
+
+
+
+
+
 				const float TileScale = TileSize / 100;
 				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 				TileObj->SetGridPosition(x, y);
@@ -224,13 +277,6 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 
 	return FVector2D(x, y);
 }
-
-
-
-/* TArray<int32> AGameField::GetLine(const FVector2D Begin, const FVector2D End) const
-{
-	return TArray<int32>();
-} */
 
 // Called every frame
 /* void AGameField::Tick(float DeltaTime)

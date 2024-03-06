@@ -14,12 +14,14 @@ ATile::ATile()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	MaterialLight = CreateDefaultSubobject<UMaterialInterface>("MaterialLight");
 	MaterialDark = CreateDefaultSubobject<UMaterialInterface>("MaterialDark");
+	// TODO => material green ?
 	MaterialGreen = CreateDefaultSubobject<UMaterialInterface>("MaterialGreen");
 
 	SetRootComponent(Scene);
 	StaticMeshComponent->SetupAttachment(Scene);
 
-	Id = TEXT("");
+	LetterId = TEXT("");
+	NumberId = -1;
 
 	TArray<bool> TmpFalse;
 	TmpFalse.Add(false); TmpFalse.Add(false);
@@ -44,14 +46,29 @@ ABasePawn* ATile::GetPawn() const
 	return Pawn;
 }
 
-void ATile::SetId(const FString TileId)
-{
-	Id = TileId;
-}
-
 FString ATile::GetId() const
 {
-	return Id;
+	return LetterId + FString::Printf(TEXT("%d"), NumberId);
+}
+
+void ATile::SetLetterId(const FString TileLetter)
+{
+	LetterId = TileLetter;
+}
+
+FString ATile::GetLetterId() const
+{
+	return LetterId;
+}
+
+void ATile::SetNumberId(const int8 TileNumber)
+{
+	NumberId = TileNumber;
+}
+
+int8 ATile::GetNumberId() const
+{
+	return NumberId;
 }
 
 void ATile::SetTileStatus(const FTileStatus TileStatus)
