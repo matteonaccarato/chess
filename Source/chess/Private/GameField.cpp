@@ -282,6 +282,30 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 {
 	// TODO => trovare modo più efficiente
+
+
+
+
+
+
+
+
+
+
+
+	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()
+	// in load board
+	//		for (pawnarray)	pawn->setactorlocation()
+
+
+
+
+
+
+
+
+
+
 	for (auto& Tile : Board)
 	{
 		ABasePawn* PawnToMove = nullptr;
