@@ -64,6 +64,7 @@ void AChess_HumanPlayer::OnTurn()
 			TArray<bool> TmpFalse; 
 			TmpFalse.SetNum(2, false);
 			TileStatus.AttackableFrom = TmpFalse;
+			TileStatus.WhoCanGo.Empty();
 			// TileStatus.AttackableFrom = TArray<bool>(false, 2);
 			Tile->SetTileStatus(TileStatus);
 		}
@@ -135,7 +136,7 @@ void AChess_HumanPlayer::OnClick()
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-		if (GameMode != nullptr)
+		if (GameMode && GameMode->CanPlay)
 		{
 			// clean last possible moves
 			// vecchio material tramite pari/dispari della posizione
@@ -223,14 +224,14 @@ void AChess_HumanPlayer::OnClick()
 						// NewTile->SetTileStatus({ 0, EPawnColor::NONE, PawnTemp->GetColor(), PawnTemp->GetType() });
 						TArray<bool> TmpFalse;
 						TmpFalse.Add(false); TmpFalse.Add(false);
-						NewTile->SetTileStatus({ 0, TmpFalse, PawnTemp->GetColor(), PawnTemp->GetType()});
+						NewTile->SetTileStatus({ 0, TmpFalse, TArray<ABasePawn*>(), PawnTemp->GetColor(), PawnTemp->GetType()});
 						NewTile->SetPawn(PawnTemp);
 						
 						ATile* OldTile = GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
 						OldTile->SetPawn(nullptr);
 						OldTile->SetPlayerOwner(-1);
 						TileStatus = OldTile->GetTileStatus();
-						OldTile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
+						OldTile->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
 						
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
@@ -308,6 +309,13 @@ void AChess_HumanPlayer::OnClick()
 						{
 							// GameMode->ComputeCheck();
 							GameMode->IsCheck();
+
+							/* for (auto& CurrPawn : GameMode->GField->PawnArray)
+							{
+								if (CurrPawn->GetStatus() == EPawnStatus::ALIVE)
+									GameMode->ShowPossibleMoves(CurrPawn, true, false, false);
+							} */
+
 							// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 							GameMode->AddToReplay(PawnTemp, PawnToEat? 1:0);
 							GameMode->EndTurn(PlayerNumber);

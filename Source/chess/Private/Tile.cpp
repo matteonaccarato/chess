@@ -25,7 +25,7 @@ ATile::ATile()
 
 	TArray<bool> TmpFalse;
 	TmpFalse.Add(false); TmpFalse.Add(false);
-	Status = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE};
+	Status = { 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE};
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 

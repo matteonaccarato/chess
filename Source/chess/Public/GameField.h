@@ -149,8 +149,9 @@ public:
 	TArray<ABasePawn*>& GetPawnArray();
 
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
-
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
+
+	void LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable);
 
 	
 //protected:

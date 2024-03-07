@@ -42,7 +42,7 @@ void AChess_RandomPlayer::OnTurn()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode != nullptr)
+			if (GameMode && GameMode->CanPlay)
 			{
 				// Setting all tiles as NON attackable from Nobody
 				for (auto& Tile : GameMode->GField->GetTileArray())
@@ -51,6 +51,7 @@ void AChess_RandomPlayer::OnTurn()
 					TArray<bool> TmpFalse;
 					TmpFalse.SetNum(2, false);
 					TileStatus.AttackableFrom = TmpFalse;
+					TileStatus.WhoCanGo.Empty();
 					Tile->SetTileStatus(TileStatus);
 				}
 
@@ -132,14 +133,14 @@ void AChess_RandomPlayer::OnTurn()
 					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPlayerOwner(AGameField::NOT_ASSIGNED);
 					// FTileStatus TileStatus = TilesArray[OldX * GameMode->GField->Size + OldY]->GetTileStatus();
 					TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
+					TilesArray[OldX * GameMode->GField->Size + OldY]->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
 					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPawn(nullptr);
 					
 
 					// Update ending tile (new player owner, new tile status, new pawn)
 					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPlayerOwner(PlayerNumber);
 					// TileStatus = TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus();
-					TilesArray[NewX * GameMode->GField->Size + NewY]->SetTileStatus({ 0, TmpFalse, MyPawns[RandPawnIdx]->GetColor(), MyPawns[RandPawnIdx]->GetType() });
+					TilesArray[NewX * GameMode->GField->Size + NewY]->SetTileStatus({ 0, TmpFalse, TArray<ABasePawn*>(), MyPawns[RandPawnIdx]->GetColor(), MyPawns[RandPawnIdx]->GetType() });
 					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPawn(MyPawns[RandPawnIdx]);
 					
 					// Change Pawn Actor position

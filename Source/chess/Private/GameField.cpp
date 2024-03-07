@@ -43,7 +43,7 @@ void AGameField::ResetField()
 		TArray<bool> TmpFalse;
 		TmpFalse.Add(false);
 		TmpFalse.Add(false);
-		Obj->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE});
+		Obj->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE});
 	}
 
 	OnResetEvent.Broadcast();
@@ -152,7 +152,7 @@ void AGameField::GenerateField()
 				TArray<bool> TmpFalse;
 				TmpFalse.Add(false);
 				TmpFalse.Add(false);
-				FTileStatus TileStatus = { 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE};
+				FTileStatus TileStatus = { 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE};
 				int32 PlayerOwner = -1;
 
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
@@ -220,6 +220,7 @@ void AGameField::GenerateField()
 						// TODO: 0.8 da mettere come attributo
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));
 						
+						BasePawnObj->SetPieceNum(x * Size + y);
 						BasePawnObj->SetType(TileStatus.PawnType);
 						BasePawnObj->SetColor(TileStatus.PawnColor);
 						BasePawnObj->SetStatus(EPawnStatus::ALIVE);
@@ -277,6 +278,41 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 
 	return FVector2D(x, y);
 }
+
+void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
+{
+	// TODO => trovare modo più efficiente
+	for (auto& Tile : Board)
+	{
+		ABasePawn* PawnToMove = nullptr;
+			
+		for (auto& Pawn : PawnArray)
+		{
+			if (Tile.PieceNum == Pawn->GetPieceNum())
+			{
+				PawnToMove = Pawn;
+				switch (Tile.PawnStatus)
+				{
+				case EPawnStatus::ALIVE: 
+					PawnToMove->SetActorHiddenInGame(false);
+					PawnToMove->SetActorEnableCollision(true);
+					PawnToMove->SetActorTickEnabled(true);
+					break;
+				case EPawnStatus::DEAD: 
+					PawnToMove->SetActorHiddenInGame(true);
+					PawnToMove->SetActorEnableCollision(false);
+					PawnToMove->SetActorTickEnabled(false);
+					break;
+				}
+				break;
+			}
+		}
+
+		if (PawnToMove)
+			PawnToMove->SetActorLocation(GetRelativeLocationByXYPosition(Tile.X, Tile.Y) + FVector(0,0,20));
+	}
+}
+
 
 // Called every frame
 /* void AGameField::Tick(float DeltaTime)

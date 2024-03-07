@@ -44,6 +44,19 @@ enum class ELine : uint8
 	DIAGONAL
 };
 
+USTRUCT(BlueprintType)
+struct FTileSaving
+{
+	GENERATED_BODY()
+
+	int8 PieceNum;
+	EPawnType PawnType;
+	EPawnColor PawnColor;
+	EPawnStatus PawnStatus;
+	int8 X;
+	int8 Y;
+};
+
 /**
  * TODO => mettere attributi come protected
  */
@@ -54,11 +67,15 @@ class CHESS_API AChess_GameMode : public AGameModeBase
 
 public:
 	bool IsGameOver;
+	bool CanPlay; // true => user can play, false => user cannot play (e.g. while watching a replay)
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;
 
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;
+
+	TArray<TArray<FTileSaving>> GameSaving;
+	TArray<FTileSaving> CurrentBoard;
 
 	// Who is under check || NONE || WHITE || BLACK
 	EPawnColor CheckFlag; 
@@ -119,7 +136,7 @@ public:
 
 	void TurnNextPlayer();
 
-	void ComputeCheck();
+	// void ComputeCheck();
 
 	/*
 	*/

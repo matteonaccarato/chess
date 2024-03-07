@@ -23,6 +23,7 @@ void AChess_GameMode::BeginPlay()
 	Super::BeginPlay();
 
 	IsGameOver = false;
+	CanPlay = true;
 	MoveCounter = 0;
 	CheckFlag = EPawnColor::NONE;
 	CheckMateFlag = EPawnColor::NONE;
@@ -88,7 +89,7 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 
 void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 {
-	
+	// MoveCounter += 1;
 
 	// -1 to notify checkmate
 	if (PlayerNumber == -1)
@@ -144,6 +145,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		} 
 		Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
 
+		TArray<FTileSaving> BoardSaving;
 		for (ATile* Tile : GField->GetTileArray())
 		{
 			// int8 PlayerColor = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
@@ -154,6 +156,24 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 				Tile->SetTileStatus(TileStatus);
 			}
 		}
+
+		for (auto& Piece : GField->PawnArray)
+		{
+			FTileSaving TileSaving = {
+				Piece->GetPieceNum(),
+				Piece->GetType(),
+				Piece->GetColor(),
+				Piece->GetStatus(),
+				static_cast<int8>(Piece->GetGridPosition()[0]),
+				static_cast<int8>(Piece->GetGridPosition()[1])
+			};
+			BoardSaving.Add(TileSaving);
+		}
+		CurrentBoard = BoardSaving;
+		GameSaving.Add(BoardSaving);
+
+
+
 		TurnNextPlayer();
 		// }
 
@@ -224,7 +244,8 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 	if (PawnPromotionWidget != nullptr)
 		PawnPromotionWidget->RemoveFromParent();
 
-	ComputeCheck();
+	// ComputeCheck();
+	IsCheck();
 	EndTurn(CurrentPlayer);
 }
 
@@ -326,6 +347,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 					{
 						FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
 						TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; // idx 0 means attackable from whites, idx 1 means attackable from blacks 
+						TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
 						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 					}
 
@@ -356,7 +378,7 @@ ABasePawn* AChess_GameMode::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, 
 		ATile* TileObj = GField->GetTileArray()[X * GField->Size + Y];
 		TileObj->SetPlayerOwner(CurrentPlayer);
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		FTileStatus TileStatus = { 0, TmpFalse, EPawnColor::NONE, EPawnType::NONE };
+		FTileStatus TileStatus = { 0, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE };
 
 		TSubclassOf<ABasePawn> W_PawnsClasses[] = { GField->W_RookClass, GField->W_KnightClass, GField->W_BishopClass, GField->W_QueenClass, GField->W_KingClass, GField->W_PawnClass };
 		TSubclassOf<ABasePawn> B_PawnsClasses[] = { GField->B_RookClass, GField->B_KnightClass, GField->B_BishopClass, GField->B_QueenClass, GField->B_KingClass, GField->B_PawnClass };
@@ -450,7 +472,7 @@ void AChess_GameMode::DespawnPawn(int8 X, int8 Y)
 		{
 			Tile->SetPawn(nullptr);
 			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-			Tile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
+			Tile->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
 			Tile->SetPlayerOwner(-1);
 
 			Pawn->SetStatus(EPawnStatus::DEAD);
@@ -587,6 +609,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 				TArray<bool> TmpFalse;
 				TmpFalse.Add(false); TmpFalse.Add(false);
 				TileStatus.AttackableFrom = TmpFalse;
+				TileStatus.WhoCanGo.Empty();
 				Tile->SetTileStatus(TileStatus);
 				/* if (PawnToEatAttackableTiles.Contains(std::pair<int8, int8>(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1])))
 				{
@@ -600,10 +623,10 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			OldTile->SetPlayerOwner(-1);
 			TArray<bool> TmpFalse;
 			TmpFalse.Add(false); TmpFalse.Add(false);
-			OldTile->SetTileStatus({ 1, TmpFalse, EPawnColor::NONE, EPawnType::NONE });
+			OldTile->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
 
 			NewTile->SetPlayerOwner(CurrentPlayer);
-			NewTile->SetTileStatus({ 0, TmpFalse, Pawn->GetColor(), Pawn->GetType() });
+			NewTile->SetTileStatus({ 0, TmpFalse, TArray<ABasePawn*>(), Pawn->GetColor(), Pawn->GetType() });
 			NewTile->SetPawn(Pawn);
 			Pawn->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
@@ -872,7 +895,39 @@ bool AChess_GameMode::IsValidTile(const int8 X, const int8 Y) const
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
 	FString BtnName = TxtBlock->GetText().ToString();
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("ii %s"), *BtnName));
+	FString NumMoveStr;
+	BtnName.Split(TEXT("."), &NumMoveStr, NULL);
+	int8 NumMove = FCString::Atoi(*NumMoveStr);
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Replay mossa %d"), NumMove));
+
+	
+	if ((NumMove + 1) != MoveCounter)
+	{
+		CanPlay = false;
+		// TODO => disable game (Flag in GameMode => CanPlay)
+		
+		// show board to load
+
+
+		// restore
+		TArray<FTileSaving> BoardToLoad = GameSaving[NumMove - 1];
+		GField->LoadBoard(BoardToLoad, false);
+		
+
+	}
+	else
+	{
+		// TODO => usare delegati per riprendere il  game quando clicco su turno attuale
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando")));
+		GField->LoadBoard(CurrentBoard, true);
+		CanPlay = true;
+		Players[CurrentPlayer]->OnTurn();
+	}
+
+
+
+
+
 }
 
 void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
@@ -907,7 +962,7 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
 			UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
 			ScrollSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
 			ScrollSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Top);
-
+			ScrollBox->ScrollToEnd()
 		
 			/* ScrollSlot->SetRow(0);
 			ScrollSlot->SetColumn(0); */

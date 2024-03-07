@@ -44,7 +44,12 @@ il pawn promotion è obbligatorio o l'utente può non farlo?
 
 #### TODO:
 segnalazione di elementi null tramite UE_LOG()
-controllare nomenclatura con scacco matto
+Nomenclatura mosse:
+	- scacco matto
+	- esito partita (vittoria/sconfitta/pareggio)
+	- BUG nomenclatura mossa => se tolgo da scacco, rimane comunque il +
+aggiungere a struttura dati della tile
+tarray whocango => add pawn che possono raggiungere la tile
 toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] Leggere regolamento (e implementare regole particolari di mangiare e proteggere re)
 - [ ] => Mettere punti cardinali corretti (anche rispetto a neri => NORTH implica andare indietro)
@@ -83,3 +88,6 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] Caricare specifica configurazione di partita (per allenarti) digitando dove posizionare le varie pedine
 - [ ] Account per registrare uno storico delle partite fatte con i risultati e uno ?screenshot? della board finale
 - [ ] Animazione dello spostamento delle pedine
+- [ ] 
+- [ ] 
+- [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))

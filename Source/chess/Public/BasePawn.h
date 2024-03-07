@@ -71,6 +71,9 @@ public:
 
 	FString GetId() const;
 
+	int GetPieceNum() const;
+	void SetPieceNum(int Num);
+
 	TArray<ECardinalDirection> GetCardinalDirections() const;
 
 	void SetMaxNumberSteps(int32 NumberSteps);
@@ -101,6 +104,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Id;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int PieceNum;
 
 	// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

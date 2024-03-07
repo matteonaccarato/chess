@@ -18,6 +18,16 @@ FString ABasePawn::GetId() const
 	return Id;
 }
 
+int ABasePawn::GetPieceNum() const
+{
+	return PieceNum;
+}
+
+void ABasePawn::SetPieceNum(int Num)
+{
+	PieceNum = Num;
+}
+
 void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
 {
 	MaxNumberSteps = NumberSteps;
