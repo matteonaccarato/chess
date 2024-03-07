@@ -2,6 +2,14 @@
 
 
 
+
+NOMENCLATURA QUANDO CI SONO SITUAZIONI AMBIGUE
+
+
+
+
+
+
 quando il re può essere mangiato (king_tile == attackable_from),
 bool IsCheck = true
 in gamemode => uniche valid move (a meno del coprire la traiettoria) sono il re che scappa; se tutte sono attackable from opponent, checkmate
@@ -39,12 +47,13 @@ il pawn promotion è obbligatorio o l'utente può non farlo?
 - [?] Check and CheckMate (look at iphone notes)
 - [ ] Reset
 - [ ] MiniMax Player
-- [ ] Replay
+- [?] Replay
 - [X] Pawn Promotion
 
 #### TODO:
 segnalazione di elementi null tramite UE_LOG()
 Nomenclatura mosse:
+	- pawn promotion
 	- scacco matto
 	- esito partita (vittoria/sconfitta/pareggio)
 	- BUG nomenclatura mossa => se tolgo da scacco, rimane comunque il +
@@ -89,5 +98,6 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] Account per registrare uno storico delle partite fatte con i risultati e uno ?screenshot? della board finale
 - [ ] Animazione dello spostamento delle pedine
 - [ ] 
+- [ ] FUNZIONI CHE RITORNANO VALORI PER IDENTIFICARE ERRORI ?
 - [ ] 
 - [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))
