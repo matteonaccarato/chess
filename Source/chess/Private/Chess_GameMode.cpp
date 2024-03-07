@@ -159,15 +159,20 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 
 		for (auto& Piece : GField->PawnArray)
 		{
-			FTileSaving TileSaving = {
+			/* FTileSaving TileSaving = {
 				Piece->GetPieceNum(),
 				Piece->GetType(),
 				Piece->GetColor(),
 				Piece->GetStatus(),
 				static_cast<int8>(Piece->GetGridPosition()[0]),
 				static_cast<int8>(Piece->GetGridPosition()[1])
+			}; */
+			FTileSaving TileSaving = {
+				static_cast<int8>(Piece->GetGridPosition()[0]),
+				static_cast<int8>(Piece->GetGridPosition()[1]) 
 			};
 			BoardSaving.Add(TileSaving);
+			
 		}
 		CurrentBoard = BoardSaving;
 		GameSaving.Add(BoardSaving);
@@ -953,49 +958,13 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
 				BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), MoveCounter, *MoveStr)));
 			}
 
-			
-			/* FRotator Rotation(0.f, 180.f, 0.f);
-			FQuat RotationQuat = FQuat(Rotation); */
 			FWidgetTransform Transform; 
 			Transform.Angle = 180;
 			WidgetBtn->SetRenderTransform(Transform);
 			UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
 			ScrollSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
 			ScrollSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Top);
-			ScrollBox->ScrollToEnd()
-		
-			/* ScrollSlot->SetRow(0);
-			ScrollSlot->SetColumn(0); */
-
-			// UUniformGridSlot* GridSlot = UniformGridPanel->AddChildToUniformGrid(WidgetBtn);
-
-			/* if (ScrollBox->GetChildrenCount() > AChess_GameMode::MAX_REPLAY_SHOW_MOVES)
-			{
-				ScrollBox->SetScrollBarVisibility(ESlateVisibility::Visible);
-				// collapse
-				UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
-			}
-			else
-			{
-				for (int8 i = UniformGridPanel->GetChildrenCount() - 1; i >= 0; i--)
-				{
-					UWidget* ChildWidget = UniformGridPanel->GetChildAt(i);
-					if (ChildWidget)
-					{
-						UUniformGridSlot* ChildSlot = Cast<UUniformGridSlot>(UniformGridPanel->GetChildAt(i)->Slot);
-						if (ChildSlot)
-						{
-							int8 NewRow = ChildSlot->GetRow() + 1;
-							ChildSlot->SetRow(NewRow);
-						}
-					}
-				}
-				GridSlot->SetRow(0);
-				GridSlot->SetColumn(0); 
-			} */
-
-
-			
+			ScrollBox->ScrollToEnd();
 		}
 	}
 }

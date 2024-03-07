@@ -49,10 +49,10 @@ struct FTileSaving
 {
 	GENERATED_BODY()
 
-	int8 PieceNum;
+	/* int8 PieceNum;
 	EPawnType PawnType;
 	EPawnColor PawnColor;
-	EPawnStatus PawnStatus;
+	EPawnStatus PawnStatus; */
 	int8 X;
 	int8 Y;
 };

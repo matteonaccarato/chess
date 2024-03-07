@@ -63,6 +63,7 @@ void AGameField::GenerateField()
 
 	UWorld* World = GetWorld();
 	bool flag = false;
+	int8 PieceIdx = 0;
 	for (int32 x = 0; x < Size; x++)
 	{
 		for (int32 y = 0; y < Size; y++)
@@ -220,13 +221,14 @@ void AGameField::GenerateField()
 						// TODO: 0.8 da mettere come attributo
 						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));
 						
-						BasePawnObj->SetPieceNum(x * Size + y);
+						BasePawnObj->SetPieceNum(PieceIdx);
 						BasePawnObj->SetType(TileStatus.PawnType);
 						BasePawnObj->SetColor(TileStatus.PawnColor);
 						BasePawnObj->SetStatus(EPawnStatus::ALIVE);
 
 						PawnArray.Add(BasePawnObj);
 						PawnMap.Add(FVector2D(x, y), BasePawnObj);
+						PieceIdx++;
 					}
 					else
 					{
@@ -301,12 +303,30 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 
 
 
+	for (int8 i = 0; i < PawnArray.Num(); i++)
+	{
+		switch (PawnArray[i]->GetStatus())
+		{
+		case EPawnStatus::ALIVE:
+			PawnArray[i]->SetActorHiddenInGame(false);
+			PawnArray[i]->SetActorEnableCollision(true);
+			PawnArray[i]->SetActorTickEnabled(true);
+			break;
+		case EPawnStatus::DEAD:
+			PawnArray[i]->SetActorHiddenInGame(true);
+			PawnArray[i]->SetActorEnableCollision(false);
+			PawnArray[i]->SetActorTickEnabled(false);
+			break;
+		}
+		
+		PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y) + FVector(0, 0, 20));
+	}
 
 
 
 
 
-	for (auto& Tile : Board)
+	/* for (auto& Tile : Board)
 	{
 		ABasePawn* PawnToMove = nullptr;
 			
@@ -334,7 +354,7 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 
 		if (PawnToMove)
 			PawnToMove->SetActorLocation(GetRelativeLocationByXYPosition(Tile.X, Tile.Y) + FVector(0,0,20));
-	}
+	} */
 }
 
 
