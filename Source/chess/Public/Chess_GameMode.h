@@ -147,13 +147,6 @@ public:
 	void AddToReplay(const ABasePawn* Pawn, const bool EatFlag = false);
 	FString ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag = false) const;
 
-	/*
-	*/
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
-
-	/*
-	*/
-	void DespawnPawn(int8 X, int8 Y);
 
 	/*
 	*/
@@ -163,20 +156,8 @@ public:
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
-
+	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
 	/*
 	*/
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
-
-	/*
-	*/
-	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;
-
-	/*
-	*/
-	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
-
-	/*
-	*/
-	bool IsValidTile(const int8 X, const int8 Y) const;
 };

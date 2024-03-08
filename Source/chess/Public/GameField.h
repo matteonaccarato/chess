@@ -153,11 +153,34 @@ public:
 
 
 
+	/*
+	*/
+	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;
+
+
+
+	/*
+	*/
+	bool IsValidTile(const int8 X, const int8 Y) const;
+
+	/*
+	*/
+	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
+
 
 
 
 
 	void LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable);
+
+
+	/*
+	*/
+	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
+
+	/*
+	*/
+	void DespawnPawn(int8 X, int8 Y);
 
 	
 //protected:
