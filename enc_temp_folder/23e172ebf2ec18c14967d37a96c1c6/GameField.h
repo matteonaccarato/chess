@@ -140,6 +140,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ResetField();
+
 	void GenerateField();
 
 	FVector2D GetPosition(const FHitResult& Hit);
@@ -149,13 +150,6 @@ public:
 
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
-
-
-
-
-
-
-
 
 	void LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable);
 

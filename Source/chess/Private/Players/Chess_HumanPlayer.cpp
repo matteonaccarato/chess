@@ -26,7 +26,6 @@ AChess_HumanPlayer::AChess_HumanPlayer()
 
 	// init values
 	PlayerNumber = -1;
-	// Color = EColor::E;
 	Color = EPawnColor::WHITE;
 }
 
@@ -74,6 +73,8 @@ void AChess_HumanPlayer::OnTurn()
 		{
 			if (CurrPawn->GetColor() != GameMode->Players[GameMode->CurrentPlayer]->Color && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
 			{
+				// TODO => fare tutte le show possible moves a priori nel turno, per evitare di calcolare ogni volta che clicco
+				// ci accedo con pieceNum a array di array di possible moves
 				TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, true, true);
 				if (Tmp.Num() > 0)
 				{
@@ -86,8 +87,6 @@ void AChess_HumanPlayer::OnTurn()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("HUMAN cannot move anything"));
 			GameMode->EndTurn(-1);
-
-			// TODO => checkFlag => WHITE
 		}
 	}
 	else
@@ -112,26 +111,12 @@ void AChess_HumanPlayer::OnLose()
 
 void AChess_HumanPlayer::OnClick()
 {
-	
-	
-
-	//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("CIAO MAMMA, turno mio? %d"), IsMyTurn));
 	FHitResult Hit = FHitResult(ForceInit);
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
 	if (Hit.bBlockingHit && IsMyTurn)
 	{
 		// Select Pawn to move first
 		// Then I must select the new position
-
-
-
-		// TODO: controllare se la pedina è mia
-		/* if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Selezionare pedina"));
-		} */
-
-
 
 		// TODO inizializzare sempre tutto (anche a nullptr)
 		ABasePawn* PawnToEat = nullptr;
@@ -156,13 +141,10 @@ void AChess_HumanPlayer::OnClick()
 				if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
 				{
 					PawnTemp = PawnSelected;
-					// FVector2D CurrPawnGridPosition = PawnTemp->GetGridPosition();
-					// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("SELECTED X: %f Y: %f"), CurrPawnGridPosition[0], CurrPawnGridPosition[1]));
 					PossibleMoves = GameMode->ShowPossibleMoves(PawnTemp);
 					SelectedPawnFlag = 1;
 				
 				
-					// GameMode->GField->GetTileArray()[CurrPawnGridPosition[0]*8 + CurrPawnGridPosition[1]]->GetStaticMeshComponent()->SetMaterial(0, GameMode->GField->MaterialDark);
 				}
 				else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
 				{
@@ -171,9 +153,6 @@ void AChess_HumanPlayer::OnClick()
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("PAWN TO EAT IS IN X: %f Y: %f FROM %f %f"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], PawnTemp->GetGridPosition()[0], PawnTemp->GetGridPosition()[1]));
 				}
 			}
-
-
-
 
 			if (SelectedPawnFlag == 1)
 			{
@@ -207,31 +186,24 @@ void AChess_HumanPlayer::OnClick()
 
 							// Stops the Actor from ticking
 							PawnToEat->SetActorTickEnabled(false);
-
-
 						}
-
 
 
 						// vecchio material tramite pari/dispari della posizione
 						// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
 
-
-
-
 						FTileStatus TileStatus = NewTile->GetTileStatus();
 						NewTile->SetPlayerOwner(PlayerNumber);
-						// NewTile->SetTileStatus({ 0, EPawnColor::NONE, PawnTemp->GetColor(), PawnTemp->GetType() });
 						TArray<bool> TmpFalse;
 						TmpFalse.Add(false); TmpFalse.Add(false);
-						NewTile->SetTileStatus({ 0, TmpFalse, TArray<ABasePawn*>(), PawnTemp->GetColor(), PawnTemp->GetType()});
+						NewTile->SetTileStatus({ 0, TmpFalse, TileStatus.WhoCanGo, PawnTemp->GetColor(), PawnTemp->GetType()});
 						NewTile->SetPawn(PawnTemp);
 						
 						ATile* OldTile = GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
 						OldTile->SetPawn(nullptr);
 						OldTile->SetPlayerOwner(-1);
 						TileStatus = OldTile->GetTileStatus();
-						OldTile->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
+						OldTile->SetTileStatus({ 1, TmpFalse, TileStatus.WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
 						
 						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
 						PawnTemp->SetActorLocation(SpawnPosition);
@@ -248,24 +220,6 @@ void AChess_HumanPlayer::OnClick()
 						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;
-						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("SET TO FALSE")));
-
-
-
-
-
-						
-						
-
-
-
-
-
-
-
-
-
-
 
 						
 						// IF (...)
@@ -277,28 +231,6 @@ void AChess_HumanPlayer::OnClick()
 							{
 								GameMode->PawnPromotionWidget = CreateWidget<UUserWidget>(World, GameMode->PawnPromotionMenuWidgetRef, FName("Name"));
 								GameMode->PawnPromotionWidget->AddToViewport(0);
-
-								// Ottenere il riferimento al bottone all'interno del widget
-								/* UButton* Button = nullptr;
-								PawnPromotionWidget->WidgetTree->ForEachWidget([&Button](UWidget* Widget)
-									{
-										if (UButton* TestButton = Cast<UButton>(Widget))
-										{
-											Button = TestButton;
-											return false; // Esce dal ciclo
-										}
-										return true; // Continua la ricerca
-									});
-
-								// Ora puoi utilizzare Button per accedere alle funzionalità del bottone
-								if (Button)
-								{
-									// Button->OnClicked([&]() { UE_LOG(LogTemp, Error, TEXT("AHIA")); });
-									Button->OnClicked.AddDynamic(Button, [&]() { UE_LOG(LogTemp, Error, TEXT("AHIA")); });
-								} */
-
-								// while (GameMode->PawnPromotionType == EPawnType::NONE) {}
-								GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AHIA2")));
 							}
 							else
 							{
@@ -310,28 +242,15 @@ void AChess_HumanPlayer::OnClick()
 							// GameMode->ComputeCheck();
 							GameMode->IsCheck();
 
-							/* for (auto& CurrPawn : GameMode->GField->PawnArray)
-							{
-								if (CurrPawn->GetStatus() == EPawnStatus::ALIVE)
-									GameMode->ShowPossibleMoves(CurrPawn, true, false, false);
-							} */
-
 							// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 							GameMode->AddToReplay(PawnTemp, PawnToEat? 1:0);
 							GameMode->EndTurn(PlayerNumber);
-						}
-
-
-						
+						}						
 					}
 					else
 					{
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Invalid move"));
 					}
-				
-
-
-
 				}
 			}
 		}
@@ -339,12 +258,6 @@ void AChess_HumanPlayer::OnClick()
 		{
 			UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 		}
-
-
-
-
-
-
 	}
 	else
 	{

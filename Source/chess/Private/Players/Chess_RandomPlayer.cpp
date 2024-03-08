@@ -175,7 +175,6 @@ void AChess_RandomPlayer::OnTurn()
 					}
 
 					// End Turn
-					// GameMode->ComputeCheck();
 					GameMode->IsCheck();
 					GameMode->AddToReplay(MyPawns[RandPawnIdx], EatFlag);
 					GameMode->EndTurn(PlayerNumber);

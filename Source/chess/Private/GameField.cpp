@@ -68,15 +68,6 @@ void AGameField::GenerateField()
 	{
 		for (int32 y = 0; y < Size; y++)
 		{
-			/* if (flag)
-			{
-				TileClass = W_TileClass;
-			}
-			else
-			{
-				TileClass = B_TileClass;
-			} */
-
 			TileClass = flag ? W_TileClass : B_TileClass;
 
 			FVector Location = AGameField::GetRelativeLocationByXYPosition(x, y);
@@ -88,15 +79,8 @@ void AGameField::GenerateField()
 				const int32 IdChar = 65 + y;
 				const int32 IdNum = x + 1;
 
-				
 				TileObj->SetLetterId(FString::Printf(TEXT("%c"), IdChar));
 				TileObj->SetNumberId(IdNum);
-
-
-
-
-
-
 
 				// Bottom (Letters)
 				if (x == 0 && World)
@@ -137,18 +121,11 @@ void AGameField::GenerateField()
 				}
 
 
-
-
-
-
-
 				const float TileScale = TileSize / 100;
 				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 				TileObj->SetGridPosition(x, y);
 				TileArray.Add(TileObj);
 				TileMap.Add(FVector2D(x, y), TileObj);
-
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TileObj->GetId());
 
 				TArray<bool> TmpFalse;
 				TmpFalse.Add(false);
@@ -159,14 +136,7 @@ void AGameField::GenerateField()
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
 					TileStatus.EmptyFlag = 0;
-					// std::vector<std::string> arr = { "W_RookClass", "ca" };
-					// std::vector<ABasePawn> arr;
 					
-
-					
-					
-					// TArray<TSubclassOf<ABasePawn>*> PawnsClasses = { W_RookClass };
-
 					EPawnType PawnTypes[] = { EPawnType::ROOK, EPawnType::KNIGHT, EPawnType::BISHOP, EPawnType::QUEEN, EPawnType::KING, EPawnType::BISHOP, EPawnType::KNIGHT, EPawnType::ROOK };
 					
 					if (x == 0)
@@ -205,16 +175,12 @@ void AGameField::GenerateField()
 						PlayerOwner = 1;
 					}
 
-					
-					
 					FVector Origin;
 					FVector BoxExtent;
 					TileObj->GetActorBounds(false, Origin, BoxExtent);
 
-
 					FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2*BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1);
 					ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0,90,0));
-					// BasePawnObj->SetTileId(FString::Printf(TEXT("%c%d"), IdChar, IdNum));
 					if (BasePawnObj != nullptr)
 					{
 						BasePawnObj->SetGridPosition(x, y);
@@ -241,7 +207,6 @@ void AGameField::GenerateField()
 				TileObj->SetPlayerOwner(PlayerOwner);
 				TileObj->SetTileStatus(TileStatus);
 				
-
 				flag = !flag;
 			}
 			else
@@ -286,22 +251,9 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 	// TODO => trovare modo più efficiente
 
 
-
-
-
-
-
-
-
-
-
 	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()
 	// in load board
 	//		for (pawnarray)	pawn->setactorlocation()
-
-
-
-
 
 	for (int8 i = 0; i < PawnArray.Num(); i++)
 	{
@@ -321,40 +273,6 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 		
 		PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y) + FVector(0, 0, 20));
 	}
-
-
-
-
-
-	/* for (auto& Tile : Board)
-	{
-		ABasePawn* PawnToMove = nullptr;
-			
-		for (auto& Pawn : PawnArray)
-		{
-			if (Tile.PieceNum == Pawn->GetPieceNum())
-			{
-				PawnToMove = Pawn;
-				switch (Tile.PawnStatus)
-				{
-				case EPawnStatus::ALIVE: 
-					PawnToMove->SetActorHiddenInGame(false);
-					PawnToMove->SetActorEnableCollision(true);
-					PawnToMove->SetActorTickEnabled(true);
-					break;
-				case EPawnStatus::DEAD: 
-					PawnToMove->SetActorHiddenInGame(true);
-					PawnToMove->SetActorEnableCollision(false);
-					PawnToMove->SetActorTickEnabled(false);
-					break;
-				}
-				break;
-			}
-		}
-
-		if (PawnToMove)
-			PawnToMove->SetActorLocation(GetRelativeLocationByXYPosition(Tile.X, Tile.Y) + FVector(0,0,20));
-	} */
 }
 
 
@@ -364,4 +282,3 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
 	Super::Tick(DeltaTime);
 
 } */
-

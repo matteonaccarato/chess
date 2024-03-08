@@ -4,7 +4,7 @@
 
 
 NOMENCLATURA QUANDO CI SONO SITUAZIONI AMBIGUE
-
+NOMENCLATURA con pawn promotion (fare .Add per nuovo pezzo)
 
 
 
