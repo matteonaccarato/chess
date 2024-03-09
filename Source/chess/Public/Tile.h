@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BasePawn.h"
+#include "ChessEnums.h"
+// #include "BasePawn.h"
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+class ABasePawn;
 
 USTRUCT(BlueprintType)
 struct FTileStatus
@@ -50,6 +52,8 @@ public:
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
+
+	void ClearInfo();
 
 protected:
 	// Called when the game starts or when spawned

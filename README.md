@@ -17,23 +17,11 @@ in gamemode => uniche valid move (a meno del coprire la traiettoria) sono il re 
 
 =>
 
-IsValidMove() {
-	if (IsCheck())
-		simulateMove
-		ShowPossibleMoves(all black)
-		if king_tile == attackable_from => still in check
-}
-=> ma crea loop infinito
-
-
 
 
 AGGIORNARE DA IPHONE NOTES E NOTION
 GameMode.cpp@353
 
-settare ogni cella attaccabile come attaccabile (evitare che il re ci vada dentro)
-se tutte le mosse possibili del re sono attackable => check mate
-e non riesco a mangiare quegli attaccanti
 
 
 How To Create UMG UI in Unreal Engine - Animating Widgets 

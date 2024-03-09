@@ -4,61 +4,14 @@
 
 // #include "vector"
 // #include "Chess_GameMode.h"
-// #include "Tile.h"
+#include "Tile.h"
 #include "CoreMinimal.h"
+#include "ChessEnums.h"
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
+// class ATile;
 class AChess_GameMode;
-
-UENUM()
-enum class EPawnType : uint8
-{
-	NONE, // 0
-	ROOK, // 1
-	KNIGHT, // 2
-	BISHOP, // 3
-	QUEEN, // 4
-	KING, // 5
-	PAWN, // 6
-};
-
-// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
-UENUM()
-enum class EPawnColor : int8
-{
-	NONE = 0,
-	WHITE = 1,
-	BLACK = -1
-};
-
-UENUM()
-enum class ECardinalDirection : uint8
-{
-	NORTH,
-	NORTHEAST,
-	EAST,
-	SOUTHEAST,
-	SOUTH,
-	SOUTHWEST,
-	WEST,
-	NORTHWEST,
-	KNIGHT_TR, // top-right
-	KNIGHT_TL, // top-left
-	KNIGHT_RT, // right-top
-	KNIGHT_RB, // right-bottom
-	KNIGHT_BR, // bottom-right
-	KNIGHT_BL, // bottom-left
-	KNIGHT_LB, // left-bottom
-	KNIGHT_LT // left-top
-};
-
-UENUM()
-enum class EPawnStatus: int8
-{
-	ALIVE, // 0
-	DEAD // 1
-};
 
 UCLASS()
 class CHESS_API ABasePawn : public AActor
@@ -92,6 +45,8 @@ public:
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
 
+	void Move(ATile* Tile);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -106,7 +61,7 @@ protected:
 	FString Id;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int PieceNum;
+	int PieceNum = -1;
 
 	// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

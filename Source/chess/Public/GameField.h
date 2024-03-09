@@ -171,12 +171,12 @@ public:
 
 
 
-	void LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable);
+	void LoadBoard(const TArray<FTileSaving>& Board);
 
 
 	/*
 	*/
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y);
+	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = AGameField::NOT_ASSIGNED);
 
 	/*
 	*/

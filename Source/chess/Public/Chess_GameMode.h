@@ -51,6 +51,7 @@ struct FTileSaving
 
 	int8 X;
 	int8 Y;
+	EPawnStatus Status;
 };
 
 /**
@@ -99,8 +100,6 @@ public:
 
 	UPROPERTY()
 	UUserWidget* ReplayWidget;
-
-	static const int8 MAX_REPLAY_SHOW_MOVES = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<class UUserWidget> ButtonWidgetRef;

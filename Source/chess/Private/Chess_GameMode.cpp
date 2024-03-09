@@ -164,7 +164,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		{
 			BoardSaving.Add({
 				static_cast<int8>(Piece->GetGridPosition()[0]),
-				static_cast<int8>(Piece->GetGridPosition()[1])
+				static_cast<int8>(Piece->GetGridPosition()[1]),
+				Piece->GetStatus()
 			});
 			
 		}
@@ -397,7 +398,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 	}
 	else
 	{
-		if (IsValidMove(Pawn, NewX, NewY, true, false, false))
+		if (GField->IsValidTile(NewX, NewY) && IsValidMove(Pawn, NewX, NewY, true, false, false))
 		{
 			// update tile array
 			FVector2D OldPosition = Pawn->GetGridPosition();
@@ -413,7 +414,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			ABasePawn* PawnToEat = NewTile->GetPawn();
 			EPawnStatus PawnToEatStatus;
 			FVector2D PawnToEatGridPosition;
-			if (PawnToEat != nullptr)
+			if (PawnToEat)
 			{
 				PawnToEatStatus = PawnToEat->GetStatus();
 				PawnToEatGridPosition = PawnToEat->GetGridPosition();
@@ -434,12 +435,6 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 				TileStatus.AttackableFrom = TmpFalse;
 				// TileStatus.WhoCanGo.Empty();
 				Tile->SetTileStatus(TileStatus);
-				/* if (PawnToEatAttackableTiles.Contains(std::pair<int8, int8>(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1])))
-				{
-					int8 X = Tile->GetGridPosition()[0];
-					int8 Y = Tile->GetGridPosition()[1];
-					TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), Tile->GetTileStatus()));
-				} */
 			}
 
 			OldTile->SetPawn(nullptr);
@@ -614,13 +609,16 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 		{
 			EPawnColor PreviousCheckFlag = CheckFlag;
 			// Check state after having moved the Piece in the new grid position
-			EPawnColor NewCheckFlag = IsCheck(Pawn, NewGridPosition[0], NewGridPosition[1]);
-			CheckFlag = PreviousCheckFlag;
+			if (GField->IsValidTile(NewGridPosition[0], NewGridPosition[1]) && Pawn->GetStatus() == EPawnStatus::ALIVE)
+			{
+				EPawnColor NewCheckFlag = IsCheck(Pawn, NewGridPosition[0], NewGridPosition[1]);
+				CheckFlag = PreviousCheckFlag;
 
-			// Possible valid situations after having checked the new check situation
-			IsValid = NewCheckFlag == EPawnColor::NONE
-				|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::BLACK && Pawn->GetColor() != EPawnColor::BLACK)
-				|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::WHITE && Pawn->GetColor() != EPawnColor::WHITE); 
+				// Possible valid situations after having checked the new check situation
+				IsValid = NewCheckFlag == EPawnColor::NONE
+					|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::BLACK && Pawn->GetColor() != EPawnColor::BLACK)
+					|| (CheckFlag == EPawnColor::NONE && NewCheckFlag == EPawnColor::WHITE && Pawn->GetColor() != EPawnColor::WHITE); 
+			}
 		}
 	}
 
@@ -632,7 +630,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 /*
  * Function: GetXYOffset
  * ----------------------------
- *   Computes the offsets (X,Y) based on the paramaters
+ *   Computes the offsets (X,Y) based on the paramaters (steps, direction and color)
  *
  *	 Steps		const int8				number of steps to perform
  *	 Direction	ECardinalDirection		direction to follow during the move
@@ -743,12 +741,12 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 	{
 		CanPlay = false;
 		TArray<FTileSaving> BoardToLoad = GameSaving[NumMove - 1];
-		GField->LoadBoard(BoardToLoad, false);
+		GField->LoadBoard(BoardToLoad);
 	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando")));
-		GField->LoadBoard(CurrentBoard, true);
+		GField->LoadBoard(CurrentBoard);
 		CanPlay = true;
 		Players[CurrentPlayer]->OnTurn();
 	}

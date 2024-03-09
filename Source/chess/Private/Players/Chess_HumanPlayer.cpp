@@ -169,55 +169,32 @@ void AChess_HumanPlayer::OnClick()
 						
 						/*
 						* Elaborate new x,y in function of eligible moves of the pawn
-						*
-						* TODO: update TileArray and TileMap
 						*/
 
 						if (PawnToEat)
-						{
-							// TODO => c'è qualcosa da fare come destroy / deallocazione ?
-							PawnToEat->SetStatus(EPawnStatus::DEAD);
-							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
-							// Hides visible components
-							PawnToEat->SetActorHiddenInGame(true);
-
-							// Disables collision components
-							PawnToEat->SetActorEnableCollision(false);
-
-							// Stops the Actor from ticking
-							PawnToEat->SetActorTickEnabled(false);
-						}
-
+							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
 
 						// vecchio material tramite pari/dispari della posizione
 						// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
 
-						FTileStatus TileStatus = NewTile->GetTileStatus();
 						NewTile->SetPlayerOwner(PlayerNumber);
-						TArray<bool> TmpFalse;
-						TmpFalse.Add(false); TmpFalse.Add(false);
-						NewTile->SetTileStatus({ 0, TmpFalse, TileStatus.WhoCanGo, PawnTemp->GetColor(), PawnTemp->GetType()});
+						TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
+						NewTile->SetTileStatus({ 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, PawnTemp->GetColor(), PawnTemp->GetType()});
 						NewTile->SetPawn(PawnTemp);
-						
-						ATile* OldTile = GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
-						OldTile->SetPawn(nullptr);
-						OldTile->SetPlayerOwner(-1);
-						TileStatus = OldTile->GetTileStatus();
-						OldTile->SetTileStatus({ 1, TmpFalse, TileStatus.WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
-						
-						FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, PawnTemp->GetActorLocation()[2]);
-						PawnTemp->SetActorLocation(SpawnPosition);
-						PawnTemp->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-						// update with last move
+						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->ClearInfo();
+						
+						PawnTemp->Move(NewTile);
+						
+
 						if (PawnTemp->GetType() == EPawnType::PAWN)
-						{
 							PawnTemp->SetMaxNumberSteps(1);
-						}
+						
 						// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
 
+						// update with last move
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
-						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
+						GameMode->PreviousGridPosition = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->GetGridPosition();
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;
 

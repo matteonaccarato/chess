@@ -63,7 +63,6 @@ void AGameField::GenerateField()
 	TSubclassOf<ATile> TileClass;
 	TSubclassOf<ABasePawn> BasePawnClass;
 
-
 	UWorld* World = GetWorld();
 	bool flag = false;
 	int8 PieceIdx = 0;
@@ -95,10 +94,8 @@ void AGameField::GenerateField()
 
 						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
 						if (BtnText)
-						{
 							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%c"), IdChar)));
-						}
-
+						
 						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]); 
 						WidgetTxt->SetPositionInViewport(WidgetPosition);
 					}
@@ -114,15 +111,12 @@ void AGameField::GenerateField()
 
 						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
 						if (BtnText)
-						{
 							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d"), IdNum)));
-						}
-
+						
 						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]);
 						WidgetTxt->SetPositionInViewport(WidgetPosition);
 					}
 				}
-
 
 				const float TileScale = TileSize / 100;
 				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
@@ -130,86 +124,18 @@ void AGameField::GenerateField()
 				TileArray.Add(TileObj);
 				TileMap.Add(FVector2D(x, y), TileObj);
 
-				TArray<bool> TmpFalse;
-				TmpFalse.Add(false);
-				TmpFalse.Add(false);
-				FTileStatus TileStatus = { 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE};
-				int32 PlayerOwner = -1;
-
+				EPawnType PawnTypesOnRow[] = { EPawnType::ROOK, EPawnType::KNIGHT, EPawnType::BISHOP, EPawnType::QUEEN, EPawnType::KING, EPawnType::BISHOP, EPawnType::KNIGHT, EPawnType::ROOK };
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
-					TileStatus.EmptyFlag = 0;
-					
-					EPawnType PawnTypes[] = { EPawnType::ROOK, EPawnType::KNIGHT, EPawnType::BISHOP, EPawnType::QUEEN, EPawnType::KING, EPawnType::BISHOP, EPawnType::KNIGHT, EPawnType::ROOK };
-					
 					if (x == 0)
-					{
-						TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_BishopClass, W_KnightClass, W_RookClass };
-
-						BasePawnClass = W_PawnsClasses[y];
-						TileStatus.PawnColor = EPawnColor::WHITE;
-						TileStatus.PawnType = PawnTypes[y];
-
-						PlayerOwner = 0;
-					}
+						SpawnPawn(PawnTypesOnRow[y], EPawnColor::WHITE, x, y, 0);
 					else if (x == 1)
-					{
-						BasePawnClass = W_PawnClass;
-						
-						TileStatus.PawnColor = EPawnColor::WHITE;
-						TileStatus.PawnType = EPawnType::PAWN;
-						PlayerOwner = 0;
-					}
+						SpawnPawn(EPawnType::PAWN, EPawnColor::WHITE, x, y, 0);
 					else if (x == Size - 1)
-					{
-						TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_BishopClass, B_KnightClass, B_RookClass };
-						
-						BasePawnClass = B_PawnsClasses[y];
-						TileStatus.PawnColor = EPawnColor::BLACK;
-						TileStatus.PawnType = PawnTypes[y];
-						PlayerOwner = 1;
-					}
+						SpawnPawn(PawnTypesOnRow[y], EPawnColor::BLACK, x, y, 1);
 					else
-					{
-						BasePawnClass = B_PawnClass;
-
-						TileStatus.PawnColor = EPawnColor::BLACK;
-						TileStatus.PawnType = EPawnType::PAWN;
-						PlayerOwner = 1;
-					}
-
-					FVector Origin;
-					FVector BoxExtent;
-					TileObj->GetActorBounds(false, Origin, BoxExtent);
-
-					FVector PawnLocation(Location.GetComponentForAxis(EAxis::X), Location.GetComponentForAxis(EAxis::Y), Location.GetComponentForAxis(EAxis::Z) + 2*BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1);
-					ABasePawn* BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0,90,0));
-					if (BasePawnObj != nullptr)
-					{
-						BasePawnObj->SetGridPosition(x, y);
-						// TODO: 0.8 da mettere come attributo
-						BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));
-						
-						BasePawnObj->SetPieceNum(PieceIdx);
-						BasePawnObj->SetType(TileStatus.PawnType);
-						BasePawnObj->SetColor(TileStatus.PawnColor);
-						BasePawnObj->SetStatus(EPawnStatus::ALIVE);
-
-						PawnArray.Add(BasePawnObj);
-						PawnMap.Add(FVector2D(x, y), BasePawnObj);
-						PieceIdx++;
-					}
-					else
-					{
-						UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
-					}
-
-					TileObj->SetPawn(BasePawnObj);
+						SpawnPawn(EPawnType::PAWN, EPawnColor::BLACK, x, y, 1);
 				}
-
-				TileObj->SetPlayerOwner(PlayerOwner);
-				TileObj->SetTileStatus(TileStatus);
-				
 				flag = !flag;
 			}
 			else
@@ -221,20 +147,10 @@ void AGameField::GenerateField()
 	}
 }
 
-FVector2D AGameField::GetPosition(const FHitResult& Hit)
-{
-	return Cast<ATile>(Hit.GetActor())->GetGridPosition();
-}
 
-TArray<ATile*>& AGameField::GetTileArray()
-{
-	return TileArray;
-}
-
-TArray<ABasePawn*>& AGameField::GetPawnArray()
-{
-	return PawnArray;
-}
+FVector2D AGameField::GetPosition(const FHitResult& Hit) { return Cast<ATile>(Hit.GetActor())->GetGridPosition(); }
+TArray<ATile*>& AGameField::GetTileArray() { return TileArray; }
+TArray<ABasePawn*>& AGameField::GetPawnArray() { return PawnArray; }
 
 FVector AGameField::GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const
 {
@@ -249,32 +165,38 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 	return FVector2D(x, y);
 }
 
-void AGameField::LoadBoard(const TArray<FTileSaving>& Board, bool IsPlayable)
+void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
 {
-	// TODO => trovare modo più efficiente
-
-
 	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()
 	// in load board
 	//		for (pawnarray)	pawn->setactorlocation()
 
 	for (int8 i = 0; i < PawnArray.Num(); i++)
 	{
-		switch (PawnArray[i]->GetStatus())
+		if (Board.IsValidIndex(i))
 		{
-		case EPawnStatus::ALIVE:
-			PawnArray[i]->SetActorHiddenInGame(false);
-			PawnArray[i]->SetActorEnableCollision(true);
-			PawnArray[i]->SetActorTickEnabled(true);
-			break;
-		case EPawnStatus::DEAD:
+			switch (Board[i].Status)
+			{
+			case EPawnStatus::ALIVE:
+				PawnArray[i]->SetActorHiddenInGame(false);
+				PawnArray[i]->SetActorEnableCollision(true);
+				PawnArray[i]->SetActorTickEnabled(true);
+				break;
+			case EPawnStatus::DEAD:
+				PawnArray[i]->SetActorHiddenInGame(true);
+				PawnArray[i]->SetActorEnableCollision(false);
+				PawnArray[i]->SetActorTickEnabled(false);
+				break;
+			}
+			PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y) + FVector(0, 0, 20));
+		}
+		else 
+		{
 			PawnArray[i]->SetActorHiddenInGame(true);
 			PawnArray[i]->SetActorEnableCollision(false);
 			PawnArray[i]->SetActorTickEnabled(false);
-			break;
+			PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
 		}
-		
-		PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y) + FVector(0, 0, 20));
 	}
 }
 
@@ -314,6 +236,10 @@ bool AGameField::CheckDirection(const EDirection Direction, ABasePawn* Pawn, con
 		{
 			if (!IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;
+
+			if (Pawn->GetType() == EPawnType::PAWN)
+				if (DeltaX * static_cast<int>(Pawn->GetColor()) < 0)
+					return false;
 
 			if (Pawn->GetType() == EPawnType::PAWN && !TestFlag)
 				Pawn->SetMaxNumberSteps(1);
@@ -392,7 +318,7 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
  *
  *   return: Pointer to the recently spawned pawn
  */
-ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y)
+ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner)
 {
 	// TODO => necessario fare if (PawnType && PawnColor && X && Y) essendo parametri obbligatori ??
 
@@ -403,7 +329,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 	if (GameMode && IsValidTile(X, Y))
 	{
 		ATile* TileObj = GetTileArray()[X * Size + Y];
-		TileObj->SetPlayerOwner(GameMode->CurrentPlayer);
+		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 		FTileStatus TileStatus = { 0, TmpFalse, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE };
 
@@ -450,8 +376,8 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 			BasePawnObj->SetGridPosition(X, Y);
 			// TODO: 0.8 da mettere come attributo
 			const float TileScale = TileSize / 100;
-			BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));
-
+			BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));			
+			BasePawnObj->SetPieceNum(PawnArray.Num());
 			BasePawnObj->SetType(TileStatus.PawnType);
 			BasePawnObj->SetColor(TileStatus.PawnColor);
 			BasePawnObj->SetStatus(EPawnStatus::ALIVE);
@@ -464,6 +390,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 			UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
 		}
 
+		TileObj->SetPlayerOwner(PlayerOwner);
 		TileObj->SetTileStatus(TileStatus);
 		TileObj->SetPawn(BasePawnObj);
 	}
@@ -490,7 +417,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			Tile->SetPawn(nullptr);
 			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 			Tile->SetTileStatus({ 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
-			Tile->SetPlayerOwner(-1);
+			Tile->SetPlayerOwner(AGameField::NOT_ASSIGNED);
 
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
 

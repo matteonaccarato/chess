@@ -84,6 +84,13 @@ FVector2D ABasePawn::GetGridPosition() const
 	return TileGridPosition;
 }
 
+void ABasePawn::Move(ATile* Tile)
+{
+	FVector SpawnPosition = Tile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
+	SetActorLocation(SpawnPosition);
+	SetGridPosition(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1]);
+}
+
 
 // Called when the game starts or when spawned
 void ABasePawn::BeginPlay()
