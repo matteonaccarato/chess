@@ -53,12 +53,16 @@ enum class EPawnStatus : int8
 	DEAD // 1
 };
 
+
 /**
  * 
  */
 class CHESS_API ChessEnums
 {
 public:
+	static const int32 NOT_ASSIGNED = -1;
+
+
 	ChessEnums();
 	~ChessEnums();
 };

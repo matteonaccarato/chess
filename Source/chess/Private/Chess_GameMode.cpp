@@ -30,7 +30,7 @@ void AChess_GameMode::BeginPlay()
 	CheckMateFlag = EPawnColor::NONE;
 
 	// Spawn GameField
-	if (GameFieldClass != nullptr)
+	if (GameFieldClass)
 	{
 		GField = GetWorld()->SpawnActor<AGameField>(GameFieldClass);
 		GField->Size = FieldSize;
@@ -208,15 +208,32 @@ void AChess_GameMode::TurnNextPlayer()
 	MoveCounter += 1;
 	CurrentPlayer = GetNextPlayer(CurrentPlayer);
 
+	for (auto& InnerArray : TurnWhitePossibleMoves)
+		InnerArray.Empty();
+	TurnWhitePossibleMoves.Empty();
+
+	for (auto& InnerArray : TurnBlackPossibleMoves)
+		InnerArray.Empty();
+	TurnBlackPossibleMoves.Empty();
+
+	for (auto& Tile : GField->GetTileArray())
+	{
+		FTileStatus TileStatus = Tile->GetTileStatus();
+		TileStatus.AttackableFrom.SetNum(2, false);
+		TileStatus.WhoCanGo.Empty();
+		Tile->SetTileStatus(TileStatus);
+	}
 
 	// TODO => compute possible moves of current player 
 	// (tarray di tarray per mosse possibli, accedo con pieceNum
 	for (auto& Piece : GField->PawnArray)
 	{
-		// TODO => com
-		ShowPossibleMoves(Piece, true, true, true);
+		TArray<std::pair<int8,int8>> Tmp = ShowPossibleMoves(Piece, true, false, true);
+		if (Piece->GetColor() == EPawnColor::WHITE)
+			TurnWhitePossibleMoves.Add(Tmp);
+		else
+			TurnBlackPossibleMoves.Add(Tmp);
 	}
-
 
 	Players[CurrentPlayer]->OnTurn();
 }
@@ -238,12 +255,13 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 	GField->DespawnPawn(X, Y);
 	ABasePawn* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
 	// Calculate new chess piece eligible moves
+	// TODO => superfluo, già fatto in ischeck
 	ShowPossibleMoves(PawnTemp, true, true, false);
 
 	if (PawnPromotionWidget != nullptr)
 		PawnPromotionWidget->RemoveFromParent();
 
-	// TODO => vedere se si può alleggerire
+	// TODO => vedere se si può alleggerire (posso rimuovere, viene fatto quando l'ai inizia il turno)
 	IsCheck();
 	EndTurn(CurrentPlayer);
 }
@@ -337,91 +355,51 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
  */
 EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
 {
-
 	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;	
 
-	
-
 	// check if king is under attack
-	
 	// if pawn != nullptr => it means that someone is under check
 	if (Pawn == nullptr)
 	{
-		bool BlackCanMove = false;
-		bool WhiteCanMove = false;
-		for (auto& CurrPawn : GField->GetPawnArray())
-		{
-			if (CurrPawn->GetStatus() == EPawnStatus::ALIVE) // TODO => solo del colore che difende (di pawn)
-			{
-				EPawnColor TmpCheckFlag = CheckFlag;
-
-				// Obtain as TArray the possible tiles where CurrPawn can move itself
-				TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(CurrPawn, true, true, false);
-
-				// Restore previous checkFlag
-				CheckFlag = TmpCheckFlag;
-
-				// If CurrPawn can make some eligible moves, it is pushed to MyPawns
-				if (Tmp.Num() > 0)
-				{
-					switch (CurrPawn->GetColor())
-					{
-					case EPawnColor::BLACK: BlackCanMove = true; break;
-					case EPawnColor::WHITE: WhiteCanMove = true; break;
-					}
-				}
-			}
-		}
-
-		if (!BlackCanMove) CheckMateFlag = EPawnColor::BLACK;
-		if (!WhiteCanMove) CheckMateFlag = EPawnColor::WHITE;
+		ComputeAttackableTiles();
 		
 		if (CheckMateFlag == EPawnColor::NONE)
 		{
-			CheckFlag = EPawnColor::NONE;
-			for (auto& CurrPawn : GField->GetPawnArray())
-			{
-				if (CurrPawn->GetType() == EPawnType::KING && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
-				{
-					FVector2D PawnGrid = CurrPawn->GetGridPosition();
-					int8 OpponentIdx = (static_cast<int>(CurrPawn->GetColor()) == 1) ? 1 : 0;
-					if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
-					{
-						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CurrPawn->GetColor()));
-						CheckFlag = CurrPawn->GetColor();
-						break;
-					}
-				}
-			}
+			CheckFlag = CheckKingUnderAttack();
 		}
 		return CheckFlag;
 	}
 	else
 	{
-		if (GField->IsValidTile(NewX, NewY) && IsValidMove(Pawn, NewX, NewY, true, false, false))
+		// try to do move passed as parameter
+		if (GField->IsValidTile(NewX, NewY)
+			&& IsValidMove(Pawn, NewX, NewY, true, false, false))
 		{
-			// update tile array
-			FVector2D OldPosition = Pawn->GetGridPosition();
-			ATile* OldTile = GField->GetTileArray()[OldPosition[0] * GField->Size + OldPosition[1]];
-			ABasePawn* OldPawn = OldTile->GetPawn();
-			int32 OldPlayerOwner = OldTile->GetPlayerOwner();
-			FTileStatus OldTileStatus = OldTile->GetTileStatus();
 
+			// Backup old tile and new tile
+			FVector2D Backup_OldPosition = Pawn->GetGridPosition();
+			ATile* OldTile = GField->GetTileArray()[Backup_OldPosition[0] * GField->Size + Backup_OldPosition[1]];
 			ATile* NewTile = GField->GetTileArray()[NewX * GField->Size + NewY];
-			int32 NewPlayerOwner = NewTile->GetPlayerOwner();
-			FTileStatus NewTileStatus = NewTile->GetTileStatus();
+
+			ABasePawn* Backup_OldPawn = OldTile->GetPawn();
+			int32 Backup_OldPlayerOwner = OldTile->GetPlayerOwner();
+			FTileStatus Backup_OldTileStatus = OldTile->GetTileStatus();
+
+			int32 Backup_NewPlayerOwner = NewTile->GetPlayerOwner();
+			FTileStatus Backup_NewTileStatus = NewTile->GetTileStatus();
 
 			ABasePawn* PawnToEat = NewTile->GetPawn();
-			EPawnStatus PawnToEatStatus;
-			FVector2D PawnToEatGridPosition;
+			EPawnStatus Backup_PawnToEatStatus;
+			FVector2D Backup_PawnToEatGridPosition;
 			if (PawnToEat)
 			{
-				PawnToEatStatus = PawnToEat->GetStatus();
-				PawnToEatGridPosition = PawnToEat->GetGridPosition();
+				Backup_PawnToEatStatus = PawnToEat->GetStatus();
+				Backup_PawnToEatGridPosition = PawnToEat->GetGridPosition();
 				PawnToEat->SetStatus(EPawnStatus::DEAD);
 				PawnToEat->SetGridPosition(-1, -1);
 			}
 
+			// Backup tile status
 			TArray<std::pair<std::pair<int8, int8>, FTileStatus>> TileStatusBackup;
 			for (ATile* Tile : GField->GetTileArray())
 			{
@@ -430,85 +408,92 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 				FTileStatus TileStatus = Tile->GetTileStatus();
 				TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), TileStatus));
 
-				TArray<bool> TmpFalse;
-				TmpFalse.Add(false); TmpFalse.Add(false);
-				TileStatus.AttackableFrom = TmpFalse;
+				TileStatus.AttackableFrom.SetNum(2, false);
 				// TileStatus.WhoCanGo.Empty();
 				Tile->SetTileStatus(TileStatus);
 			}
 
-			OldTile->SetPawn(nullptr);
-			OldTile->SetPlayerOwner(-1);
-			TArray<bool> TmpFalse;
-			TmpFalse.Add(false); TmpFalse.Add(false);
-			OldTile->SetTileStatus({ 1, TmpFalse, OldTile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE});
+			// Simulate move
+			Pawn->Move(OldTile, NewTile, true);
 
-			NewTile->SetPlayerOwner(CurrentPlayer);
-			NewTile->SetTileStatus({ 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, Pawn->GetColor(), Pawn->GetType() });
-			NewTile->SetPawn(Pawn);
-			Pawn->SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
-
-
-			// recalculate show possible moves
-			// TODO => const auto& o solo auto&
-			for (auto& PawnInArray : GField->GetPawnArray())
-			{
-				if (PawnInArray->GetStatus() == EPawnStatus::ALIVE) // TODO => solo del colore che difende (di pawn)
-				{
-					ShowPossibleMoves(PawnInArray, true, true, false);
-				}
-			}
-
-			// ShowPossibleMoves(Pawn, true, false, false);
-
+			// Compute attackable tile with the new move
+			ComputeAttackableTiles();
 
 			EPawnColor OldCheckFlag = CheckFlag;
 			EPawnColor NewCheckFlag = IsCheck();
-			
-			for (const auto& pair : TileStatusBackup)
-			{
-				GField->GetTileArray()[pair.first.first * GField->Size + pair.first.second]->SetTileStatus(pair.second);
-			}
 
-			// undo
-			OldTile->SetPawn(OldPawn);
-			OldTile->SetPlayerOwner(OldPlayerOwner);
-			OldTile->SetTileStatus(OldTileStatus);
+			// undo | restore backedup info
+			for (const auto& pair : TileStatusBackup)
+				GField->GetTileArray()[pair.first.first * GField->Size + pair.first.second]->SetTileStatus(pair.second);
+			
+			OldTile->SetPawn(Backup_OldPawn);
+			OldTile->SetPlayerOwner(Backup_OldPlayerOwner);
+			OldTile->SetTileStatus(Backup_OldTileStatus);
 
 			NewTile->SetPawn(PawnToEat);
-			NewTile->SetPlayerOwner(NewPlayerOwner);
-			NewTile->SetTileStatus(NewTileStatus);
-			Pawn->SetGridPosition(OldPosition[0], OldPosition[1]);
+			NewTile->SetPlayerOwner(Backup_NewPlayerOwner);
+			NewTile->SetTileStatus(Backup_NewTileStatus);
+			Pawn->SetGridPosition(Backup_OldPosition[0], Backup_OldPosition[1]);
 
-			if (PawnToEat != nullptr)
+			if (PawnToEat)
 			{
-				PawnToEat->SetStatus(PawnToEatStatus);
-				PawnToEat->SetGridPosition(PawnToEatGridPosition[0], PawnToEatGridPosition[1]);
+				PawnToEat->SetStatus(Backup_PawnToEatStatus);
+				PawnToEat->SetGridPosition(Backup_PawnToEatGridPosition[0], Backup_PawnToEatGridPosition[1]);
 			}
 
 			CheckFlag = OldCheckFlag;
 
-			
-
 			return NewCheckFlag;
 		}
 		return CheckFlag;
-
 	}
-
-	
-
-	// for tutte le pedine del !current player
-	//		check tutte le mosse possibili (ShowPossibleMoves(pawn, x, y))
-	//			se una può mangiare re, SET EUNUM under_check { BLACK, WHITE, NONE }
-	//			pedine_eating = {...} || se > 0 => esistono pedine che possono mangiare re
-	//	show possible moves dipenderà da attributo under_check (se true, bisogna spostare il re o mangiare pedina che minaccia, ma dopo è necessario ricontrollare)
-
-	// TODO NON è possibile mangiare i re
-
-	// return CheckFlag != EPawnColor::NONE;
 }
 
+
+void AChess_GameMode::ComputeAttackableTiles()
+{
+	bool BlackCanMove = false;
+	bool WhiteCanMove = false;
+	for (auto& CurrPawn : GField->GetPawnArray())
+	{
+		if (CurrPawn->GetStatus() == EPawnStatus::ALIVE) 
+		{
+			// Obtain as TArray the possible tiles where CurrPawn can move itself
+			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(CurrPawn, true, true, false);
+
+			if (Tmp.Num() > 0)
+			{
+				switch (CurrPawn->GetColor())
+				{
+				case EPawnColor::BLACK: BlackCanMove = true; break;
+				case EPawnColor::WHITE: WhiteCanMove = true; break;
+				}
+			}
+		}
+	}
+
+	if (!BlackCanMove) CheckMateFlag = EPawnColor::BLACK;
+	if (!WhiteCanMove) CheckMateFlag = EPawnColor::WHITE;
+}
+
+EPawnColor AChess_GameMode::CheckKingUnderAttack() const
+{
+	EPawnColor TmpCheckFlag = EPawnColor::NONE;
+	for (auto& Piece : GField->GetPawnArray())
+	{
+		if (Piece->GetType() == EPawnType::KING && Piece->GetStatus() == EPawnStatus::ALIVE)
+		{
+			FVector2D PawnGrid = Piece->GetGridPosition();
+			int8 OpponentIdx = (static_cast<int>(Piece->GetColor()) == 1) ? 1 : 0;
+			if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
+			{
+				TmpCheckFlag = Piece->GetColor();
+				break;
+			}
+		}
+	}
+	return TmpCheckFlag;
+}
 
 
 // TODO make it const

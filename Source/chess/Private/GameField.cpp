@@ -39,7 +39,7 @@ void AGameField::ResetField()
 {
 	for (ATile* Obj : TileArray)
 	{
-		Obj->SetPlayerOwner(NOT_ASSIGNED);
+		Obj->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		TArray<bool> TmpFalse;
 		TmpFalse.Add(false);
 		TmpFalse.Add(false);
@@ -417,12 +417,13 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			Tile->SetPawn(nullptr);
 			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 			Tile->SetTileStatus({ 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
-			Tile->SetPlayerOwner(AGameField::NOT_ASSIGNED);
+			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
 
 			// Update pawn information
 			Pawn->SetStatus(EPawnStatus::DEAD);
+			Pawn->SetGridPosition(-1, -1);
 			Pawn->SetActorHiddenInGame(true);
 			Pawn->SetActorEnableCollision(false);
 			Pawn->SetActorTickEnabled(false);

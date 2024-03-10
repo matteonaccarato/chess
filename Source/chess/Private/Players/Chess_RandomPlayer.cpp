@@ -37,7 +37,7 @@ void AChess_RandomPlayer::OnTurn()
 	FTimerHandle TimerHandle;
 	// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
 	// RandTimer [1.0, 3.0] seconds
-	// TODO: sono magic numberss
+	// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
 	int8 RandTimer = FMath::Rand() % 21 + 10;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
@@ -48,9 +48,7 @@ void AChess_RandomPlayer::OnTurn()
 				for (auto& Tile : GameMode->GField->GetTileArray())
 				{
 					FTileStatus TileStatus = Tile->GetTileStatus();
-					TArray<bool> TmpFalse;
-					TmpFalse.SetNum(2, false);
-					TileStatus.AttackableFrom = TmpFalse;
+					TileStatus.AttackableFrom.SetNum(2, false);
 					TileStatus.WhoCanGo.Empty();
 					Tile->SetTileStatus(TileStatus);
 				}
@@ -104,50 +102,16 @@ void AChess_RandomPlayer::OnTurn()
 					bool EatFlag = static_cast<int>(TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(MyPawns[RandPawnIdx]->GetColor());
 					if (EatFlag)
 					{
-						// TODO => c'è qualcosa da fare come destroy / deallocazione ?
 						ABasePawn* PawnToEat = TilesArray[NewX * GameMode->GField->Size + NewY]->GetPawn();
-						if (PawnToEat != nullptr)
-						{
-							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("%f %f pawn has been eaten"), PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]));
-
-							// Disable eaten pawn
-							PawnToEat->SetStatus(EPawnStatus::DEAD);
-							PawnToEat->SetGridPosition(-1, -1);
-
-							// Hides visible components
-							PawnToEat->SetActorHiddenInGame(true);
-
-							// Disables collision components
-							PawnToEat->SetActorEnableCollision(false);
-
-							// Stops the Actor from ticking
-							PawnToEat->SetActorTickEnabled(false);
-						}
-
-						// TODO => just for testing
-						if (PawnToEat && PawnToEat->GetStatus() == EPawnStatus::ALIVE)
-							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("ERROR mistico")));
+						if (PawnToEat)
+							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
 					}
 
-					// Update starting tile (no player owner, no pawn on it, ...)
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPlayerOwner(AGameField::NOT_ASSIGNED);
-					// FTileStatus TileStatus = TilesArray[OldX * GameMode->GField->Size + OldY]->GetTileStatus();
-					TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE });
-					TilesArray[OldX * GameMode->GField->Size + OldY]->SetPawn(nullptr);
-					
+					// TilesArray[OldX * GameMode->GField->Size + OldY]->ClearInfo();
 
+					// Clear starting tile (no player owner, no pawn on it, ...)
 					// Update ending tile (new player owner, new tile status, new pawn)
-					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPlayerOwner(PlayerNumber);
-					// TileStatus = TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus();
-					TilesArray[NewX * GameMode->GField->Size + NewY]->SetTileStatus({ 0, TmpFalse, TArray<ABasePawn*>(), MyPawns[RandPawnIdx]->GetColor(), MyPawns[RandPawnIdx]->GetType() });
-					TilesArray[NewX * GameMode->GField->Size + NewY]->SetPawn(MyPawns[RandPawnIdx]);
-					
-					// Change Pawn Actor position
-					FVector NewPawnPosition = GameMode->GField->GetRelativeLocationByXYPosition(NewX, NewY) + FVector(0, 0, MyPawns[RandPawnIdx]->GetActorLocation()[2]);
-					MyPawns[RandPawnIdx]->SetActorLocation(NewPawnPosition);
-					MyPawns[RandPawnIdx]->SetGridPosition(NewX, NewY);
-
+					MyPawns[RandPawnIdx]->Move(TilesArray[OldX * GameMode->GField->Size + OldY], TilesArray[NewX * GameMode->GField->Size + NewY]);
 
 					// TODO => superfluo (?, già fatto in gamemode)
 					if (MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
@@ -178,7 +142,6 @@ void AChess_RandomPlayer::OnTurn()
 					GameMode->IsCheck();
 					GameMode->AddToReplay(MyPawns[RandPawnIdx], EatFlag);
 					GameMode->EndTurn(PlayerNumber);
-
 				}
 				else
 				{

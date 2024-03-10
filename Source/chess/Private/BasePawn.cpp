@@ -84,11 +84,22 @@ FVector2D ABasePawn::GetGridPosition() const
 	return TileGridPosition;
 }
 
-void ABasePawn::Move(ATile* Tile)
+void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 {
-	FVector SpawnPosition = Tile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
-	SetActorLocation(SpawnPosition);
-	SetGridPosition(Tile->GetGridPosition()[0], Tile->GetGridPosition()[1]);
+	if (OldTile && NewTile)
+	{
+		OldTile->ClearInfo();
+
+		NewTile->SetPlayerOwner(GetColor() == EPawnColor::WHITE ? 0 : 1);
+		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
+		NewTile->SetTileStatus({ 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType() });
+		NewTile->SetPawn(this);
+
+		FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
+		SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
+		if (!Simulate)
+			SetActorLocation(SpawnPosition);
+	}
 }
 
 

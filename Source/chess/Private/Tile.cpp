@@ -104,7 +104,7 @@ FVector2D ATile::GetGridPosition() const
 void ATile::ClearInfo()
 {
 	SetPawn(nullptr);
-	SetPlayerOwner(-1);
+	SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 	TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 	SetTileStatus({ 1, TmpFalse,  GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
 }

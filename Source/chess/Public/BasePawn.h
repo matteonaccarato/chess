@@ -45,7 +45,8 @@ public:
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
 
-	void Move(ATile* Tile);
+	// !simulate is used to actually move actor in the scene
+	void Move(ATile* OldTile, ATile* NewTile, bool Simulate = false);
 
 protected:
 	// Called when the game starts or when spawned

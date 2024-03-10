@@ -39,7 +39,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
 
-	static const int32 NOT_ASSIGNED = -1;
+	// static const int32 NOT_ASSIGNED = -1;
 
 	// BlueprintAssignable usable with multicast delegates only.
 	// Exposes the property for assigning in Blueprints.
@@ -151,6 +151,7 @@ public:
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
 
+	
 
 
 	/*
@@ -176,7 +177,7 @@ public:
 
 	/*
 	*/
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = AGameField::NOT_ASSIGNED);
+	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED);
 
 	/*
 	*/

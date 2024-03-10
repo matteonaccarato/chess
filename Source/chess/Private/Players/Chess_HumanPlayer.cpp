@@ -60,9 +60,7 @@ void AChess_HumanPlayer::OnTurn()
 		for (auto& Tile : GameMode->GField->GetTileArray())
 		{
 			FTileStatus TileStatus = Tile->GetTileStatus();
-			TArray<bool> TmpFalse; 
-			TmpFalse.SetNum(2, false);
-			TileStatus.AttackableFrom = TmpFalse;
+			TileStatus.AttackableFrom.SetNum(2, false);
 			TileStatus.WhoCanGo.Empty();
 			// TileStatus.AttackableFrom = TArray<bool>(false, 2);
 			Tile->SetTileStatus(TileStatus);
@@ -177,16 +175,12 @@ void AChess_HumanPlayer::OnClick()
 						// vecchio material tramite pari/dispari della posizione
 						// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
 
-						NewTile->SetPlayerOwner(PlayerNumber);
-						TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-						NewTile->SetTileStatus({ 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, PawnTemp->GetColor(), PawnTemp->GetType()});
-						NewTile->SetPawn(PawnTemp);
-
-						GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->ClearInfo();
-						
-						PawnTemp->Move(NewTile);
+						// GameMode->GField->GetTileArray()[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->ClearInfo();						
+						ATile* OldTile = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
+						PawnTemp->Move(OldTile, NewTile);
 						
 
+						// TODO => forse già fatto ?
 						if (PawnTemp->GetType() == EPawnType::PAWN)
 							PawnTemp->SetMaxNumberSteps(1);
 						
@@ -201,7 +195,8 @@ void AChess_HumanPlayer::OnClick()
 						
 						// IF (...)
 						// ELSE EndTurn
-						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 && PawnTemp->GetType() == EPawnType::PAWN)
+						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 
+							&& PawnTemp->GetType() == EPawnType::PAWN)
 						{
 							UWorld* World = GetWorld();							
 							if (World && GameMode->PawnPromotionMenuWidgetRef)

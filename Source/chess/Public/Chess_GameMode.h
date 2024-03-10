@@ -68,6 +68,9 @@ public:
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;
 
+	TArray<TArray<std::pair<int8, int8>>> TurnWhitePossibleMoves;
+	TArray<TArray<std::pair<int8, int8>>> TurnBlackPossibleMoves;
+
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;
 
@@ -155,8 +158,16 @@ public:
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
+
+	void ComputeAttackableTiles();
+
 	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
 	/*
 	*/
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
+
+
+private:
+	EPawnColor CheckKingUnderAttack() const;
+
 };
