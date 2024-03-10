@@ -54,9 +54,10 @@ void AChess_HumanPlayer::OnTurn()
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
 	GameInstance->SetTurnMessage(TEXT("Human"));
 
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode != nullptr)
+	// AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	/* if (GameMode != nullptr)
 	{
+		// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("HUMAN turn"));
 		for (auto& Tile : GameMode->GField->GetTileArray())
 		{
 			FTileStatus TileStatus = Tile->GetTileStatus();
@@ -90,7 +91,7 @@ void AChess_HumanPlayer::OnTurn()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-	}
+	} */
 
 }
 
@@ -124,14 +125,12 @@ void AChess_HumanPlayer::OnClick()
 			// clean last possible moves
 			// vecchio material tramite pari/dispari della posizione
 			// TODO => Itera su PossibleMoves per ripristinare il colore originario (serve saperlo o reperirlo in base a nome classe o stato della tile)
-
 			for (const auto& move : PossibleMoves)
 			{
-				UMaterialInterface* Material = ((move.first + move.second) % 2)? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
+				UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
 				GameMode->GField->GetTileArray()[move.first * GameMode->FieldSize + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 			}
-
-
+			
 			if (Cast<ABasePawn>(Hit.GetActor()))
 			{
 				// TODO => PawnTemp as variabile locale
@@ -140,7 +139,19 @@ void AChess_HumanPlayer::OnClick()
 				{
 					PawnTemp = PawnSelected;
 					PossibleMoves = GameMode->ShowPossibleMoves(PawnTemp);
-					SelectedPawnFlag = 1;
+
+					if (GameMode->TurnPossibleMoves.IsValidIndex(PawnTemp->GetPieceNum()))
+					{ 
+						PossibleMoves = GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()];
+						for (const auto& move : PossibleMoves)
+						{
+							UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialLightRed : GameMode->GField->MaterialDarkRed;
+							GameMode->GField->GetTileArray()[move.first * GameMode->FieldSize + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
+						}
+
+
+						SelectedPawnFlag = 1;
+					}
 				
 				
 				}
@@ -162,7 +173,7 @@ void AChess_HumanPlayer::OnClick()
 				if (NewTile)
 				{
 
-					if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1] /*, PawnToEat ? true : false*/))
+					if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]))
 					{
 						
 						/*
@@ -191,6 +202,8 @@ void AChess_HumanPlayer::OnClick()
 						GameMode->PreviousGridPosition = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->GetGridPosition();
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;
+
+
 
 						
 						// IF (...)

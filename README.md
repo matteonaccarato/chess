@@ -58,6 +58,8 @@ toimplement NON è POSSIBILE MANGIARE I RE
 - [ ] calcolo ischeck 1° for superfluo se gli passo un pawn (vuol dire che è sottoscacco e voglio provare a liberarmi)
 - [ ] std::pair va bene o unreal si offende
 - [ ] king se mangia una pedina e poi può essere mangiato, non viene notato come mossa non lecita (perché appunto c'è una pedina sulla tile che diventerebbe attackable)
+- [ ] se king si posiziona tale che vuole mangiare l'altro king => situazione da gestire come non consentita (non la gestisco perché appena trovo king sotto attacco, faccio break)
+- [ ] quando si vedono le possibili mosse (cambio material) e clicco su un replay, le mosse possibili rimangono visibili
 
 
 #### TO REVIEW (if already implemented)

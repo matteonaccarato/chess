@@ -44,7 +44,7 @@ void AChess_RandomPlayer::OnTurn()
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 			if (GameMode && GameMode->CanPlay)
 			{
-				// Setting all tiles as NON attackable from Nobody
+				// Setting all tiles as NON attackable from Nobody (TODO => già fatto nell'inizio turno)
 				for (auto& Tile : GameMode->GField->GetTileArray())
 				{
 					FTileStatus TileStatus = Tile->GetTileStatus();
@@ -53,95 +53,75 @@ void AChess_RandomPlayer::OnTurn()
 					Tile->SetTileStatus(TileStatus);
 				}
 
-
-				// TArray which will contain black pawns which can make moves
-				TArray<ABasePawn*> MyPawns; 
-				for (auto& CurrPawn : GameMode->GField->GetPawnArray())
-				{
-					if (CurrPawn->GetColor() == EPawnColor::BLACK && CurrPawn->GetStatus() == EPawnStatus::ALIVE)
-					{
-						/* Compute eligible moves for CurrPawn */
-
-						// Backup current checkflag
-						EPawnColor TmpCheckFlag = GameMode->CheckFlag;
-
-						// Obtain as TArray the possible tiles where CurrPawn can move itself
-						TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(CurrPawn, true, false, true);
-
-						// Restore previous checkFlag
-						GameMode->CheckFlag = TmpCheckFlag;
-
-						// If CurrPawn can make some eligible moves, it is pushed to MyPawns
-						// and the tiles it can attack to AttackableTiles
-						if (Tmp.Num() > 0)
-						{
-							AttackableTiles.Add(Tmp);
-							MyPawns.Add(CurrPawn);
-						}
-					}
-				}
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), MyPawns.Num()));
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), GameMode->BlackPiecesCanMove.Num()));
 
 				// If there are black pawns eligible to move
-				if (MyPawns.Num() > 0)
+				if (GameMode->BlackPiecesCanMove.Num() > 0)
 				{
 					// Select randomically the index of the pawn to move
-					int8 RandPawnIdx = FMath::Rand() % MyPawns.Num(); 
+					int8 RandPawnIdx = FMath::Rand() % GameMode->BlackPiecesCanMove.Num();
+					int8 RandPieceNum = GameMode->BlackPiecesCanMove[RandPawnIdx];
+					TArray<std::pair<int8, int8>> AttackableTiles = GameMode->TurnPossibleMoves[RandPieceNum];
 					// Select randomically the index of the tile to move to
-					int8 RandNewTile = FMath::Rand() % AttackableTiles[RandPawnIdx].Num();
+					int8 RandNewTile = FMath::Rand() % AttackableTiles.Num();
 
-					int32 OldX = MyPawns[RandPawnIdx]->GetGridPosition()[0];
-					int32 OldY = MyPawns[RandPawnIdx]->GetGridPosition()[1];
-					int8 NewX = AttackableTiles[RandPawnIdx][RandNewTile].first;
-					int8 NewY = AttackableTiles[RandPawnIdx][RandNewTile].second;
-					TArray<ATile*> TilesArray = GameMode->GField->GetTileArray();
+					int32 OldX = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[0];
+					int32 OldY = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[1];
+					int8 NewX = AttackableTiles[RandNewTile].first;
+					int8 NewY = AttackableTiles[RandNewTile].second;
 
-					// EatFlag is true if the Tile->PawnColor is the opposite of the black pawn
-					// e.g. Tile->PawnwColor = 1 (white) , Pawn->Color = -1 => EatFlag = true
-					// e.g. Tile->PawnwColor = 0 (empty) , Pawn->Color = -1 => EatFlag = flag
-					bool EatFlag = static_cast<int>(TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(MyPawns[RandPawnIdx]->GetColor());
-					if (EatFlag)
+					if (GameMode->GField->IsValidTile(OldX, OldY)
+						&& GameMode->GField->IsValidTile(NewX, NewY))
 					{
-						ABasePawn* PawnToEat = TilesArray[NewX * GameMode->GField->Size + NewY]->GetPawn();
-						if (PawnToEat)
-							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
-					}
+						TArray<ATile*> TilesArray = GameMode->GField->GetTileArray();
 
-					// TilesArray[OldX * GameMode->GField->Size + OldY]->ClearInfo();
+						// EatFlag is true if the Tile->PawnColor is the opposite of the black pawn
+						// e.g. Tile->PawnwColor = 1 (white) , Pawn->Color = -1 => EatFlag = true
+						// e.g. Tile->PawnwColor = 0 (empty) , Pawn->Color = -1 => EatFlag = flag
+						bool EatFlag = static_cast<int>(TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(GameMode->GField->PawnArray[RandPieceNum]->GetColor());
+						if (EatFlag)
+						{
+							ABasePawn* PawnToEat = TilesArray[NewX * GameMode->GField->Size + NewY]->GetPawn();
+							if (PawnToEat)
+								GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
+						}
 
-					// Clear starting tile (no player owner, no pawn on it, ...)
-					// Update ending tile (new player owner, new tile status, new pawn)
-					MyPawns[RandPawnIdx]->Move(TilesArray[OldX * GameMode->GField->Size + OldY], TilesArray[NewX * GameMode->GField->Size + NewY]);
+						// TilesArray[OldX * GameMode->GField->Size + OldY]->ClearInfo();
 
-					// TODO => superfluo (?, già fatto in gamemode)
-					if (MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
-					{
-						MyPawns[RandPawnIdx]->SetMaxNumberSteps(1);
-					}
+						// Clear starting tile (no player owner, no pawn on it, ...)
+						// Update ending tile (new player owner, new tile status, new pawn)
+						GameMode->GField->PawnArray[RandPieceNum]->Move(TilesArray[OldX * GameMode->GField->Size + OldY], TilesArray[NewX * GameMode->GField->Size + NewY]);
 
-					// Update last move (useful when doing pawn promotion)
-					GameMode->LastGridPosition = FVector2D(NewX, NewY);
-					GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
+						// TODO => superfluo (?, già fatto in gamemode)
+						if (GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
+						{
+							GameMode->GField->PawnArray[RandPieceNum]->SetMaxNumberSteps(1);
+						}
+
+						// Update last move (useful when doing pawn promotion)
+						GameMode->LastGridPosition = FVector2D(NewX, NewY);
+						GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
 					
 
-					// Pawn promotion handling
-					if (NewX == 0 && MyPawns[RandPawnIdx]->GetType() == EPawnType::PAWN)
-					{
-						// Randomically choice of what to promote to
-						int8 RandSpawnPawn = FMath::Rand() % 4;
-						switch (RandPawnIdx)
+						// Pawn promotion handling
+						if (NewX == 0 && GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
 						{
-						case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-						case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
-						case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
-						case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
-						}						
-					}
+							// Randomically choice of what to promote to
+							int8 RandSpawnPawn = FMath::Rand() % 4;
+							switch (RandPawnIdx)
+							{
+							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
+							case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
+							case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
+							case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+							}						
+						}
 
-					// End Turn
-					GameMode->IsCheck();
-					GameMode->AddToReplay(MyPawns[RandPawnIdx], EatFlag);
-					GameMode->EndTurn(PlayerNumber);
+						// End Turn
+						GameMode->IsCheck();
+						GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
+						GameMode->EndTurn(PlayerNumber);
+					}
 				}
 				else
 				{

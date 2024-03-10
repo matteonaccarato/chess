@@ -84,6 +84,8 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 
 	MoveCounter += 1;
 
+	InitTurn();
+
 	Players[CurrentPlayer]->OnTurn();
 }
 
@@ -208,14 +210,19 @@ void AChess_GameMode::TurnNextPlayer()
 	MoveCounter += 1;
 	CurrentPlayer = GetNextPlayer(CurrentPlayer);
 
-	for (auto& InnerArray : TurnWhitePossibleMoves)
-		InnerArray.Empty();
-	TurnWhitePossibleMoves.Empty();
+	InitTurn();
 
-	for (auto& InnerArray : TurnBlackPossibleMoves)
-		InnerArray.Empty();
-	TurnBlackPossibleMoves.Empty();
+	Players[CurrentPlayer]->OnTurn();
+}
 
+void AChess_GameMode::InitTurn()
+{
+	// Clear possible moves
+	for (auto& InnerArray : TurnPossibleMoves)
+		InnerArray.Empty();
+	TurnPossibleMoves.Empty();
+
+	// Clear tile status (attackable from and who can go variables)
 	for (auto& Tile : GField->GetTileArray())
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
@@ -224,18 +231,36 @@ void AChess_GameMode::TurnNextPlayer()
 		Tile->SetTileStatus(TileStatus);
 	}
 
+	WhitePiecesCanMove.Empty();
+	BlackPiecesCanMove.Empty();
+
+
 	// TODO => compute possible moves of current player 
 	// (tarray di tarray per mosse possibli, accedo con pieceNum
+	bool BlackCanMove = false;
+	bool WhiteCanMove = false;
 	for (auto& Piece : GField->PawnArray)
 	{
-		TArray<std::pair<int8,int8>> Tmp = ShowPossibleMoves(Piece, true, false, true);
-		if (Piece->GetColor() == EPawnColor::WHITE)
-			TurnWhitePossibleMoves.Add(Tmp);
-		else
-			TurnBlackPossibleMoves.Add(Tmp);
+		EPawnColor PreviousCheckFlag = CheckFlag;
+		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true);
+		TurnPossibleMoves.Add(Tmp);
+		CheckFlag = PreviousCheckFlag;
+		if (Tmp.Num() > 0)
+		{
+			switch (Piece->GetColor())
+			{
+			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); WhiteCanMove = true; break;
+			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); BlackCanMove = true; break;
+			}
+		}
+		
 	}
 
-	Players[CurrentPlayer]->OnTurn();
+	/* if (!WhiteCanMove || !BlackCanMove)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("Someone cannot move anything"));
+		EndTurn(-1);
+	} */
 }
 
 /*
@@ -256,7 +281,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 	ABasePawn* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
 	// Calculate new chess piece eligible moves
 	// TODO => superfluo, già fatto in ischeck
-	ShowPossibleMoves(PawnTemp, true, true, false);
+	ShowPossibleMoves(PawnTemp, true, false);
 
 	if (PawnPromotionWidget != nullptr)
 		PawnPromotionWidget->RemoveFromParent();
@@ -272,17 +297,16 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
  *   Calculates the eligible moves of the chess piece passed as parameter
  *
  *   Pawn			ABasePawn*	: pawn on which to calculate the eligible moves
- *	 CheckTest		bool = false: 
  *	 ShowAttackable	bool = false: flag to determine if only the attackable tiles should be taken into account 
 									(possible tiles to move on and attackable tiles are different for pawns)
  *	 CheckCheckFlag	bool = false: flag to determine if checking the new check situation should be evaluated
  *
  *   return: TArray made of new possible X,Y of the chess piece
  */
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool CheckTest, const bool ShowAttackable, const bool CheckCheckFlag)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable, const bool CheckCheckFlag)
 {
 	TArray<std::pair<int8, int8>> PossibleMoves;
-	if (Pawn != nullptr)
+	if (Pawn && Pawn->GetStatus() == EPawnStatus::ALIVE)
 	{
 		FVector2D CurrPawnGridPosition = Pawn->GetGridPosition();
 		const int8 X = CurrPawnGridPosition[0];
@@ -321,15 +345,6 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 
 
 						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
-					}
-
-
-					// Actually shows next possible moves on the chess board changing the material of the tiles
-					if (CurrentPlayer == 0 && !CheckTest)
-					{
-						UMaterialInterface* Material = ((X + XOffset + Y + YOffset) % 2) ? GField->MaterialLightRed : GField->MaterialDarkRed;
-						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetStaticMeshComponent()->SetMaterial(0, Material);
-
 					}
 				}
 			}
@@ -454,12 +469,22 @@ void AChess_GameMode::ComputeAttackableTiles()
 {
 	bool BlackCanMove = false;
 	bool WhiteCanMove = false;
+
+
+	for (auto& Tile : GField->TileArray)
+	{
+		FTileStatus TileStatus = Tile->GetTileStatus();
+		TArray<bool> TmpFalse; TmpFalse.SetNum(2, false);
+		TileStatus.AttackableFrom = TmpFalse;
+		Tile->SetTileStatus(TileStatus);
+	}
+
 	for (auto& CurrPawn : GField->GetPawnArray())
 	{
 		if (CurrPawn->GetStatus() == EPawnStatus::ALIVE) 
 		{
 			// Obtain as TArray the possible tiles where CurrPawn can move itself
-			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(CurrPawn, true, true, false);
+			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(CurrPawn, true, false);
 
 			if (Tmp.Num() > 0)
 			{
