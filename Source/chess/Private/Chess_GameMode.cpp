@@ -242,7 +242,7 @@ void AChess_GameMode::InitTurn()
 	for (auto& Piece : GField->PawnArray)
 	{
 		EPawnColor PreviousCheckFlag = CheckFlag;
-		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true);
+		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, true);
 		TurnPossibleMoves.Add(Tmp);
 		CheckFlag = PreviousCheckFlag;
 		if (Tmp.Num() > 0)
@@ -303,7 +303,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
  *
  *   return: TArray made of new possible X,Y of the chess piece
  */
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable, const bool CheckCheckFlag)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable, const bool CheckCheckFlag, const bool UpdateWhoCanGoFlag)
 {
 	TArray<std::pair<int8, int8>> PossibleMoves;
 	if (Pawn && Pawn->GetStatus() == EPawnStatus::ALIVE)
@@ -329,23 +329,19 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				{
 					// Add the VALID move to result TArray
 					PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+					FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
 				
 					// Check needed to avoid pawns eat on straight line
 					if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
 					{
-						FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
 						// Index 0 means attackable from whites
 						// Index 1 means attackable from blacks 
 						TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; 
-
-
-
+					}
+					if (UpdateWhoCanGoFlag)
 						TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
 
-
-
-						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
-					}
+					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 				}
 			}
 		}
@@ -803,10 +799,24 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 	bool IsPawn = Pawn->GetType() == EPawnType::PAWN;
 	
 	FString MoveStr = TEXT("");
+	FString StartTileStr = TEXT("");
+	for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
+	{
+		// TODO => to test
+		if (Pawn->GetType() == Piece->GetType() && Pawn->GetPieceNum() != Piece->GetPieceNum())
+		{
+			if (Pawn->GetGridPosition()[1] == Piece->GetGridPosition()[1])
+			{
+				StartTileStr += FString::FromInt(Tile->GetNumberId());
+			}
+			StartTileStr += Tile->GetLetterId().ToLower();
+		}
+	}
 
 	if (Pawn && !Tile->GetId().IsEmpty())
 	{
 		MoveStr = (IsPawn? TEXT("") : Pawn->GetId()) +
+			StartTileStr +
 			((IsPawn && EatFlag)? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
 			(EatFlag ? TEXT("x") : TEXT("")) + 
 			Tile->GetId().ToLower() +

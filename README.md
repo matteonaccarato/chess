@@ -1,6 +1,10 @@
 # CHESS
 
 
+partita patta 
+	=> king vs king
+	=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
+	=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
 
 NOMENCLATURA QUANDO CI SONO SITUAZIONI AMBIGUE

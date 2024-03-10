@@ -160,7 +160,7 @@ public:
 	/*
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
-	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
+	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool UpdateWhoCanGoFlag = false);
 
 	void ComputeAttackableTiles();
 
