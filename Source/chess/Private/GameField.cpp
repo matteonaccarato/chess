@@ -411,7 +411,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 	{
 		ATile* Tile = GetTileArray()[X * Size + Y];
 		ABasePawn* Pawn = Tile->GetPawn();
-		if (Tile && Pawn)
+		if (Tile)
 		{
 			// Reset old tile status
 			Tile->SetPawn(nullptr);
@@ -420,7 +420,10 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
+		}
 
+		if (Pawn)
+		{
 			// Update pawn information
 			Pawn->SetStatus(EPawnStatus::DEAD);
 			Pawn->SetGridPosition(-1, -1);

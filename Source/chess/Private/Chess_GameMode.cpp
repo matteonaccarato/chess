@@ -274,6 +274,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 {	
 	int8 X = LastGridPosition.X;
 	int8 Y = LastGridPosition.Y;
+	bool EatFlag = GField->TileArray[X * GField->Size + Y]->GetPawn() ? true : false;
 	PawnPromotionType = PawnType;
 
 	// Despawn & Spawn pawn
@@ -281,13 +282,14 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 	ABasePawn* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
 	// Calculate new chess piece eligible moves
 	// TODO => superfluo, già fatto in ischeck
-	ShowPossibleMoves(PawnTemp, true, false);
+	//ShowPossibleMoves(PawnTemp, true, false);
 
 	if (PawnPromotionWidget != nullptr)
 		PawnPromotionWidget->RemoveFromParent();
 
 	// TODO => vedere se si può alleggerire (posso rimuovere, viene fatto quando l'ai inizia il turno)
 	IsCheck();
+	AddToReplay(PawnTemp, EatFlag);
 	EndTurn(CurrentPlayer);
 }
 
@@ -323,6 +325,10 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				XOffset = Offsets.first;
 				YOffset = Offsets.second;
 
+				if (Pawn->GetType() == EPawnType::QUEEN && Pawn->GetColor() == EPawnColor::BLACK)
+				{
+					XOffset = XOffset;
+				}
 
 				// Evaluate if this move is valid or not
 				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))

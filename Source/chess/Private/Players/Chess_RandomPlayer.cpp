@@ -108,6 +108,7 @@ void AChess_RandomPlayer::OnTurn()
 						{
 							// Randomically choice of what to promote to
 							int8 RandSpawnPawn = FMath::Rand() % 4;
+							RandSpawnPawn = 0;
 							switch (RandPawnIdx)
 							{
 							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
@@ -116,11 +117,14 @@ void AChess_RandomPlayer::OnTurn()
 							case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
 							}						
 						}
+						else
+						{
+							// End Turn
+							GameMode->IsCheck();
+							GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
+							GameMode->EndTurn(PlayerNumber);
+						}
 
-						// End Turn
-						GameMode->IsCheck();
-						GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
-						GameMode->EndTurn(PlayerNumber);
 					}
 				}
 				else

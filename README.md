@@ -9,17 +9,12 @@ partita patta
 
 NOMENCLATURA QUANDO CI SONO SITUAZIONI AMBIGUE
 NOMENCLATURA con pawn promotion (fare .Add per nuovo pezzo)
+controllo nomenclatura di sovrapposizione (who can go)
 
 
+BUG => quando avviene la pawn promotion succedono cose strane (i nemici si sentono in dovere di esporre il re)
 
 
-
-quando il re può essere mangiato (king_tile == attackable_from),
-bool IsCheck = true
-in gamemode => uniche valid move (a meno del coprire la traiettoria) sono il re che scappa; se tutte sono attackable from opponent, checkmate
-(poi gestire possibilità di coprire e mangiare con altre pedine quello che mette sotto scacco)
-
-=>
 
 
 
