@@ -809,7 +809,8 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 	for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
 	{
 		// TODO => to test
-		if (Pawn->GetType() == Piece->GetType() && Pawn->GetPieceNum() != Piece->GetPieceNum())
+		if (Pawn->GetType() == Piece->GetType() 
+			&& Pawn->GetColor() != Piece->GetColor())
 		{
 			if (Pawn->GetGridPosition()[1] == Piece->GetGridPosition()[1])
 			{
