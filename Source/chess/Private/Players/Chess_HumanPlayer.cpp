@@ -151,6 +151,8 @@ void AChess_HumanPlayer::OnClick()
 
 				if (NewTile)
 				{
+					// Get PieceToEat if not properly selected by mouse clicking (e.g. the user clicked the tile and not the opponent chess piece)
+					PawnToEat = NewTile->GetPawn();
 
 					// TODO => già calcolato in turn possible moves
 					// TurnPossibleMoves[PawnTemp->GetPieceNum()].Contains(x, y)
