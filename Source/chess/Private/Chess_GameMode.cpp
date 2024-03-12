@@ -34,38 +34,38 @@ void AChess_GameMode::BeginPlay()
 	{
 		GField = GetWorld()->SpawnActor<AGameField>(GameFieldClass);
 		GField->Size = FieldSize;
+
+		// Get and Set Human Player (Camera) Location
+		AChess_HumanPlayer* HumanPlayer = Cast<AChess_HumanPlayer>(*TActorIterator<AChess_HumanPlayer>(GetWorld()));
+		float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
+		FVector CameraPos(CameraPosX, CameraPosX, 1250.0f); // TODO: 1000 da mettere come attributo
+		HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
+	
+		// Human player at INDEX 0
+		Players.Add(HumanPlayer);
+
+		// Random player
+		auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+		// Minimax player
+		// auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+
+		Players.Add(AI);
+
+		// Create replay widget
+		UWorld* World = GetWorld();
+		if (World && ReplayWidgetRef)
+		{
+			ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
+			ReplayWidget->AddToViewport(0);
+		}
+
+		// Ready to start the game
+		this->ChoosePlayerAndStartGame();
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameFieldClass is null"));
 	}
-
-	// Get and Set Human Player (Camera) Location
-	AChess_HumanPlayer* HumanPlayer = Cast<AChess_HumanPlayer>(*TActorIterator<AChess_HumanPlayer>(GetWorld()));
-	float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
-	FVector CameraPos(CameraPosX, CameraPosX, 1250.0f); // TODO: 1000 da mettere come attributo
-	HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
-	
-	// Human player at INDEX 0
-	Players.Add(HumanPlayer);
-
-	// Random player
-	auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
-	// Minimax player
-	// auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-
-	Players.Add(AI);
-
-	// Create replay widget
-	UWorld* World = GetWorld();
-	if (World && ReplayWidgetRef)
-	{
-		ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
-		ReplayWidget->AddToViewport(0);
-	}
-
-	// Ready to start the game
-	this->ChoosePlayerAndStartGame();
 }
 
 /*
@@ -810,13 +810,17 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 	{
 		// TODO => to test
 		if (Pawn->GetType() == Piece->GetType() 
-			&& Pawn->GetColor() != Piece->GetColor())
+			&& Pawn->GetColor() == Piece->GetColor()
+			&& Pawn->GetPieceNum() != Piece->GetPieceNum())
 		{
-			if (Pawn->GetGridPosition()[1] == Piece->GetGridPosition()[1])
+			if (PreviousGridPosition[1] == Piece->GetGridPosition()[1])
 			{
-				StartTileStr += FString::FromInt(Tile->GetNumberId());
+				StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
 			}
-			StartTileStr += Tile->GetLetterId().ToLower();
+			else
+			{
+				StartTileStr += PreviousTile->GetLetterId().ToLower();
+			}
 		}
 	}
 

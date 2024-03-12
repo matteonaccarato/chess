@@ -108,7 +108,6 @@ void AChess_RandomPlayer::OnTurn()
 						{
 							// Randomically choice of what to promote to
 							int8 RandSpawnPawn = FMath::Rand() % 4;
-							RandSpawnPawn = 0;
 							switch (RandPawnIdx)
 							{
 							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;

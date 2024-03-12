@@ -181,6 +181,7 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
 	// in load board
 	//		for (pawnarray)	pawn->setactorlocation()
 
+	FVector Origin, BoxExtent, Location, PawnLocation;
 	for (int8 i = 0; i < PawnArray.Num(); i++)
 	{
 		if (Board.IsValidIndex(i))
@@ -191,14 +192,24 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
 				PawnArray[i]->SetActorHiddenInGame(false);
 				PawnArray[i]->SetActorEnableCollision(true);
 				PawnArray[i]->SetActorTickEnabled(true);
+
+				TileArray[Board[i].X * Size + Board[i].Y]->GetActorBounds(false, Origin, BoxExtent);
+				Location = GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y);
+				PawnLocation = FVector(
+					Location.GetComponentForAxis(EAxis::X),
+					Location.GetComponentForAxis(EAxis::Y),
+					Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
+				);
+				PawnArray[i]->SetActorLocation(PawnLocation);
 				break;
+
 			case EPawnStatus::DEAD:
 				PawnArray[i]->SetActorHiddenInGame(true);
 				PawnArray[i]->SetActorEnableCollision(false);
 				PawnArray[i]->SetActorTickEnabled(false);
+				PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
 				break;
 			}
-			PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y) + FVector(0, 0, 20));
 		}
 		else 
 		{

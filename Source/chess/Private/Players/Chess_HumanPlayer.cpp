@@ -52,20 +52,29 @@ void AChess_HumanPlayer::OnTurn()
 {
 	IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
-	GameInstance->SetTurnMessage(TEXT("Human"));
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("Human"));
+	}
 }
 
 void AChess_HumanPlayer::OnWin()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-	GameInstance->IncrementScoreHumanPlayer();
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+		GameInstance->IncrementScoreHumanPlayer();
+	}
 }
 
 void AChess_HumanPlayer::OnLose()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("Human Loses!"));
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("Human Loses!"));
+	}
 }
 
 /*
@@ -161,7 +170,7 @@ void AChess_HumanPlayer::OnClick()
 						
 						// Update info with last move
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
-						GameMode->PreviousGridPosition = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]]->GetGridPosition();
+						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
 						SelectedPawnFlag = 0;
 						IsMyTurn = false;
 

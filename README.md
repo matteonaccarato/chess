@@ -12,16 +12,11 @@ NOMENCLATURA con pawn promotion (fare .Add per nuovo pezzo)
 controllo nomenclatura di sovrapposizione (who can go)
 
 
-BUG => quando avviene la pawn promotion succedono cose strane (i nemici si sentono in dovere di esporre il re)
-
-
-
-
 
 AGGIORNARE DA IPHONE NOTES E NOTION
 GameMode.cpp@353
 
-
+Sostituire north sout, con forward backward
 
 How To Create UMG UI in Unreal Engine - Animating Widgets 
 https://youtu.be/SD66UgyHiMM?si=ZoCKFO_R1YV-gRLk
