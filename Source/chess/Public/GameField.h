@@ -124,6 +124,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABasePawn> W_RookClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> LetterA;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CellPadding;

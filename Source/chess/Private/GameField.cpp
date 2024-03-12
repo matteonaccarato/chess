@@ -66,6 +66,9 @@ void AGameField::GenerateField()
 	UWorld* World = GetWorld();
 	bool flag = false;
 	int8 PieceIdx = 0;
+	TSubclassOf<AActor> Letters[] = { LetterA };
+	TSubclassOf<AActor> Numbers[] = { LetterA };
+
 	for (int32 x = 0; x < Size; x++)
 	{
 		for (int32 y = 0; y < Size; y++)
@@ -80,6 +83,7 @@ void AGameField::GenerateField()
 				// [A-H][1-8]
 				const int32 IdChar = 65 + y;
 				const int32 IdNum = x + 1;
+				const float TileScale = TileSize / 100;
 
 				TileObj->SetLetterId(FString::Printf(TEXT("%c"), IdChar));
 				TileObj->SetNumberId(IdNum);
@@ -99,6 +103,9 @@ void AGameField::GenerateField()
 						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]); 
 						WidgetTxt->SetPositionInViewport(WidgetPosition);
 					}
+					AActor* Letter = GetWorld()->SpawnActor<AActor>(Letters[0], Location + FVector(-120, 0, 0), FRotator(0, 90, 0));
+					if (Letter)
+						Letter->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
 				}
 				
 				// Left (Numbers)
@@ -116,9 +123,12 @@ void AGameField::GenerateField()
 						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]);
 						WidgetTxt->SetPositionInViewport(WidgetPosition);
 					}
+
+					AActor* Number = GetWorld()->SpawnActor<AActor>(Numbers[0], Location + FVector(0, -120, 0), FRotator(0, 90, 0));
+					if (Number)
+						Number->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
 				}
 
-				const float TileScale = TileSize / 100;
 				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 				TileObj->SetGridPosition(x, y);
 				TileArray.Add(TileObj);
