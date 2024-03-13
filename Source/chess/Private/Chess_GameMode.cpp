@@ -82,6 +82,8 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 		Players[i]->Color = i == CurrentPlayer ? EPawnColor::WHITE : EPawnColor::BLACK;
 	}
 
+	CheckFlag = EPawnColor::NONE;
+	CheckMateFlag = EPawnColor::NONE;
 	MoveCounter += 1;
 	CanPlay = true;
 
@@ -353,6 +355,25 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				}
 			}
 		}
+		
+		// Castling handling
+		/* if (Pawn->GetType() == EPawnType::KING)
+		{
+			// Short castling
+			std::pair<int8, int8> Offsets = GetXYOffset(2, ECardinalDirection::EAST, Pawn->GetColor());
+			XOffset = Offsets.first;
+			YOffset = Offsets.second;
+			// Evaluate if this move is valid or not
+			if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+			{
+				// Add the VALID move to result TArray
+				PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+			}
+
+
+			// Long castling
+			// std::pair<int8, int8> Offsets = GetXYOffset(2, ECardinalDirection::WEST, Pawn->GetColor());
+		} */
 	}
 
 	return PossibleMoves;

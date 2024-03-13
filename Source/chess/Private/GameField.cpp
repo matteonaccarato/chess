@@ -40,8 +40,6 @@ void AGameField::ResetField()
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
-		GameMode->CanPlay = false;
-
 		// clear tile status
 		for (ATile* Obj : TileArray)
 			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
@@ -94,10 +92,10 @@ void AGameField::ResetField()
 			ScrollBoxBlack->ClearChildren();
 		}
 	
-
-
 		// OnResetEvent.Broadcast();
 
+		GameMode->CheckFlag = EPawnColor::NONE;
+		GameMode->CheckMateFlag = EPawnColor::NONE;
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
 		GameMode->ChoosePlayerAndStartGame();
@@ -113,8 +111,10 @@ void AGameField::GenerateField()
 	UWorld* World = GetWorld();
 	bool flag = false;
 	int8 PieceIdx = 0;
-	TSubclassOf<AActor> Letters[] = { LetterA };
-	TSubclassOf<AActor> Numbers[] = { LetterA };
+	/* TSubclassOf<AActor> Letters[] = {LetterA};
+	TSubclassOf<AActor> Numbers[] = { LetterA }; */
+	UMaterialInterface* Letters[] = { LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH };
+	UMaterialInterface* Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 };
 
 	for (int32 x = 0; x < Size; x++)
 	{
@@ -138,42 +138,27 @@ void AGameField::GenerateField()
 				// Bottom (Letters)
 				if (x == 0 && World)
 				{
-					UUserWidget* WidgetTxt = CreateWidget(World, TileIdWidgetRef);
-					if (WidgetTxt)
-					{
-						WidgetTxt->AddToViewport(1);
-
-						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
-						if (BtnText)
-							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%c"), IdChar)));
-						
-						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]); 
-						WidgetTxt->SetPositionInViewport(WidgetPosition);
-					}
-					AActor* Letter = GetWorld()->SpawnActor<AActor>(Letters[0], Location + FVector(-120, 0, 0), FRotator(0, 90, 0));
+					AActor* Letter = GetWorld()->SpawnActor<AActor>(LetterNumberClass, Location + FVector(-120, 0, 0), FRotator(0, 90, 0));
 					if (Letter)
+					{
 						Letter->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
+						UStaticMeshComponent* MeshComponent = Letter->FindComponentByClass<UStaticMeshComponent>();
+						if (MeshComponent)
+							MeshComponent->SetMaterial(0, Letters[y]);
+					}
 				}
 				
 				// Left (Numbers)
 				if (y == 0 && World)
 				{
-					UUserWidget* WidgetTxt = CreateWidget(World, TileIdWidgetRef);
-					if (WidgetTxt)
-					{
-						WidgetTxt->AddToViewport(1);
-
-						UTextBlock* BtnText = Cast<UTextBlock>(WidgetTxt->GetWidgetFromName(TEXT("txtId")));
-						if (BtnText)
-							BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d"), IdNum)));
-						
-						FVector2D WidgetPosition = FVector2D(TileObj->GetActorLocation()[0], TileObj->GetActorLocation()[1]);
-						WidgetTxt->SetPositionInViewport(WidgetPosition);
-					}
-
-					AActor* Number = GetWorld()->SpawnActor<AActor>(Numbers[0], Location + FVector(0, -120, 0), FRotator(0, 90, 0));
+					AActor* Number = GetWorld()->SpawnActor<AActor>(LetterNumberClass, Location + FVector(0, -120, 0), FRotator(0, 90, 0));
 					if (Number)
+					{
 						Number->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
+						UStaticMeshComponent* MeshComponent = Number->FindComponentByClass<UStaticMeshComponent>();
+						if (MeshComponent)
+							MeshComponent->SetMaterial(0, Numbers[x]);
+					}
 				}
 
 				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));

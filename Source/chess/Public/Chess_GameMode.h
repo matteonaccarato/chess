@@ -54,6 +54,15 @@ struct FTileSaving
 	EPawnStatus Status;
 };
 
+USTRUCT(BlueprintType)
+struct FCastlingInfo
+{
+	GENERATED_BODY()
+
+	bool KingeMoved = false;
+	bool RooksMoved[2] = { false, false }; // left / right
+};
+
 /**
  * TODO => mettere attributi come protected
  */
@@ -73,6 +82,9 @@ public:
 	TArray<int8> BlackPiecesCanMove;
 	/* int8 WhitePiecesCanMove = 0;
 	int8 BlackPiecesCanMove = 0; */
+
+	/* FCastlingInfo CastlingWhite;
+	FCastlingInfo CastlingBlack; */
 
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;

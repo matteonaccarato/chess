@@ -59,14 +59,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 WinSize;
 
-
-	UPROPERTY()
-	UUserWidget* TileIdWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
-	TSubclassOf<class UUserWidget> TileIdWidgetRef;
-
-	// Tile Classes
+	// Tile Materials
 	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInterface* MaterialLight;
 
@@ -84,6 +77,55 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> W_TileClass;
+
+	// Tile Letters/Numbers Materials
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterA;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterB;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterC;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterD;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterE;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterF;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterG;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* LetterH;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number1;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number2;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number3;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number4;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number5;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number6;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number7;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	UMaterialInterface* Number8;
 
 	// Pawns Classes
 	// Blacks
@@ -125,7 +167,7 @@ public:
 	TSubclassOf<ABasePawn> W_RookClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AActor> LetterA;
+	TSubclassOf<AActor> LetterNumberClass;
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
