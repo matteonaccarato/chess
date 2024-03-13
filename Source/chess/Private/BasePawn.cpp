@@ -109,7 +109,7 @@ void ABasePawn::BeginPlay()
 	Super::BeginPlay();
 
 
-	/*AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	/* AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode != nullptr)
 	{
 		// TODO => riposizionare pedina nel punto di partenza
@@ -118,7 +118,7 @@ void ABasePawn::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-	}*/
+	} */
 	
 }
 

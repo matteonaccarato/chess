@@ -35,7 +35,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	bool IsMyTurn = false;
+	// bool IsMyTurn = false;
 	ABasePawn* PawnTemp;
 
 	// 0 => Select Pawn to move is needed

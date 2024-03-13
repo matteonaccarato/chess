@@ -6,10 +6,12 @@ partita patta
 	=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
 	=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
+Arrocco
+
+
 
 NOMENCLATURA QUANDO CI SONO SITUAZIONI AMBIGUE
 NOMENCLATURA con pawn promotion (fare .Add per nuovo pezzo)
-controllo nomenclatura di sovrapposizione (who can go)
 
 
 
@@ -23,7 +25,7 @@ https://youtu.be/SD66UgyHiMM?si=ZoCKFO_R1YV-gRLk
 
 
 il pawn promotion è obbligatorio o l'utente può non farlo?
-
+<a href="https://www.freepik.com/free-vector/wooden-buttons-different-shapes-vector-illustrations-set-play-stop-check-star-buttons-with-wood-texture-progress-bar-white-background-user-interface-concept-game-app-website-design_24645050.htm">Image by pch.vector</a> on Freepik
 
 #### Main Feature
 - [?] Check and CheckMate (look at iphone notes)

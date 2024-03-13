@@ -50,7 +50,7 @@ void AChess_HumanPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void AChess_HumanPlayer::OnTurn()
 {
-	IsMyTurn = true;
+	// IsMyTurn = true;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
 	if (GameInstance)
 	{
@@ -174,7 +174,7 @@ void AChess_HumanPlayer::OnClick()
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
 						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
 						SelectedPawnFlag = 0;
-						IsMyTurn = false;
+						// IsMyTurn = false;
 
 
 						// Pawn promotion handling

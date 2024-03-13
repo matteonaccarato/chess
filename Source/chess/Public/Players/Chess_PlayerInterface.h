@@ -27,6 +27,7 @@ public:
 	int32 PlayerNumber;
 	EPawnColor Color;
 	TArray<TArray<std::pair<int8, int8>>> AttackableTiles;
+	bool IsMyTurn = false;
 
 	virtual void OnTurn() {};
 	virtual void OnWin() {};

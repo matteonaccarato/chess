@@ -83,9 +83,12 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	}
 
 	MoveCounter += 1;
+	CanPlay = true;
 
 	InitTurn();
 
+	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
+	Players[CurrentPlayer]->IsMyTurn = true;
 	Players[CurrentPlayer]->OnTurn();
 }
 
@@ -98,6 +101,7 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
  */
 void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 {
+
 	// -1 to notify checkmate
 	if (PlayerNumber == -1)
 	{
@@ -123,6 +127,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		if (IsGameOver || PlayerNumber != CurrentPlayer)
 			return;
 
+
+		Players[PlayerNumber]->IsMyTurn = false;
 
 		// TODO => forse superfluo
 		IsCheck();
@@ -212,6 +218,7 @@ void AChess_GameMode::TurnNextPlayer()
 
 	InitTurn();
 
+	Players[CurrentPlayer]->IsMyTurn = true;
 	Players[CurrentPlayer]->OnTurn();
 }
 
@@ -324,11 +331,6 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				std::pair<int8, int8> Offsets = GetXYOffset(i, PawnDirection, Pawn->GetColor());
 				XOffset = Offsets.first;
 				YOffset = Offsets.second;
-
-				if (Pawn->GetType() == EPawnType::QUEEN && Pawn->GetColor() == EPawnColor::BLACK)
-				{
-					XOffset = XOffset;
-				}
 
 				// Evaluate if this move is valid or not
 				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
@@ -773,9 +775,10 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
 
 	// Update Replay widget content
 	UWorld* World = GetWorld();
-	// UUniformGridPanel* UniformGridPanel = Cast<UUniformGridPanel>(ReplayWidget->GetWidgetFromName(TEXT("ufg_Replay")));
-	UScrollBox* ScrollBox = Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay")));
-	if (World && /* UniformGridPanel  && */ ScrollBox && ButtonWidgetRef)
+	UScrollBox* ScrollBox = Pawn->GetColor() == EPawnColor::WHITE ? 
+		Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")))
+		: Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
+	if (World && ScrollBox && ButtonWidgetRef)
 	{
 		UUserWidget* WidgetBtn = CreateWidget(World, ButtonWidgetRef);
 		if (WidgetBtn)
@@ -834,7 +837,7 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 			((CheckFlag != EPawnColor::NONE &&  CheckMateFlag == EPawnColor::NONE)? TEXT("+") : TEXT("")) +
 			(CheckMateFlag != EPawnColor::NONE ? TEXT("#") : TEXT(""));
 
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, MoveStr);
+		// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, MoveStr);
 	}
 
 	return MoveStr;

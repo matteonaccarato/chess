@@ -37,20 +37,67 @@ void AGameField::BeginPlay()
 
 void AGameField::ResetField()
 {
-	for (ATile* Obj : TileArray)
-	{
-		Obj->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
-		TArray<bool> TmpFalse;
-		TmpFalse.Add(false);
-		TmpFalse.Add(false);
-		Obj->SetTileStatus({ 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE});
-	}
-
-	OnResetEvent.Broadcast();
-
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
+		GameMode->CanPlay = false;
+
+		// clear tile status
+		for (ATile* Obj : TileArray)
+			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
+		
+		// load initial board
+		TArray<FTileSaving> InitialBoard;
+		int n = PawnArray.Num();
+		for (int i = 0; i < n; i++)
+		{
+			// initial 32 chess pieces
+			if (i < 32)
+			{
+				int8 x = (PawnArray[i]->GetColor() == EPawnColor::WHITE) ?
+					PawnArray[i]->GetPieceNum() / 8
+					: PawnArray[i]->GetPieceNum() / 8 + 4;
+				int8 y = PawnArray[i]->GetPieceNum() % 8;
+				PawnArray[i]->SetGridPosition(x, y);
+				PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
+
+				PawnArray[i]->Move(TileArray[x * Size + y], TileArray[x * Size + y]);
+				if (PawnArray[i]->GetType() == EPawnType::PAWN)
+				{
+					PawnArray[i]->SetMaxNumberSteps(2); // restore two steps of first move on pawn
+				}
+
+				InitialBoard.Add({
+					x,
+					y,
+					EPawnStatus::ALIVE
+					});
+			}
+			else
+			{
+				// pieces added during the game
+				// destroy actor and reference to it
+				PawnArray[i]->SelfDestroy();
+				PawnArray.RemoveAt(i);
+			}
+		}
+		GameMode->GameSaving.Empty();
+		LoadBoard(InitialBoard);
+
+
+		// clear replay
+		if (GameMode->ReplayWidget)
+		{
+			UScrollBox* ScrollBoxWhite = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")));
+			ScrollBoxWhite->ClearChildren();
+			UScrollBox* ScrollBoxBlack = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
+			ScrollBoxBlack->ClearChildren();
+		}
+	
+
+
+		// OnResetEvent.Broadcast();
+
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
 		GameMode->ChoosePlayerAndStartGame();
@@ -439,8 +486,6 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
 			Tile->SetTileStatus({ 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
-
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
 		}
 
 		if (Pawn)
@@ -451,6 +496,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			Pawn->SetActorHiddenInGame(true);
 			Pawn->SetActorEnableCollision(false);
 			Pawn->SetActorTickEnabled(false);
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
 		}
 	}
 }
