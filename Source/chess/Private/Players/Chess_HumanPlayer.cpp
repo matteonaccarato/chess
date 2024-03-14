@@ -156,13 +156,43 @@ void AChess_HumanPlayer::OnClick()
 
 					// TODO => già calcolato in turn possible moves
 					// TurnPossibleMoves[PawnTemp->GetPieceNum()].Contains(x, y)
-					if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]))
+					// if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]))
+					if (GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()].Contains(std::make_pair<int8,int8>(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1])))
 					{
 						if (PawnToEat)
 							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
 
 						ATile* OldTile = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
 						PawnTemp->Move(OldTile, NewTile);
+
+						// Castling Handling (King moves by two tiles)
+						if (PawnTemp->GetType() == EPawnType::KING
+							&& FMath::Abs(NewTile->GetGridPosition()[1] - OldTile->GetGridPosition()[1]) == 2)
+						{
+							// Move the rook
+							bool ShortCastling = (NewTile->GetGridPosition()[1] - OldTile->GetGridPosition()[1]) > 0;
+							int8 RookX = PawnTemp->GetColor() == EPawnColor::WHITE ? 0 : 7;
+							int8 OldRookY = ShortCastling ? 7 : 0;
+							ATile* OldRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + OldRookY];
+							ABasePawn* RookToMove = OldRookTile->GetPawn();
+
+							int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
+							if (GameMode->GField->IsValidTile(RookX, NewRookY))
+							{
+								ATile* NewRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + NewRookY];
+								if (RookToMove)
+								{
+									RookToMove->Move(OldRookTile, NewRookTile);
+									GameMode->CastlingInfoWhite.KingMoved = true;
+									GameMode->CastlingInfoWhite.RooksMoved[NewRookY == 0 ? 0 : 1];
+								}
+							}
+						}
+
+						if (PawnTemp->GetType() == EPawnType::ROOK)
+						{
+							GameMode->CastlingInfoWhite.RooksMoved[OldTile->GetGridPosition()[1] == 0 ? 0 : 1] = true;
+						}
 						
 
 						// TODO => forse già fatto ?

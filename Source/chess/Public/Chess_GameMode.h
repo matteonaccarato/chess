@@ -59,7 +59,7 @@ struct FCastlingInfo
 {
 	GENERATED_BODY()
 
-	bool KingeMoved = false;
+	bool KingMoved = false;
 	bool RooksMoved[2] = { false, false }; // left / right
 };
 
@@ -83,8 +83,8 @@ public:
 	/* int8 WhitePiecesCanMove = 0;
 	int8 BlackPiecesCanMove = 0; */
 
-	/* FCastlingInfo CastlingWhite;
-	FCastlingInfo CastlingBlack; */
+	FCastlingInfo CastlingInfoWhite;
+	FCastlingInfo CastlingInfoBlack; 
 
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;
@@ -181,7 +181,7 @@ public:
 	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
 	/*
 	*/
-	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true);
+	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);
 
 
 private:

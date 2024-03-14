@@ -11,7 +11,7 @@ En Passant
 
 
 
-NOMENCLATURA con pawn promotion (fare .Add per nuovo pezzo)
+NOMENCLATURA per arrocco da aggiungere
 
 
 

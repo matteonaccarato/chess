@@ -359,23 +359,22 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 		}
 		
 		// Castling handling
-		/* if (Pawn->GetType() == EPawnType::KING)
+		if (Pawn->GetType() == EPawnType::KING)
 		{
-			// Short castling
-			std::pair<int8, int8> Offsets = GetXYOffset(2, ECardinalDirection::EAST, Pawn->GetColor());
-			XOffset = Offsets.first;
-			YOffset = Offsets.second;
-			// Evaluate if this move is valid or not
-			if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+			// short castling and long castling
+			for (ECardinalDirection Direction : { ECardinalDirection::EAST, ECardinalDirection::WEST })
 			{
-				// Add the VALID move to result TArray
-				PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+				std::pair<int8, int8> Offsets = GetXYOffset(2, Direction, Pawn->GetColor());
+				XOffset = Offsets.first;
+				YOffset = Offsets.second;
+				// Evaluate if this move is valid or not
+				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag, true))
+				{
+					// Add the VALID move to result TArray
+					PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+				}
 			}
-
-
-			// Long castling
-			// std::pair<int8, int8> Offsets = GetXYOffset(2, ECardinalDirection::WEST, Pawn->GetColor());
-		} */
+		}
 	}
 
 	return PossibleMoves;
@@ -566,7 +565,7 @@ EPawnColor AChess_GameMode::CheckKingUnderAttack() const
  * 
  *   return 	bool	determines if a move is valid or not
  */
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag, const bool ShowAttackable, const bool CheckCheckFlag)
+bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag, const bool ShowAttackable, const bool CheckCheckFlag, const bool CastlingFlag)
 {
 	bool IsValid = false;
 
@@ -629,7 +628,15 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 				
 				// If the piece is the king and it is attackable from the opponent player,
 				//	IsValid flag is determined SOMEWHERE ELSE (wHERE ?? TODO )
-				if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0]))
+				if (CastlingFlag)
+				{
+					// TODO => aggiungere che non siano attaccabili da pedine nemiche
+					FCastlingInfo CastlingInfo = Pawn->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
+					int8 RookIdx = DeltaY > 0 ? 1 : 0; /* If delta y > 0 => then look for the rook on the right side of the king, otherwise the left one */
+					IsValid = GField->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY)
+						&& (!CastlingInfo.KingMoved && !CastlingInfo.RooksMoved[RookIdx]);
+				}
+				else if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0]))
 				{
 					IsValid = GField->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
 					IsValid = IsValid || GField->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);

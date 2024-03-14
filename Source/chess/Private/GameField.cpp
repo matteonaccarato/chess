@@ -80,6 +80,9 @@ void AGameField::ResetField()
 			}
 		}
 		GameMode->GameSaving.Empty();
+		GameMode->CastlingInfoWhite = { false, { false, false } };
+		GameMode->CastlingInfoBlack = { false, { false, false } };
+
 		LoadBoard(InitialBoard);
 
 
