@@ -42,7 +42,7 @@ void AChess_RandomPlayer::OnTurn()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode && GameMode->CanPlay && IsMyTurn)
+			if (GameMode && GameMode->ReplayInProgress == 0 && IsMyTurn)
 			{
 				// Setting all tiles as NON attackable from Nobody (TODO => già fatto nell'inizio turno)
 				for (auto& Tile : GameMode->GField->GetTileArray())

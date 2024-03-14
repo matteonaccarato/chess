@@ -73,9 +73,11 @@ class CHESS_API AChess_GameMode : public AGameModeBase
 
 public:
 	bool IsGameOver;
-	bool CanPlay; // true => user can play, false => user cannot play (e.g. while watching a replay)
+	// bool CanPlay; // true => user can play, false => user cannot play (e.g. while watching a replay)
+	int8 ReplayInProgress; // shows the number of turn currently replaying
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;
+	TArray<std::pair<int8, int8>> ShownPossibleMoves;
 
 	TArray<TArray<std::pair<int8, int8>>> TurnPossibleMoves;
 	TArray<int8> WhitePiecesCanMove;
@@ -101,8 +103,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGameField> GameFieldClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 FieldSize;
+	/* UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 FieldSize; */
 
 	UPROPERTY(VisibleAnywhere)
 	AGameField* GField;

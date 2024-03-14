@@ -13,7 +13,6 @@ AChess_GameMode::AChess_GameMode()
 {
 	PlayerControllerClass = AChess_PlayerController::StaticClass();
 	DefaultPawnClass = AChess_HumanPlayer::StaticClass();
-	FieldSize = 8;
 	PawnPromotionType = EPawnType::NONE;
 	LastGridPosition = FVector2D(-1, -1);
 }
@@ -24,7 +23,8 @@ void AChess_GameMode::BeginPlay()
 
 	// Init variables
 	IsGameOver = false;
-	CanPlay = true;
+	// CanPlay = true;
+	ReplayInProgress = 0;
 	MoveCounter = 0;
 	CheckFlag = EPawnColor::NONE;
 	CheckMateFlag = EPawnColor::NONE;
@@ -33,11 +33,10 @@ void AChess_GameMode::BeginPlay()
 	if (GameFieldClass)
 	{
 		GField = GetWorld()->SpawnActor<AGameField>(GameFieldClass);
-		GField->Size = FieldSize;
 
 		// Get and Set Human Player (Camera) Location
 		AChess_HumanPlayer* HumanPlayer = Cast<AChess_HumanPlayer>(*TActorIterator<AChess_HumanPlayer>(GetWorld()));
-		float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
+		float CameraPosX = ((GField->TileSize * (GField->Size + ((GField->Size - 1) * GField->NormalizedCellPadding) - (GField->Size - 1))) / 2) - (GField->TileSize / 2);
 		FVector CameraPos(CameraPosX, CameraPosX, 1250.0f); // TODO: 1000 da mettere come attributo
 		HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 	
@@ -85,7 +84,7 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	CheckFlag = EPawnColor::NONE;
 	CheckMateFlag = EPawnColor::NONE;
 	MoveCounter += 1;
-	CanPlay = true;
+	// CanPlay = true;
 
 	InitTurn();
 
@@ -133,11 +132,9 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		Players[PlayerNumber]->IsMyTurn = false;
 
 		// TODO => forse superfluo
-		IsCheck();
+		// IsCheck();
 
 
-		if (CheckFlag != EPawnColor::NONE)
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
 
 		// Clean opponent's attackable tiles, they will be overwritten the next turn,
 		// so the previous state is useless
@@ -184,7 +181,20 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		CurrentBoard = BoardSaving;
 		GameSaving.Add(BoardSaving);
 
-		TurnNextPlayer();
+		InitTurn();
+
+		if (CheckFlag != EPawnColor::NONE)
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
+		
+		if (WhitePiecesCanMove.Num() == 0)
+			CheckMateFlag = EPawnColor::WHITE;
+		if (BlackPiecesCanMove.Num() == 0)
+			CheckMateFlag = EPawnColor::BLACK;
+
+		if (CheckMateFlag != EPawnColor::NONE)
+			EndTurn(-1);
+		else
+			TurnNextPlayer();
 	}
 }
 
@@ -232,7 +242,7 @@ void AChess_GameMode::InitTurn()
 	TurnPossibleMoves.Empty();
 
 	// Clear tile status (attackable from and who can go variables)
-	for (auto& Tile : GField->GetTileArray())
+	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
 		TileStatus.AttackableFrom.SetNum(2, false);
@@ -246,8 +256,8 @@ void AChess_GameMode::InitTurn()
 
 	// TODO => compute possible moves of current player 
 	// (tarray di tarray per mosse possibli, accedo con pieceNum
-	bool BlackCanMove = false;
-	bool WhiteCanMove = false;
+	// bool BlackCanMove = false;
+	// bool WhiteCanMove = false;
 	for (auto& Piece : GField->PawnArray)
 	{
 		EPawnColor PreviousCheckFlag = CheckFlag;
@@ -258,8 +268,8 @@ void AChess_GameMode::InitTurn()
 		{
 			switch (Piece->GetColor())
 			{
-			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); WhiteCanMove = true; break;
-			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); BlackCanMove = true; break;
+			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); /*WhiteCanMove = true;*/ break;
+			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); /*BlackCanMove = true; */ break;
 			}
 		}
 		
@@ -635,6 +645,16 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 					int8 RookIdx = DeltaY > 0 ? 1 : 0; /* If delta y > 0 => then look for the rook on the right side of the king, otherwise the left one */
 					IsValid = GField->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY)
 						&& (!CastlingInfo.KingMoved && !CastlingInfo.RooksMoved[RookIdx]);
+					for (int8 i = 0; i <= FMath::Abs(DeltaY) && IsValid; i++)
+					{
+						if (GField->IsValidTile(NewGridPosition[0], CurrGridPosition[1] + i * FMath::Sign(DeltaY)))
+						{
+							if (GField->GetTileArray()[NewGridPosition[0] * GField->Size + CurrGridPosition[1] + i * FMath::Sign(DeltaY)]->GetTileStatus().AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0])
+							{
+								IsValid = false;
+							}
+						}
+					}
 				}
 				else if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0]))
 				{
@@ -775,24 +795,38 @@ std::pair<int8, int8> AChess_GameMode::GetXYOffset(const int8 Steps, const ECard
 /* REPLAY (add to separated class) */
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
-	FString BtnName = TxtBlock->GetText().ToString();
-	FString NumMoveStr;
-	BtnName.Split(TEXT("."), &NumMoveStr, NULL);
-	int8 NumMove = FCString::Atoi(*NumMoveStr);
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Replay mossa %d"), NumMove));
-	
-	if ((NumMove + 1) != MoveCounter)
+	if (CurrentPlayer == 0)
 	{
-		CanPlay = false;
-		TArray<FTileSaving> BoardToLoad = GameSaving[NumMove - 1];
-		GField->LoadBoard(BoardToLoad);
+		// Human is playing (replay available)
+		FString BtnName = TxtBlock->GetText().ToString();
+		FString NumMoveStr;
+		BtnName.Split(TEXT("."), &NumMoveStr, NULL);
+		int8 NumMove = FCString::Atoi(*NumMoveStr);
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Replay mossa %d"), NumMove));
+	
+		if ((NumMove + 1) != MoveCounter)
+		{
+			// CanPlay = false;
+			ReplayInProgress = NumMove;
+			if (GameSaving.IsValidIndex(NumMove - 1))
+			{
+				TArray<FTileSaving> BoardToLoad = GameSaving[NumMove - 1];
+				GField->LoadBoard(BoardToLoad);
+			}
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando")));
+			GField->LoadBoard(CurrentBoard);
+			// CanPlay = true;
+			ReplayInProgress = MoveCounter;
+			Players[CurrentPlayer]->OnTurn();
+		}
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando")));
-		GField->LoadBoard(CurrentBoard);
-		CanPlay = true;
-		Players[CurrentPlayer]->OnTurn();
+		// AI is playing (replay NOT available)
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO, non puoi replayare mentre gioco IO! :)"));
 	}
 }
 
@@ -861,7 +895,7 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 	{
 		MoveStr = ((IsPawn || PawnPromotionFlag)? TEXT("") : Pawn->GetId()) +
 			StartTileStr +
-			(((IsPawn || PawnPromotionFlag) && EatFlag)? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
+			(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
 			(EatFlag ? TEXT("x") : TEXT("")) + 
 			Tile->GetId().ToLower() +
 			(PawnPromotionFlag? (TEXT("=") + Pawn->GetId()) : TEXT("")) +

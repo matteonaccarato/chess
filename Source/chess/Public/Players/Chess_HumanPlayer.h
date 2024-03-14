@@ -42,7 +42,6 @@ protected:
 	// 1 => Pawn selected, Choose Tile to move on
 	// TODO: valutare se sostituibile con IsMyTurn
 	int32 SelectedPawnFlag = 0;
-	TArray<std::pair<int8, int8>> PossibleMoves;
 
 public:	
 	// Called every frame

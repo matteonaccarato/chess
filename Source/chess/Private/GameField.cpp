@@ -75,8 +75,11 @@ void AGameField::ResetField()
 			{
 				// pieces added during the game
 				// destroy actor and reference to it
-				PawnArray[i]->SelfDestroy();
-				PawnArray.RemoveAt(i);
+				if (PawnArray.IsValidIndex(i))
+				{
+					PawnArray[i]->SelfDestroy();
+					PawnArray.RemoveAt(i);
+				}
 			}
 		}
 		GameMode->GameSaving.Empty();
@@ -101,6 +104,7 @@ void AGameField::ResetField()
 		GameMode->CheckMateFlag = EPawnColor::NONE;
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
+		GameMode->ReplayInProgress = 0;
 		GameMode->ChoosePlayerAndStartGame();
 	}
 }
@@ -215,43 +219,58 @@ void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
 	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()
 	// in load board
 	//		for (pawnarray)	pawn->setactorlocation()
-
-	FVector Origin, BoxExtent, Location, PawnLocation;
-	for (int8 i = 0; i < PawnArray.Num(); i++)
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
 	{
-		if (Board.IsValidIndex(i))
+		for (const auto& move : GameMode->ShownPossibleMoves)
 		{
-			switch (Board[i].Status)
+			UMaterialInterface* Material = ((move.first + move.second) % 2) ? MaterialLight : MaterialDark;
+			TileArray[move.first * Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
+		}
+
+		FVector Origin, BoxExtent, Location, PawnLocation;
+		for (int8 i = 0; i < PawnArray.Num(); i++)
+		{
+			if (Board.IsValidIndex(i))
 			{
-			case EPawnStatus::ALIVE:
-				PawnArray[i]->SetActorHiddenInGame(false);
-				PawnArray[i]->SetActorEnableCollision(true);
-				PawnArray[i]->SetActorTickEnabled(true);
+				switch (Board[i].Status)
+				{
+				case EPawnStatus::ALIVE:
+					PawnArray[i]->SetActorHiddenInGame(false);
+					PawnArray[i]->SetActorEnableCollision(true);
+					PawnArray[i]->SetActorTickEnabled(true);
 
-				TileArray[Board[i].X * Size + Board[i].Y]->GetActorBounds(false, Origin, BoxExtent);
-				Location = GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y);
-				PawnLocation = FVector(
-					Location.GetComponentForAxis(EAxis::X),
-					Location.GetComponentForAxis(EAxis::Y),
-					Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
-				);
-				PawnArray[i]->SetActorLocation(PawnLocation);
-				break;
+					TileArray[Board[i].X * Size + Board[i].Y]->GetActorBounds(false, Origin, BoxExtent);
+					Location = GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y);
+					PawnLocation = FVector(
+						Location.GetComponentForAxis(EAxis::X),
+						Location.GetComponentForAxis(EAxis::Y),
+						Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
+					);
+					PawnArray[i]->SetActorLocation(PawnLocation);
+					PawnArray[i]->SetGridPosition(Board[i].X, Board[i].Y);
+					PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
+					break;
 
-			case EPawnStatus::DEAD:
+				case EPawnStatus::DEAD:
+					PawnArray[i]->SetActorHiddenInGame(true);
+					PawnArray[i]->SetActorEnableCollision(false);
+					PawnArray[i]->SetActorTickEnabled(false);
+					PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
+					PawnArray[i]->SetGridPosition(-1, -1);
+					PawnArray[i]->SetStatus(EPawnStatus::DEAD);
+					break;
+				}
+			}
+			else 
+			{
 				PawnArray[i]->SetActorHiddenInGame(true);
 				PawnArray[i]->SetActorEnableCollision(false);
 				PawnArray[i]->SetActorTickEnabled(false);
 				PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
-				break;
+				PawnArray[i]->SetGridPosition(-1, -1);
+				PawnArray[i]->SetStatus(EPawnStatus::DEAD);
 			}
-		}
-		else 
-		{
-			PawnArray[i]->SetActorHiddenInGame(true);
-			PawnArray[i]->SetActorEnableCollision(false);
-			PawnArray[i]->SetActorTickEnabled(false);
-			PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
 		}
 	}
 }

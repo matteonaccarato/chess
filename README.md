@@ -6,7 +6,7 @@ partita patta
 	=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
 	=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
-Arrocco
+Arrocco (da verificare se soddisfa le condizioni di non passare, essere, andare in scacco)
 En Passant
 
 
@@ -71,3 +71,4 @@ Nomenclatura mosse:
 - [ ] FUNZIONI CHE RITORNANO VALORI PER IDENTIFICARE ERRORI ?
 
 - [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))
+- [ ] REPLAY => va bene così, o conviene fare man mano dallo stato iniziale convertendo #id mossa a mossa sul campo ?
