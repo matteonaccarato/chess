@@ -132,6 +132,8 @@ public:
 	// Used to remember which pawn to promote
 	FVector2D LastGridPosition;
 
+	bool LastEatFlag = false;
+
 	// Used to remember previous grid position in notation
 	FVector2D PreviousGridPosition;
 
@@ -161,8 +163,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReplayMove(UTextBlock* TxtBlock);
 
-	void AddToReplay(const ABasePawn* Pawn, const bool EatFlag = false);
-	FString ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag = false) const;
+	void AddToReplay(const ABasePawn* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false);
+	FString ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false) const;
 
 
 	/*

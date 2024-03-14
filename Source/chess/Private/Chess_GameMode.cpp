@@ -283,12 +283,14 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 {	
 	int8 X = LastGridPosition.X;
 	int8 Y = LastGridPosition.Y;
-	bool EatFlag = GField->TileArray[X * GField->Size + Y]->GetPawn() ? true : false;
+	// ABasePawn* PawnToEat = GField->TileArray[X * GField->Size + Y]->GetPawn();
+	// EPawnColor PawnToEatColor = PawnToEat ? PawnToEat->GetColor() : EPawnColor::NONE;
 	PawnPromotionType = PawnType;
 
 	// Despawn & Spawn pawn
 	GField->DespawnPawn(X, Y);
 	ABasePawn* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
+	// bool EatFlag = (PawnToEat && PawnToEatColor != PawnTemp->GetColor())? true : false;
 	// Calculate new chess piece eligible moves
 	// TODO => superfluo, già fatto in ischeck
 	//ShowPossibleMoves(PawnTemp, true, false);
@@ -298,7 +300,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 
 	// TODO => vedere se si può alleggerire (posso rimuovere, viene fatto quando l'ai inizia il turno)
 	IsCheck();
-	AddToReplay(PawnTemp, EatFlag);
+	AddToReplay(PawnTemp, LastEatFlag, true);
 	EndTurn(CurrentPlayer);
 }
 
@@ -787,9 +789,9 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 	}
 }
 
-void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
+void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
-	FString MoveStr = ComputeMoveName(Pawn, EatFlag);
+	FString MoveStr = ComputeMoveName(Pawn, EatFlag, PawnPromotionFlag);
 
 	// Update RecordMoves
 	RecordMoves.Add(MoveStr);
@@ -821,7 +823,7 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag)
 	}
 }
 
-FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag) const
+FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag) const
 {
 	FVector2D GridPosition = Pawn->GetGridPosition();
 	ATile* Tile = GField->GetTileArray()[GridPosition[0] * GField->Size + GridPosition[1]];
@@ -850,11 +852,12 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 
 	if (Pawn && !Tile->GetId().IsEmpty())
 	{
-		MoveStr = (IsPawn? TEXT("") : Pawn->GetId()) +
+		MoveStr = ((IsPawn || PawnPromotionFlag)? TEXT("") : Pawn->GetId()) +
 			StartTileStr +
-			((IsPawn && EatFlag)? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
+			(((IsPawn || PawnPromotionFlag) && EatFlag)? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
 			(EatFlag ? TEXT("x") : TEXT("")) + 
 			Tile->GetId().ToLower() +
+			(PawnPromotionFlag? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
 			((CheckFlag != EPawnColor::NONE &&  CheckMateFlag == EPawnColor::NONE)? TEXT("+") : TEXT("")) +
 			(CheckMateFlag != EPawnColor::NONE ? TEXT("#") : TEXT(""));
 

@@ -101,6 +101,7 @@ void AChess_RandomPlayer::OnTurn()
 						// Update last move (useful when doing pawn promotion)
 						GameMode->LastGridPosition = FVector2D(NewX, NewY);
 						GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
+						GameMode->LastEatFlag = EatFlag;
 					
 
 						// Pawn promotion handling

@@ -173,6 +173,7 @@ void AChess_HumanPlayer::OnClick()
 						// Update info with last move
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
 						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
+						GameMode->LastEatFlag = PawnToEat ? true : false;
 						SelectedPawnFlag = 0;
 						// IsMyTurn = false;
 
@@ -199,7 +200,7 @@ void AChess_HumanPlayer::OnClick()
 							GameMode->IsCheck();
 
 							// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
-							GameMode->AddToReplay(PawnTemp, PawnToEat? 1:0);
+							GameMode->AddToReplay(PawnTemp, PawnToEat ? 1 : 0);
 							GameMode->EndTurn(PlayerNumber);
 						}						
 					}
