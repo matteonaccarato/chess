@@ -214,6 +214,15 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 	return FVector2D(x, y);
 }
 
+int8 AGameField::DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const
+{
+	return FMath::Floor(
+		FMath::Sqrt(
+			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[0]) - Piece2->GetGridPosition()[1], 2) +
+			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[1]) - Piece2->GetGridPosition()[1], 2) 
+		));
+}
+
 void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
 {
 	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()

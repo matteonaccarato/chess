@@ -338,52 +338,63 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 		TArray<ECardinalDirection> PawnDirections = Pawn->GetCardinalDirections();
 		int8 MaxSteps = Pawn->GetMaxNumberSteps();
 		int8 XOffset = 0, YOffset = 0;
-		for (const auto& PawnDirection : PawnDirections)
-		{
-			for (int8 i = 1; i <= MaxSteps; i++)
-			{
-				std::pair<int8, int8> Offsets = GetXYOffset(i, PawnDirection, Pawn->GetColor());
-				XOffset = Offsets.first;
-				YOffset = Offsets.second;
 
-				// Evaluate if this move is valid or not
-				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+		// TODO => è senza controllo della direzione
+		/* if (!ShowAttackable
+			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? 4 : 28]) <= Pawn->GetMaxNumberSteps()))
+		{ */
+			for (const auto& PawnDirection : PawnDirections)
+			{
+				// TODO => fare stesso check di prima controllando la direzione  vc
+				for (int8 i = 1; i <= MaxSteps; i++)
 				{
-					// Add the VALID move to result TArray
-					PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
-					FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
-				
-					// Check needed to avoid pawns eat on straight line
-					if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
+					std::pair<int8, int8> Offsets = GetXYOffset(i, PawnDirection, Pawn->GetColor());
+						XOffset = Offsets.first;
+						YOffset = Offsets.second;
+
+						// Evaluate if this move is valid or not
+						if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+						{
+							// Add the VALID move to result TArray
+							PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+							FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
+
+							// Check needed to avoid pawns eat on straight line
+							if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
+							{
+								// Index 0 means attackable from whites
+								// Index 1 means attackable from blacks 
+								TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] = true;
+							}
+							if (UpdateWhoCanGoFlag)
+								TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
+
+							GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+						}
+						else {
+							// If the piece cannot do a move with n steps, it will not do it with n+1 steps
+							break;
+						}
+				}
+			}
+
+			// Castling handling
+			if (Pawn->GetType() == EPawnType::KING)
+			{
+				// short castling and long castling
+				for (ECardinalDirection Direction : { ECardinalDirection::EAST, ECardinalDirection::WEST })
+				{
+					std::pair<int8, int8> Offsets = GetXYOffset(2, Direction, Pawn->GetColor());
+					XOffset = Offsets.first;
+					YOffset = Offsets.second;
+					// Evaluate if this move is valid or not
+					if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag, true))
 					{
-						// Index 0 means attackable from whites
-						// Index 1 means attackable from blacks 
-						TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1)? 0:1] = true; 
+						// Add the VALID move to result TArray
+						PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
 					}
-					if (UpdateWhoCanGoFlag)
-						TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
-
-					GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 				}
-			}
-		}
-		
-		// Castling handling
-		if (Pawn->GetType() == EPawnType::KING)
-		{
-			// short castling and long castling
-			for (ECardinalDirection Direction : { ECardinalDirection::EAST, ECardinalDirection::WEST })
-			{
-				std::pair<int8, int8> Offsets = GetXYOffset(2, Direction, Pawn->GetColor());
-				XOffset = Offsets.first;
-				YOffset = Offsets.second;
-				// Evaluate if this move is valid or not
-				if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag, true))
-				{
-					// Add the VALID move to result TArray
-					PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
-				}
-			}
+			// }
 		}
 	}
 

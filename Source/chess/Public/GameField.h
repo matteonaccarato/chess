@@ -195,7 +195,7 @@ public:
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
-
+	int8 DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const;
 	
 
 
