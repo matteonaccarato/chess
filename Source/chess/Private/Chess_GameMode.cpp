@@ -343,38 +343,44 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 		/* if (!ShowAttackable
 			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? 4 : 28]) <= Pawn->GetMaxNumberSteps()))
 		{ */
+		// TODO => if show attackable => show only mine attacks, not the enenemy ones
+		/* GEngine->AddOnScreenDebugMessage(-1, 20.f,
+			FColor::Red, 
+			FString::Printf(TEXT("%d"), 
+				GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? 4 : 28])));
+				*/
 			for (const auto& PawnDirection : PawnDirections)
 			{
 				// TODO => fare stesso check di prima controllando la direzione  vc
 				for (int8 i = 1; i <= MaxSteps; i++)
 				{
 					std::pair<int8, int8> Offsets = GetXYOffset(i, PawnDirection, Pawn->GetColor());
-						XOffset = Offsets.first;
-						YOffset = Offsets.second;
+					XOffset = Offsets.first;
+					YOffset = Offsets.second;
 
-						// Evaluate if this move is valid or not
-						if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+					// Evaluate if this move is valid or not
+					if (IsValidMove(Pawn, X + XOffset, Y + YOffset, true, ShowAttackable, CheckCheckFlag))
+					{
+						// Add the VALID move to result TArray
+						PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
+						FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
+
+						// Check needed to avoid pawns eat on straight line
+						if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
 						{
-							// Add the VALID move to result TArray
-							PossibleMoves.Add(std::make_pair(X + XOffset, Y + YOffset));
-							FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
-
-							// Check needed to avoid pawns eat on straight line
-							if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
-							{
-								// Index 0 means attackable from whites
-								// Index 1 means attackable from blacks 
-								TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] = true;
-							}
-							if (UpdateWhoCanGoFlag)
-								TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
-
-							GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+							// Index 0 means attackable from whites
+							// Index 1 means attackable from blacks 
+							TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] = true;
 						}
-						else {
-							// If the piece cannot do a move with n steps, it will not do it with n+1 steps
-							break;
-						}
+						if (UpdateWhoCanGoFlag)
+							TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
+
+						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+					}
+					else {
+						// If the piece cannot do a move with n steps, it will not do it with n+1 steps
+						break;
+					}
 				}
 			}
 

@@ -216,11 +216,12 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 
 int8 AGameField::DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const
 {
-	return FMath::Floor(
+	int tmp = FMath::Floor(
 		FMath::Sqrt(
-			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[0]) - Piece2->GetGridPosition()[1], 2) +
-			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[1]) - Piece2->GetGridPosition()[1], 2) 
+			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[0]) - Piece2->GetGridPosition()[0], 2) +
+			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[1]) - Piece2->GetGridPosition()[1], 2)
 		));
+	return tmp;
 }
 
 void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
