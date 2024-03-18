@@ -73,7 +73,6 @@ class CHESS_API AChess_GameMode : public AGameModeBase
 
 public:
 	bool IsGameOver;
-	// bool CanPlay; // true => user can play, false => user cannot play (e.g. while watching a replay)
 	int8 ReplayInProgress; // shows the number of turn currently replaying
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;
@@ -82,9 +81,7 @@ public:
 	TArray<TArray<std::pair<int8, int8>>> TurnPossibleMoves;
 	TArray<int8> WhitePiecesCanMove;
 	TArray<int8> BlackPiecesCanMove;
-	/* int8 WhitePiecesCanMove = 0;
-	int8 BlackPiecesCanMove = 0; */
-
+	
 	FCastlingInfo CastlingInfoWhite;
 	FCastlingInfo CastlingInfoBlack; 
 
@@ -93,6 +90,9 @@ public:
 
 	TArray<TArray<FTileSaving>> GameSaving;
 	TArray<FTileSaving> CurrentBoard;
+
+	int8 KingWhitePieceNum = -1;
+	int8 KingBlackPieceNum = -1;
 
 	// Who is under check || NONE || WHITE || BLACK
 	EPawnColor CheckFlag; 

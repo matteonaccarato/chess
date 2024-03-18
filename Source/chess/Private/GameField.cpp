@@ -478,6 +478,13 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		TileObj->SetPlayerOwner(PlayerOwner);
 		TileObj->SetTileStatus(TileStatus);
 		TileObj->SetPawn(BasePawnObj);
+		if (BasePawnObj->GetType() == EPawnType::KING)
+		{
+			int8& KingPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+				GameMode->KingWhitePieceNum
+				: GameMode->KingBlackPieceNum;
+			KingPieceNum = BasePawnObj->GetPieceNum();
+		}
 	}
 	return BasePawnObj;
 }
