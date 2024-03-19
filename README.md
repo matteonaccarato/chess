@@ -72,3 +72,4 @@ Nomenclatura mosse:
 
 - [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))
 - [ ] REPLAY => va bene così, o conviene fare man mano dallo stato iniziale convertendo #id mossa a mossa sul campo ?
+- [ ] cambiare EatFlag => in CaptureFlag

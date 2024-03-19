@@ -152,7 +152,7 @@ void AChess_RandomPlayer::OnTurn()
 						else
 						{
 							// End Turn
-							GameMode->IsCheck();
+							GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
 							GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
 							GameMode->EndTurn(PlayerNumber);
 						}
