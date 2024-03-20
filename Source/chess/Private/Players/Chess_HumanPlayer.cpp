@@ -163,7 +163,7 @@ void AChess_HumanPlayer::OnClick()
 									break;
 
 								case EPawnType::ROOK:
-									// TODO => far con enum o array di conversione
+									// TODO => far con enum o array di conversione (sono magic numbers)
 									// rook left white
 									switch (Piece->GetPieceNum())
 									{
@@ -180,9 +180,16 @@ void AChess_HumanPlayer::OnClick()
 										GameMode->CastlingInfoBlack.RooksMoved[1] = !(Piece->GetGridPosition() == FVector2D(7, 7));
 										break;
 									}
+									break;
 								case EPawnType::KING:
-									GameMode->CastlingInfoWhite.KingMoved = !(Piece->GetColor() == EPawnColor::WHITE && Piece->GetGridPosition() == FVector2D(0, 4));
-									GameMode->CastlingInfoBlack.KingMoved = !(Piece->GetColor() == EPawnColor::BLACK && Piece->GetGridPosition() == FVector2D(7, 4));;
+									if (Piece->GetColor() == EPawnColor::WHITE)
+									{
+										GameMode->CastlingInfoWhite.KingMoved = !(Piece->GetGridPosition() == FVector2D(0, 4));
+									}
+									else
+									{
+										GameMode->CastlingInfoBlack.KingMoved = !(Piece->GetGridPosition() == FVector2D(7, 4));
+									}
 									break;
 								}
 							}

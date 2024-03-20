@@ -647,7 +647,10 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 					int8 RookIdx = DeltaY > 0 ? 1 : 0; 
 					
 					// 1st validation: if the line is clear and neither king and rook have already moved
-					IsValid = GField->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY)
+					// If DeltaY < 0, it means long castling should be handled, so it is necessary to check that all the tiles between left rook and king are empty
+					//	e.g. Short Castling:	CheckLineClearDeltaY = DeltaY		= 2		(From the tile which the king is on to the two at its right)
+					//		 Long  Castling:	CheckLineClearDeltaY = DeltaY - 1	= -3	(From the tile which the king is on to the three at its left)
+					IsValid = GField->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY + (DeltaY > 0 ? 1 : -2))
 						&& (!CastlingInfo.KingMoved && !CastlingInfo.RooksMoved[RookIdx]);
 					
 					// 2nd validation: looking for every tile involved in the movement if it is attackable from opponent piece,
