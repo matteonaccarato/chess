@@ -14,11 +14,11 @@
 #include "Components/TextBlock.h"
 
 #include "CoreMinimal.h"
-#include "Players/Chess_PlayerInterface.h"
 #include "BasePawn.h"
 #include "GameFramework/GameModeBase.h"
 #include "Chess_GameMode.generated.h"
 
+class IChess_PlayerInterface;
 class AActor;
 class AGameField;
 class ABasePawn;

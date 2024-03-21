@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-// #include "../Chess_GameMode.h"
-// #include "../GameField.h"
+#include "../Chess_GameMode.h"
 #include "../BasePawn.h"
 #include "../Chess_GameInstance.h"
 
@@ -13,7 +12,6 @@
 
 enum class EPawnColor : int8;
 
-class AChess_GameMode;
 class AChess_GameField;
 
 // This class does not need to be modified.
