@@ -25,7 +25,7 @@ ATile::ATile()
 
 	TArray<bool> TmpFalse;
 	TmpFalse.Add(false); TmpFalse.Add(false);
-	Status = { 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE};
+	Status = { nullptr, 1, TmpFalse, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED};
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
 
@@ -106,7 +106,7 @@ void ATile::ClearInfo()
 	SetPawn(nullptr);
 	SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 	TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-	SetTileStatus({ 1, TmpFalse,  GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
+	SetTileStatus({ nullptr, 1, TmpFalse,  GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED });
 }
 
 // Called when the game starts or when spawned

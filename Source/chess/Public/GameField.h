@@ -226,7 +226,7 @@ public:
 
 	/*
 	*/
-	void DespawnPawn(int8 X, int8 Y);
+	void DespawnPawn(int8 X, int8 Y, bool Simulate = false);
 
 	
 //protected:

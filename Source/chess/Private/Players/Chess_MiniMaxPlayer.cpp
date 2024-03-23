@@ -58,7 +58,29 @@ void AChess_MiniMaxPlayer::OnTurn()
 				{
 
 					// piece and move X Y
+					TArray<FTileStatus> TilesStatusBackup;
+					// GameMode->BackupTiles(TilesStatusBackup);
+					/* for (auto& Tile : GameMode->GField->TileArray)
+					{
+						FTileStatus TileStatus = Tile->GetTileStatus();
+						TilesStatusBackup.Add(TileStatus);
+						Tile->SetTileStatus(TileStatus);
+					} */
 					std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray);
+					/* int8 i = 0;
+					for (const auto& Tile : GameMode->GField->TileArray)
+					{
+						if (TilesStatusBackup.IsValidIndex(i))
+						{
+							Tile->SetTileStatus(TilesStatusBackup[i]);
+							i++;
+						}
+					} */
+					/* GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
+					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
+					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); */
 
 					ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
 					int8 OldX = Pawn->GetGridPosition()[0];
@@ -110,15 +132,66 @@ void AChess_MiniMaxPlayer::OnTurn()
 
 int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 {
-	// se re sotto scacco => cosa metto ?
-	// se re sotto scacco matto => metto infinito
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		// se re sotto scacco => cosa metto ?
+		// se re sotto scacco matto => metto infinito
+		int8 Score = 0;
+	
+		/* f(p) =	200(K - K')
+					+ 9(Q - Q')
+					+ 5(R - R')
+					+ 3(B - B' + N-N')
+					+ 1(P - P')
+					- 0.5(D - D' + S-S' + I - I')
+					+ 0.1(M - M') + ...
 
+			KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
+			D, S, I = doubled, blocked and isolated pawns
+			M = Mobility(the number of legal moves) */
 
+		// White, Black
+		int8 QueenCounts[2] = {0, 0};
+		int8 RookCounts[2] = {0, 0};
+		int8 BishopCounts[2] = {0, 0};
+		int8 KnightsCounts[2] = {0, 0};
+		int8 PawnsCounts[2] = {0, 0};
+		
+		for (const auto& Piece : GameMode->GField->PawnArray)
+		{
+			if (Piece->GetStatus() == EPawnStatus::ALIVE)
+			{
+				int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
+				switch (Piece->GetType())
+				{
+				case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
+				case EPawnType::ROOK: RookCounts[IdxColor]++; break;
+				case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
+				case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
+				case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
+				}
+			}
+		}
 
-	return int32();
+		// TODO => aggiungere conto mosse possibili e condizione di scacco o scacco matto
+		Score = 9 * (QueenCounts[1] - QueenCounts[0])
+			+ 5 * (RookCounts[1] - RookCounts[0])
+			+ 5 * (BishopCounts[1] - BishopCounts[0])
+			+ 5 * (KnightsCounts[1] - KnightsCounts[0])
+			+ 5 * (PawnsCounts[1] - PawnsCounts[0]);
+
+		return Score;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+		return 0;
+	}
 }
 
 // best_move, max(min)_eval
+// [ [ piece_num, [to_x, to_y] ], eval ]
 std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::MiniMax(TArray<ATile*> Board, int8 Depth, bool MaximizingPlayer)
 {
 
@@ -129,8 +202,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 			return std::make_pair(std::make_pair(- 1, std::make_pair(-1, -1)), EvaluateBoard(Board)); // None, Evaluate(board, maximizing color)
 
 		
-
-		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
+		
 
 		// moves = compute all current possible moves
 		// best_move = random.choice(moves)
@@ -138,47 +210,62 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 
 		if (MaximizingPlayer)
 		{
-			int32 max_eval = -1000;
+			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
+			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
+
+			int32 MaxEval = -1000;
+			int8 MaxPieceNum = -1;
+			int8 MaxX = -1;
+			int8 MaxY = -1;
 
 			for (const auto& PieceMove : PiecesMoves)
 			{
+				// piece_num , [ [x1,y1], [x2,y2], ... ]
 				for (const auto& Move : PieceMove.second)
 				{
-					TArray<FTileStatus> TilesStatusesBackup;
-					for (auto& Tile : GameMode->GField->TileArray)
-					{
-						FTileStatus TileStatus = Tile->GetTileStatus();
-						TilesStatusesBackup.Add(TileStatus);
-
-						TileStatus.AttackableFrom.SetNum(2, false);
-						TileStatus.WhoCanGo.Empty();
-						Tile->SetTileStatus(TileStatus);
-					}
+					// [x1, y1], [x2, y2], ...
+				
+					// Backup
+					TArray<FTileStatus> TilesStatusBackup;
+					TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+					GameMode->BackupTiles(TilesStatusBackup);
+					GameMode->BackupPiecesInfo(PiecesInfoBackup);
 					int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
 					int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
+					EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+					FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
+					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
 
-					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second);
+					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
 					int32 CurrentEval = MiniMax(Board, Depth - 1, false).second;
 
 					// undo the move
-					int8 i = 0;
-					for (const auto& Tile : GameMode->GField->TileArray)
-					{
-						Tile->SetTileStatus(TilesStatusesBackup[i]);
-						i++;
-					}
+					GameMode->RestoreTiles(TilesStatusBackup);
+					GameMode->RestorePiecesInfo(PiecesInfoBackup);
+					GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
+					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
 					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
 
+					if (CurrentEval > MaxEval || (CurrentEval == MaxEval && FMath::Rand() % 2 == 1))
+					{
+						MaxEval = CurrentEval;
+						MaxPieceNum = PieceMove.first;
+						MaxX = Move.first;
+						MaxY = Move.second;
+					}
 					
-
-
-
 					/* ... */
-
-
 				}
 			}
-				
+
+			return std::make_pair(
+				std::make_pair(
+					MaxPieceNum, 
+					std::make_pair(MaxX, MaxY)
+					), MaxEval);
+
 				/* board.make_move
 				current_eval = minimax(board, depth-1, False)[1]
 				board.unmake_move
@@ -191,6 +278,62 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 		}
 		else
 		{
+			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
+			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE);
+
+			int32 MinEval = 1000;
+			int8 MinPieceNum = -1;
+			int8 MinX = -1;
+			int8 MinY = -1;
+
+			for (const auto& PieceMove : PiecesMoves)
+			{
+				// piece_num , [ [x1,y1], [x2,y2], ... ]
+				for (const auto& Move : PieceMove.second)
+				{
+					// [x1, y1], [x2, y2], ...
+
+					// Backup
+					TArray<FTileStatus> TilesStatusBackup;
+					TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+					GameMode->BackupTiles(TilesStatusBackup);
+					GameMode->BackupPiecesInfo(PiecesInfoBackup);
+					int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
+					int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
+					EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+					FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
+					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
+
+					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
+					int32 CurrentEval = MiniMax(Board, Depth - 1, true).second;
+
+					// undo the move
+					GameMode->RestoreTiles(TilesStatusBackup);
+					GameMode->RestorePiecesInfo(PiecesInfoBackup);
+					GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
+					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
+					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
+
+					if (CurrentEval < MinEval || (CurrentEval == MinEval && FMath::Rand() % 2 == 1))
+					{
+						MinEval = CurrentEval;
+						MinPieceNum = PieceMove.first;
+						MinX = Move.first;
+						MinY = Move.second;
+					}
+
+					/* ... */
+				}
+			}
+
+			return std::make_pair(
+				std::make_pair(
+					MinPieceNum,
+					std::make_pair(MinX, MinY)
+				), MinEval);
+
 			// min_eval = inf
 
 			/* for move : moves
@@ -203,16 +346,12 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 			*  return best_move, min_eval
 			*/
 		}
-
-
-
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+		return std::pair<std::pair<int8, std::pair<int8, int8>>, int32>();
 	}
-
-	return std::pair<std::pair<int8, std::pair<int8, int8>>, int32>();
 }
 
 std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*> Board)
@@ -233,42 +372,42 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 			for (const auto& Move : PieceMove.second)
 			{
 
-				TArray<FTileStatus> TilesStatusesBackup;
-				for (auto& Tile : GameMode->GField->TileArray)
-				{
-					FTileStatus TileStatus = Tile->GetTileStatus();
-					TilesStatusesBackup.Add(TileStatus);
-
-					TileStatus.AttackableFrom.SetNum(2, false);
-					TileStatus.WhoCanGo.Empty();
-					Tile->SetTileStatus(TileStatus);
-				}
+				TArray<FTileStatus> TilesStatusBackup;
+				TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+				GameMode->BackupTiles(TilesStatusBackup);
+				GameMode->BackupPiecesInfo(PiecesInfoBackup);
 				int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
 				int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
+				EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+				FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
+				int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
 
-
-				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second);
+				// GameMode->GField->PawnArray[PieceMove.first]->Move(Move.first, Move.second, true);
+				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
 
 				// compute evaluation function for this move
 				// { { piece_num, { newX, newY } }, move_value }
-				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, false);
+				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, true);
 
 				// undo the move
-				int8 i = 0;
-				for (const auto& Tile : GameMode->GField->TileArray)
-				{
-					Tile->SetTileStatus(TilesStatusesBackup[i]);
-					i++;
-				}
+				GameMode->RestoreTiles(TilesStatusBackup);
+				GameMode->RestorePiecesInfo(PiecesInfoBackup);
+				GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
+				GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
 				GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+				GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+				GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
 				// evaluate val
-				if (PieceMoveVal.second > BestVal)
+				if (PieceMoveVal.second > BestVal || (PieceMoveVal.second == BestVal && FMath::Rand() % 2 == 1))
 				{
-					BestMove.first = PieceMoveVal.first.first;
-					BestMove.second = PieceMoveVal.first.second;
+					// BestMove.first = PieceMoveVal.first.first;
+					// BestMove.second = PieceMoveVal.first.second;
+					BestMove.first = PieceMove.first;
+					BestMove.second.first = Move.first;
+					BestMove.second.second = Move.second;
 					BestVal = PieceMoveVal.second;
-				}
+				} 
 			}
 
 		}

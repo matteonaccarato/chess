@@ -416,7 +416,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		ATile* TileObj = GetTileArray()[X * Size + Y];
 		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		FTileStatus TileStatus = { 0, TmpFalse, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE };
+		FTileStatus TileStatus = { nullptr, 0, TmpFalse, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED };
 
 		TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_PawnClass };
 		TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_PawnClass };
@@ -475,6 +475,8 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 			UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
 		}
 
+		TileStatus.Piece = BasePawnObj;
+		TileStatus.PlayerOwner = PlayerOwner;
 		TileObj->SetPlayerOwner(PlayerOwner);
 		TileObj->SetTileStatus(TileStatus);
 		TileObj->SetPawn(BasePawnObj);
@@ -497,7 +499,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
  *   X			int8		: x position of the pawn to despawn
  *	 Y			int8		: y position of the pawn to despawn
  */
-void AGameField::DespawnPawn(int8 X, int8 Y)
+void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 {
 	if (IsValidTile(X, Y))
 	{
@@ -508,7 +510,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			// Reset old tile status
 			Tile->SetPawn(nullptr);
 			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-			Tile->SetTileStatus({ 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
+			Tile->SetTileStatus({ nullptr, 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		}
 
@@ -517,10 +519,13 @@ void AGameField::DespawnPawn(int8 X, int8 Y)
 			// Update pawn information
 			Pawn->SetStatus(EPawnStatus::DEAD);
 			Pawn->SetGridPosition(-1, -1);
-			Pawn->SetActorHiddenInGame(true);
-			Pawn->SetActorEnableCollision(false);
-			Pawn->SetActorTickEnabled(false);
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
+			if (!Simulate)
+			{
+				Pawn->SetActorHiddenInGame(true);
+				Pawn->SetActorEnableCollision(false);
+				Pawn->SetActorTickEnabled(false);
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
+			}
 		}
 	}
 }

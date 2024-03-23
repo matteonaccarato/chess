@@ -583,7 +583,7 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 	// bool WhiteCanMove = false;
 	for (auto& Piece : GField->PawnArray)
 	{
-		if (Piece->GetColor() == Color)
+		if (Piece->GetStatus() == EPawnStatus::ALIVE && Piece->GetColor() == Color)
 		{
 			EPawnColor PreviousCheckFlag = CheckFlag;
 			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, false);
@@ -605,7 +605,7 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 	return PiecesMoves;
 }
 
-bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY)
+bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate)
 {
 	bool EatFlag = false;
 	int8 OldX = Piece->GetGridPosition()[0];
@@ -623,14 +623,14 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 		{
 			ABasePawn* PawnToEat = TilesArray[NewX * GField->Size + NewY]->GetPawn();
 			if (PawnToEat)
-				GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
+				GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], Simulate);
 		}
 
 		// TilesArray[OldX * GField->Size + OldY]->ClearInfo();
 
 		// Clear starting tile (no player owner, no pawn on it, ...)
 		// Update ending tile (new player owner, new tile status, new pawn)
-		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY]);
+		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY], Simulate);
 
 
 		// Castling Handling (King moves by two tiles)
@@ -651,6 +651,7 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 				if (RookToMove)
 				{
 					RookToMove->Move(OldRookTile, NewRookTile);
+					// TODO => qui specifico CastlingInfoBLACK (farlo o generale o altro)
 					CastlingInfoBlack.KingMoved = true;
 					CastlingInfoBlack.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
 				}
@@ -913,6 +914,57 @@ std::pair<int8, int8> AChess_GameMode::GetXYOffset(const int8 Steps, const ECard
 }
 
 
+
+void AChess_GameMode::BackupTiles(TArray<FTileStatus>& TilesStatus)
+{
+	for (auto& Tile : GField->TileArray)
+	{
+		FTileStatus TileStatus = Tile->GetTileStatus();
+		TilesStatus.Add(TileStatus);
+
+		/* TileStatus.AttackableFrom.SetNum(2, false);
+		TileStatus.WhoCanGo.Empty();
+		Tile->SetTileStatus(TileStatus); */
+	}
+}
+
+void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
+{
+	int8 i = 0;
+	for (auto& Tile : GField->TileArray)
+	{
+		if (TilesStatusBackup.IsValidIndex(i))
+		{
+			Tile->SetTileStatus(TilesStatusBackup[i]);
+			Tile->SetPlayerOwner(TilesStatusBackup[i].PlayerOwner);
+			Tile->SetPawn(TilesStatusBackup[i].Piece);
+			i++;
+		}
+	}
+}
+
+void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo)
+{
+	// TODO const auto& (anche sopra)
+	for (auto& Piece : GField->PawnArray)
+	{
+		PiecesInfo.Add(std::make_pair(Piece->GetStatus(), Piece->GetGridPosition()));
+	}
+}
+
+void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
+{
+	int8 i = 0;
+	for (auto& Piece : GField->PawnArray)
+	{
+		if (PiecesInfoBackup.IsValidIndex(i))
+		{
+			Piece->SetStatus(PiecesInfoBackup[i].first);
+			Piece->SetGridPosition(PiecesInfoBackup[i].second.X, PiecesInfoBackup[i].second.Y);
+			i++;
+		}
+	}
+}
 
 
 

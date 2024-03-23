@@ -90,9 +90,10 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 	{
 		OldTile->ClearInfo();
 
-		NewTile->SetPlayerOwner(GetColor() == EPawnColor::WHITE ? 0 : 1);
+		int8 PlayerOwner = GetColor() == EPawnColor::WHITE ? 0 : 1;
+		NewTile->SetPlayerOwner(PlayerOwner);
 		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		NewTile->SetTileStatus({ 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType() });
+		NewTile->SetTileStatus({ this, 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType(), PlayerOwner });
 		NewTile->SetPawn(this);
 
 		FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);

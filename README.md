@@ -51,6 +51,7 @@ Nomenclatura mosse:
 #### BUGS
 - [ ] Nomenclatura quando sotto scacco matto non funzionante
 - [ ] Save board status quando scacco matto (salva due mosse in una (fatto video con telefono))
+- [ ] quando clicco back mentre gioca l'avversario, crasha tutto :) (disabilito i bottoni)
 
 #### TO REVIEW (if already implemented)
 - [ ] in random player => toglliere case epawntype@101, gestire tutti i movimenti nelle direzioni cardinali, eat flag dipende da se in newx e newy è NON occupata (occupata da bianco)
