@@ -6,6 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "../Chess_GameInstance.h"
 #include "Chess_PlayerInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "Chess_MiniMaxPlayer.generated.h"
 
 UCLASS()
@@ -36,6 +37,6 @@ public:
 
 	int32 EvaluateBoard(TArray<ATile*> Board) const;
 	// are moves left (se ci sono mosse rimanenti => guardo PossibleMoves.Num()
-	std::pair<std::pair<int8, int8>, int32> MiniMax(TArray<ATile*> Board, int8 Depth, bool IsMax);
+	std::pair<std::pair<int8, std::pair<int8, int8>>, int32> MiniMax(TArray<ATile*> Board, int8 Depth, bool IsMax);
 	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*> Board);
 };

@@ -8,7 +8,7 @@ AChess_MiniMaxPlayer::AChess_MiniMaxPlayer()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
 // Called when the game starts or when spawned
@@ -31,18 +31,6 @@ void AChess_MiniMaxPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void AChess_MiniMaxPlayer::OnTurn()
@@ -69,86 +57,39 @@ void AChess_MiniMaxPlayer::OnTurn()
 				if (GameMode->BlackPiecesCanMove.Num() > 0)
 				{
 
-
-
-
-
 					// piece and move X Y
 					std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray);
 
-					int8 OldX = GameMode->GField->PawnArray[BestMove.first]->GetGridPosition()[0];
-					int8 OldY = GameMode->GField->PawnArray[BestMove.first]->GetGridPosition()[1];
-
-
-
-
-
-
-					// do the move
-
-
-
-
-
-
+					ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
+					int8 OldX = Pawn->GetGridPosition()[0];
+					int8 OldY = Pawn->GetGridPosition()[1];
 					int8 NewX = BestMove.second.first;
 					int8 NewY = BestMove.second.second;
-					bool EatFlag = false;
 
+					
+					// do the move
+					bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
 
-					// Castling Handling (King moves by two tiles)
-					if (GameMode->GField->PawnArray[BestMove.first]->GetType() == EPawnType::KING
-						&& FMath::Abs(NewY - OldY) == 2)
+					// Pawn promotion handling
+					if (NewX == 0 && Pawn->GetType() == EPawnType::PAWN)
 					{
-						// Move the rook
-						bool ShortCastling = (NewY - OldY) > 0;
-						int8 RookX = GameMode->GField->PawnArray[BestMove.first]->GetColor() == EPawnColor::WHITE ? 0 : 7;
-						int8 OldRookY = ShortCastling ? 7 : 0;
-						ATile* OldRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + OldRookY];
-						ABasePawn* RookToMove = OldRookTile->GetPawn();
-
-						int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
-						if (GameMode->GField->IsValidTile(RookX, NewRookY))
+						// Randomically choice of what to promote to
+						int8 RandSpawnPawn = FMath::Rand() % 4;
+						switch (RandSpawnPawn)
 						{
-							ATile* NewRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + NewRookY];
-							if (RookToMove)
-							{
-								RookToMove->Move(OldRookTile, NewRookTile);
-								GameMode->CastlingInfoBlack.KingMoved = true;
-								GameMode->CastlingInfoBlack.RooksMoved[NewRookY == 0 ? 0 : 1];
-							}
+						case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
+						case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
+						case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
+						case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
 						}
 					}
-
-					if (GameMode->GField->PawnArray[BestMove.first]->GetType() == EPawnType::ROOK)
+					else
 					{
-						GameMode->CastlingInfoBlack.RooksMoved[NewY == 0 ? 0 : 1] = true;
+						// End Turn
+						GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
+						GameMode->AddToReplay(Pawn, EatFlag);
+						GameMode->EndTurn(PlayerNumber);
 					}
-
-
-
-					// TODO => superfluo (?, già fatto in gamemode)
-					if (GameMode->GField->PawnArray[BestMove.first]->GetType() == EPawnType::PAWN)
-					{
-						GameMode->GField->PawnArray[BestMove.first]->SetMaxNumberSteps(1);
-					}
-
-					// Update last move (useful when doing pawn promotion)
-					GameMode->LastGridPosition = FVector2D(NewX, NewY);
-					GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
-					GameMode->LastEatFlag = EatFlag;// Castling Handling (King moves by two tiles)
-
-
-
-					GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
-					GameMode->AddToReplay(GameMode->GField->PawnArray[BestMove.first], EatFlag); // TODO => a cosa serve l'eat flag qui se lo segno già in LastEatFlag ?
-					GameMode->EndTurn(PlayerNumber);
-
-
-
-
-
-
 				}
 				else
 				{
@@ -158,37 +99,6 @@ void AChess_MiniMaxPlayer::OnTurn()
 					GameMode->CheckMateFlag = EPawnColor::BLACK;
 					GameMode->EndTurn(-1);
 				}
-
-
-
-				
-
-
-
-				// Setting all tiles as NON attackable from Nobody (TODO => già fatto nell'inizio turno)
-				/* for (auto& Tile : GameMode->GField->GetTileArray())
-				{
-					FTileStatus TileStatus = Tile->GetTileStatus();
-					TileStatus.AttackableFrom.SetNum(2, false);
-					TileStatus.WhoCanGo.Empty();
-					Tile->SetTileStatus(TileStatus);
-				}
-
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), GameMode->BlackPiecesCanMove.Num()));
-
-				// If there are black pawns eligible to move
-				if (GameMode->BlackPiecesCanMove.Num() > 0)
-				{
-					
-				}
-				else
-				{
-					// No pawns can make eligible moves => BLACK is checkmated
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
-
-					GameMode->CheckMateFlag = EPawnColor::BLACK;
-					GameMode->EndTurn(-1); 
-				} */
 			}
 			else
 			{
@@ -209,33 +119,74 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 }
 
 // best_move, max(min)_eval
-std::pair<std::pair<int8, int8>, int32> AChess_MiniMaxPlayer::MiniMax(TArray<ATile*> Board, int8 Depth, bool MaximizingPlayer)
+std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::MiniMax(TArray<ATile*> Board, int8 Depth, bool MaximizingPlayer)
 {
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
 		if (Depth == 0 || GameMode->IsGameOver)
-			return std::make_pair(std::make_pair(-1, -1), EvaluateBoard(Board)); // None, Evaluate(board, maximizing color)
+			return std::make_pair(std::make_pair(- 1, std::make_pair(-1, -1)), EvaluateBoard(Board)); // None, Evaluate(board, maximizing color)
 
 		
+
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
 
 		// moves = compute all current possible moves
 		// best_move = random.choice(moves)
 
+
 		if (MaximizingPlayer)
 		{
-			// max_eval = -inf
+			int32 max_eval = -1000;
 
-			/* for move : moves
-			*	board.make_move
-			*	current_eval = minimax(board, depth-1, False)[1]
-			*	board.unmake_move
-			*	if (current_eval > max_eval)
-			*		max_eval = current_eval
-			*		best_move = move
-			*  return best_move, max_eval
-			*/	
+			for (const auto& PieceMove : PiecesMoves)
+			{
+				for (const auto& Move : PieceMove.second)
+				{
+					TArray<FTileStatus> TilesStatusesBackup;
+					for (auto& Tile : GameMode->GField->TileArray)
+					{
+						FTileStatus TileStatus = Tile->GetTileStatus();
+						TilesStatusesBackup.Add(TileStatus);
+
+						TileStatus.AttackableFrom.SetNum(2, false);
+						TileStatus.WhoCanGo.Empty();
+						Tile->SetTileStatus(TileStatus);
+					}
+					int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
+					int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
+
+					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second);
+					int32 CurrentEval = MiniMax(Board, Depth - 1, false).second;
+
+					// undo the move
+					int8 i = 0;
+					for (const auto& Tile : GameMode->GField->TileArray)
+					{
+						Tile->SetTileStatus(TilesStatusesBackup[i]);
+						i++;
+					}
+					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+
+					
+
+
+
+					/* ... */
+
+
+				}
+			}
+				
+				/* board.make_move
+				current_eval = minimax(board, depth-1, False)[1]
+				board.unmake_move
+				if (current_eval > max_eval)
+					max_eval = current_eval
+					best_move = move
+			  return best_move, max_eval */
+				
 
 		}
 		else
@@ -261,18 +212,72 @@ std::pair<std::pair<int8, int8>, int32> AChess_MiniMaxPlayer::MiniMax(TArray<ATi
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 	}
 
-	return std::pair<std::pair<int8, int8>, int32>();
+	return std::pair<std::pair<int8, std::pair<int8, int8>>, int32>();
 }
 
 std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*> Board)
 {
+	int32 BestVal = -1000;
+	std::pair<int8, std::pair<int8, int8>> BestMove;
+	BestMove.first = -1; BestMove.second.first = -1; BestMove.second.second = -1;
 
-	// for mosse possibili
-	// do / undo ciascuna mossa
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		// for mosse possibili
+		// do / undo ciascuna mossa
+
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
+		for (const auto& PieceMove : PiecesMoves)
+		{
+			for (const auto& Move : PieceMove.second)
+			{
+
+				TArray<FTileStatus> TilesStatusesBackup;
+				for (auto& Tile : GameMode->GField->TileArray)
+				{
+					FTileStatus TileStatus = Tile->GetTileStatus();
+					TilesStatusesBackup.Add(TileStatus);
+
+					TileStatus.AttackableFrom.SetNum(2, false);
+					TileStatus.WhoCanGo.Empty();
+					Tile->SetTileStatus(TileStatus);
+				}
+				int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
+				int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
 
 
+				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second);
 
-	return std::pair<int8, std::pair<int8, int8>>();
+				// compute evaluation function for this move
+				// { { piece_num, { newX, newY } }, move_value }
+				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, false);
+
+				// undo the move
+				int8 i = 0;
+				for (const auto& Tile : GameMode->GField->TileArray)
+				{
+					Tile->SetTileStatus(TilesStatusesBackup[i]);
+					i++;
+				}
+				GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+
+				// evaluate val
+				if (PieceMoveVal.second > BestVal)
+				{
+					BestMove.first = PieceMoveVal.first.first;
+					BestMove.second = PieceMoveVal.first.second;
+					BestVal = PieceMoveVal.second;
+				}
+			}
+
+		}
+	}
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
+
+
+	return BestMove;
 }
 
 

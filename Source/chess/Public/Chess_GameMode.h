@@ -185,6 +185,8 @@ public:
 	*/
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);
 
+	bool MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY);
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color);
 
 private:
 	EPawnColor CheckKingUnderAttack() const;

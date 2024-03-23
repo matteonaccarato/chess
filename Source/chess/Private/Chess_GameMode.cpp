@@ -44,9 +44,9 @@ void AChess_GameMode::BeginPlay()
 
 		// TODO AI based on a value passed through parameter (button)
 		// Random player
-		auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+		// auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		// Minimax player
-		// auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+		auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
 		Players.Add(AI);
 
@@ -560,6 +560,124 @@ EPawnColor AChess_GameMode::CheckKingUnderAttack() const
 	return TmpCheckFlag;
 }
 
+TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
+{
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
+	TArray<FTileStatus> TileStatusBackup;
+	for (auto& Tile : GField->TileArray)
+	{
+		FTileStatus TileStatus = Tile->GetTileStatus();
+		TileStatusBackup.Add(TileStatus);
+
+		TileStatus.AttackableFrom.SetNum(2, false);
+		TileStatus.WhoCanGo.Empty();
+		Tile->SetTileStatus(TileStatus);
+	}
+
+	/* WhitePiecesCanMove.Empty();
+	BlackPiecesCanMove.Empty(); */
+
+	// TODO => compute possible moves of current player 
+	// (tarray di tarray per mosse possibli, accedo con pieceNum
+	// bool BlackCanMove = false;
+	// bool WhiteCanMove = false;
+	for (auto& Piece : GField->PawnArray)
+	{
+		if (Piece->GetColor() == Color)
+		{
+			EPawnColor PreviousCheckFlag = CheckFlag;
+			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, false);
+			TurnPossibleMoves.Add(Tmp);
+			CheckFlag = PreviousCheckFlag;
+			if (Tmp.Num() > 0)
+			{
+				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
+			}
+		}
+		
+			/* switch (Piece->GetColor())
+			{
+			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); break;
+			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); break;
+			} */
+
+	}
+	return PiecesMoves;
+}
+
+bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY)
+{
+	bool EatFlag = false;
+	int8 OldX = Piece->GetGridPosition()[0];
+	int8 OldY = Piece->GetGridPosition()[1];
+	if (GField->IsValidTile(OldX, OldY)
+		&& GField->IsValidTile(NewX, NewY))
+	{
+		TArray<ATile*> TilesArray = GField->GetTileArray();
+
+		// EatFlag is true if the Tile->PawnColor is the opposite of the black pawn
+		// e.g. Tile->PawnwColor = 1 (white) , Pawn->Color = -1 => EatFlag = true
+		// e.g. Tile->PawnwColor = 0 (empty) , Pawn->Color = -1 => EatFlag = flag
+		EatFlag = static_cast<int>(TilesArray[NewX * GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(Piece->GetColor());
+		if (EatFlag)
+		{
+			ABasePawn* PawnToEat = TilesArray[NewX * GField->Size + NewY]->GetPawn();
+			if (PawnToEat)
+				GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
+		}
+
+		// TilesArray[OldX * GField->Size + OldY]->ClearInfo();
+
+		// Clear starting tile (no player owner, no pawn on it, ...)
+		// Update ending tile (new player owner, new tile status, new pawn)
+		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY]);
+
+
+		// Castling Handling (King moves by two tiles)
+		if (Piece->GetType() == EPawnType::KING
+			&& FMath::Abs(NewY - OldY) == 2)
+		{
+			// Move the rook
+			bool ShortCastling = (NewY - OldY) > 0;
+			int8 RookX = Piece->GetColor() == EPawnColor::WHITE ? 0 : 7;
+			int8 OldRookY = ShortCastling ? 7 : 0;
+			ATile* OldRookTile = GField->TileArray[RookX * GField->Size + OldRookY];
+			ABasePawn* RookToMove = OldRookTile->GetPawn();
+
+			int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
+			if (GField->IsValidTile(RookX, NewRookY))
+			{
+				ATile* NewRookTile = GField->TileArray[RookX * GField->Size + NewRookY];
+				if (RookToMove)
+				{
+					RookToMove->Move(OldRookTile, NewRookTile);
+					CastlingInfoBlack.KingMoved = true;
+					CastlingInfoBlack.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
+				}
+			}
+		}
+
+		if (Piece->GetType() == EPawnType::ROOK)
+		{
+			CastlingInfoBlack.RooksMoved[NewY == 0 ? 0 : 1] = true;
+		}
+
+
+
+		// TODO => superfluo (?, già fatto in gamemode)
+		if (Piece->GetType() == EPawnType::PAWN)
+		{
+			Piece->SetMaxNumberSteps(1);
+		}
+
+		// Update last move (useful when doing pawn promotion)
+		LastGridPosition = FVector2D(NewX, NewY);
+		PreviousGridPosition = FVector2D(OldX, OldY);
+		LastEatFlag = EatFlag;
+	}
+	return EatFlag;
+}
+
 
 // TODO make it const
 /*
@@ -648,8 +766,8 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 					
 					// 1st validation: if the line is clear and neither king and rook have already moved
 					// If DeltaY < 0, it means long castling should be handled, so it is necessary to check that all the tiles between left rook and king are empty
-					//	e.g. Short Castling:	CheckLineClearDeltaY = DeltaY		= 2		(From the tile which the king is on to the two at its right)
-					//		 Long  Castling:	CheckLineClearDeltaY = DeltaY - 1	= -3	(From the tile which the king is on to the three at its left)
+					//	e.g. Short Castling:	CheckLineClearDeltaY = DeltaY + 1	= +3		(From the tile which the king is on to the two at its right)
+					//		 Long  Castling:	CheckLineClearDeltaY = DeltaY - 2	= -4	(From the tile which the king is on to the three at its left)
 					IsValid = GField->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY + (DeltaY > 0 ? 1 : -2))
 						&& (!CastlingInfo.KingMoved && !CastlingInfo.RooksMoved[RookIdx]);
 					

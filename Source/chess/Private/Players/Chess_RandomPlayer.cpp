@@ -73,67 +73,8 @@ void AChess_RandomPlayer::OnTurn()
 					if (GameMode->GField->IsValidTile(OldX, OldY)
 						&& GameMode->GField->IsValidTile(NewX, NewY))
 					{
-						TArray<ATile*> TilesArray = GameMode->GField->GetTileArray();
-
-						// EatFlag is true if the Tile->PawnColor is the opposite of the black pawn
-						// e.g. Tile->PawnwColor = 1 (white) , Pawn->Color = -1 => EatFlag = true
-						// e.g. Tile->PawnwColor = 0 (empty) , Pawn->Color = -1 => EatFlag = flag
-						bool EatFlag = static_cast<int>(TilesArray[NewX * GameMode->GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(GameMode->GField->PawnArray[RandPieceNum]->GetColor());
-						if (EatFlag)
-						{
-							ABasePawn* PawnToEat = TilesArray[NewX * GameMode->GField->Size + NewY]->GetPawn();
-							if (PawnToEat)
-								GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
-						}
-
-						// TilesArray[OldX * GameMode->GField->Size + OldY]->ClearInfo();
-
-						// Clear starting tile (no player owner, no pawn on it, ...)
-						// Update ending tile (new player owner, new tile status, new pawn)
-						GameMode->GField->PawnArray[RandPieceNum]->Move(TilesArray[OldX * GameMode->GField->Size + OldY], TilesArray[NewX * GameMode->GField->Size + NewY]);
-
-
-						// Castling Handling (King moves by two tiles)
-						if (GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::KING
-							&& FMath::Abs(NewY - OldY) == 2)
-						{
-							// Move the rook
-							bool ShortCastling = (NewY - OldY) > 0;
-							int8 RookX = GameMode->GField->PawnArray[RandPieceNum]->GetColor() == EPawnColor::WHITE ? 0 : 7;
-							int8 OldRookY = ShortCastling ? 7 : 0;
-							ATile* OldRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + OldRookY];
-							ABasePawn* RookToMove = OldRookTile->GetPawn();
-
-							int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
-							if (GameMode->GField->IsValidTile(RookX, NewRookY))
-							{
-								ATile* NewRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + NewRookY];
-								if (RookToMove)
-								{
-									RookToMove->Move(OldRookTile, NewRookTile);
-									GameMode->CastlingInfoBlack.KingMoved = true;
-									GameMode->CastlingInfoBlack.RooksMoved[NewRookY == 0 ? 0 : 1];
-								}
-							}
-						}
-
-						if (GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::ROOK)
-						{
-							GameMode->CastlingInfoBlack.RooksMoved[NewY == 0 ? 0 : 1] = true;
-						}
-
-
-
-						// TODO => superfluo (?, già fatto in gamemode)
-						if (GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
-						{
-							GameMode->GField->PawnArray[RandPieceNum]->SetMaxNumberSteps(1);
-						}
-
-						// Update last move (useful when doing pawn promotion)
-						GameMode->LastGridPosition = FVector2D(NewX, NewY);
-						GameMode->PreviousGridPosition = FVector2D(OldX, OldY);
-						GameMode->LastEatFlag = EatFlag;
+						
+						bool EatFlag = GameMode->MakeMove(GameMode->GField->PawnArray[RandPieceNum], NewX, NewY);
 					
 
 						// Pawn promotion handling
@@ -141,7 +82,7 @@ void AChess_RandomPlayer::OnTurn()
 						{
 							// Randomically choice of what to promote to
 							int8 RandSpawnPawn = FMath::Rand() % 4;
-							switch (RandPawnIdx)
+							switch (RandSpawnPawn)
 							{
 							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
 							case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
