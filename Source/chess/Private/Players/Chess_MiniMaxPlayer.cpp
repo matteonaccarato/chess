@@ -42,7 +42,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 	// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
 	// RandTimer [1.0, 3.0] seconds
 	// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
-	int8 RandTimer = FMath::Rand() % 21 + 0; // + 10;
+	int8 RandTimer = FMath::Rand() % 5 + 5; // + 10;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
 			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
@@ -58,29 +58,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 				{
 
 					// piece and move X Y
-					TArray<FTileStatus> TilesStatusBackup;
-					// GameMode->BackupTiles(TilesStatusBackup);
-					/* for (auto& Tile : GameMode->GField->TileArray)
-					{
-						FTileStatus TileStatus = Tile->GetTileStatus();
-						TilesStatusBackup.Add(TileStatus);
-						Tile->SetTileStatus(TileStatus);
-					} */
 					std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray);
-					/* int8 i = 0;
-					for (const auto& Tile : GameMode->GField->TileArray)
-					{
-						if (TilesStatusBackup.IsValidIndex(i))
-						{
-							Tile->SetTileStatus(TilesStatusBackup[i]);
-							i++;
-						}
-					} */
-					/* GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
-					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
-					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); */
 
 					ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
 					int8 OldX = Pawn->GetGridPosition()[0];
@@ -88,7 +66,6 @@ void AChess_MiniMaxPlayer::OnTurn()
 					int8 NewX = BestMove.second.first;
 					int8 NewY = BestMove.second.second;
 
-					
 					// do the move
 					bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
 
@@ -157,7 +134,13 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		int8 BishopCounts[2] = {0, 0};
 		int8 KnightsCounts[2] = {0, 0};
 		int8 PawnsCounts[2] = {0, 0};
-		
+
+		ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
+		ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
+		int8 AttackableKings[2] = { 
+			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1] == true ? 1 : 0, 
+			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0] == true ? 1 : 0
+		};
 		for (const auto& Piece : GameMode->GField->PawnArray)
 		{
 			if (Piece->GetStatus() == EPawnStatus::ALIVE)
@@ -175,11 +158,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		}
 
 		// TODO => aggiungere conto mosse possibili e condizione di scacco o scacco matto
-		Score = 9 * (QueenCounts[1] - QueenCounts[0])
+		Score = 200 * (AttackableKings[1] - AttackableKings[0])
+			+ 9 * (QueenCounts[1] - QueenCounts[0])
 			+ 5 * (RookCounts[1] - RookCounts[0])
-			+ 5 * (BishopCounts[1] - BishopCounts[0])
-			+ 5 * (KnightsCounts[1] - KnightsCounts[0])
-			+ 5 * (PawnsCounts[1] - PawnsCounts[0]);
+			+ 3 * (BishopCounts[1] - BishopCounts[0])
+			+ 3 * (KnightsCounts[1] - KnightsCounts[0])
+			+ 1 * (PawnsCounts[1] - PawnsCounts[0]);
 
 		return Score;
 	}
@@ -213,7 +197,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
 			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
 
-			int32 MaxEval = -1000;
+			int32 MaxEval = -10000;
 			int8 MaxPieceNum = -1;
 			int8 MaxX = -1;
 			int8 MaxY = -1;
@@ -248,7 +232,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
 
-					if (CurrentEval > MaxEval || (CurrentEval == MaxEval && FMath::Rand() % 2 == 1))
+					if (CurrentEval > MaxEval || (CurrentEval == MaxEval && FMath::Rand() % PiecesMoves.Num() == 1))
 					{
 						MaxEval = CurrentEval;
 						MaxPieceNum = PieceMove.first;
@@ -281,7 +265,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
 			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE);
 
-			int32 MinEval = 1000;
+			int32 MinEval = 10000;
 			int8 MinPieceNum = -1;
 			int8 MinX = -1;
 			int8 MinY = -1;
@@ -316,7 +300,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
-					if (CurrentEval < MinEval || (CurrentEval == MinEval && FMath::Rand() % 2 == 1))
+					if (CurrentEval < MinEval || (CurrentEval == MinEval && FMath::Rand() % PiecesMoves.Num() == 1))
 					{
 						MinEval = CurrentEval;
 						MinPieceNum = PieceMove.first;
@@ -356,7 +340,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 
 std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*> Board)
 {
-	int32 BestVal = -1000;
+	int32 BestVal = -10000;
 	std::pair<int8, std::pair<int8, int8>> BestMove;
 	BestMove.first = -1; BestMove.second.first = -1; BestMove.second.second = -1;
 
@@ -385,7 +369,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				// GameMode->GField->PawnArray[PieceMove.first]->Move(Move.first, Move.second, true);
 				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
 
-				// compute evaluation function for this move
+				// compute evaluation function for this move ( TODO => restituire solo newX newY)
 				// { { piece_num, { newX, newY } }, move_value }
 				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, true);
 
@@ -399,10 +383,8 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
 				// evaluate val
-				if (PieceMoveVal.second > BestVal || (PieceMoveVal.second == BestVal && FMath::Rand() % 2 == 1))
+				if (PieceMoveVal.second > BestVal || (PieceMoveVal.second == BestVal && FMath::Rand() % PiecesMoves.Num() == 1))
 				{
-					// BestMove.first = PieceMoveVal.first.first;
-					// BestMove.second = PieceMoveVal.first.second;
 					BestMove.first = PieceMove.first;
 					BestMove.second.first = Move.first;
 					BestMove.second.second = Move.second;
@@ -413,7 +395,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 		}
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
 
 
 	return BestMove;

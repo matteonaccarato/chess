@@ -343,7 +343,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 						FTileStatus TileStatus = GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus();
 
 						// Check needed to avoid pawns eat on straight line
-						if (ShowAttackable && !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
+						if (/*ShowAttackable && */ !(Pawn->GetType() == EPawnType::PAWN && PawnDirection == ECardinalDirection::NORTH))
 						{
 							// Index 0 means attackable from whites
 							// Index 1 means attackable from blacks 
@@ -563,7 +563,7 @@ EPawnColor AChess_GameMode::CheckKingUnderAttack() const
 TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
 {
 	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
-	TArray<FTileStatus> TileStatusBackup;
+	/* TArray<FTileStatus> TileStatusBackup;
 	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
@@ -572,7 +572,7 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 		TileStatus.AttackableFrom.SetNum(2, false);
 		TileStatus.WhoCanGo.Empty();
 		Tile->SetTileStatus(TileStatus);
-	}
+	} */
 
 	/* WhitePiecesCanMove.Empty();
 	BlackPiecesCanMove.Empty(); */
@@ -622,8 +622,10 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 		if (EatFlag)
 		{
 			ABasePawn* PawnToEat = TilesArray[NewX * GField->Size + NewY]->GetPawn();
-			if (PawnToEat)
+			if (PawnToEat && PawnToEat->GetType() != EPawnType::KING)
 				GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], Simulate);
+			if (PawnToEat && PawnToEat->GetType() == EPawnType::KING)
+				EatFlag = false;
 		}
 
 		// TilesArray[OldX * GField->Size + OldY]->ClearInfo();

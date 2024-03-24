@@ -11,6 +11,18 @@ En Passant
 
 
 
+
+
+to add => return immediately if checkmate
+
+incongruenza della grid position durante il calcolo delle possibili mosse
+(e.g. simulo che la rook si sposti in 6,4 da 6,3 in show possible moves viene ancora considerata in 6,3
+(cosa mistica: viene eseguita una IsCheck durante la funzione menzionata sopra)
+
+
+
+
+
 NOMENCLATURA per arrocco da aggiungere
 
 
@@ -79,3 +91,4 @@ Nomenclatura mosse:
 - [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))
 - [ ] REPLAY => va bene così, o conviene fare man mano dallo stato iniziale convertendo #id mossa a mossa sul campo ?
 - [ ] cambiare EatFlag => in CaptureFlag
+- [ ] Aggiungere attributo a piece => riferimento a tile
