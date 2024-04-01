@@ -157,8 +157,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			}
 		}
 
+
+		if (AttackableKings[0]) GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("White king POTENTIALLY under attack"));
+		if (AttackableKings[1]) GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("Black king POTENTIALLY under attack"));
+
 		// TODO => aggiungere conto mosse possibili e condizione di scacco o scacco matto
-		Score = 200 * (AttackableKings[1] - AttackableKings[0])
+		Score = 200 * (AttackableKings[0] - AttackableKings[1])
 			+ 9 * (QueenCounts[1] - QueenCounts[0])
 			+ 5 * (RookCounts[1] - RookCounts[0])
 			+ 3 * (BishopCounts[1] - BishopCounts[0])
