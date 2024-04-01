@@ -22,8 +22,8 @@ incongruenza della grid position durante il calcolo delle possibili mosse
 
 
 
-SPOSTAMENTO TORRI A CASO (con MiniMax, DEBUG => in move quando c'è tipo torre)
 
+NOMENCLATURA per arrocco da aggiungere
 
 
 

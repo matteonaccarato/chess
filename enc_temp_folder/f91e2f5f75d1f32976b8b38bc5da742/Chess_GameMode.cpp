@@ -1064,42 +1064,36 @@ FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFl
 	
 	FString MoveStr = TEXT("");
 	FString StartTileStr = TEXT("");
-	int8 DeltaY = Pawn->GetGridPosition()[1] - PreviousGridPosition[1];
-	if (Pawn && Pawn->GetType() == EPawnType::KING && FMath::Abs(DeltaY) > 1 && !Tile->GetId().IsEmpty())
+	for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
 	{
-		// Castling handling
-		MoveStr = FMath::Sign(DeltaY) > 0 ? "0-0" : "0-0-0";
-	}
-	else
-	{
-		for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
+		// TODO => to test
+		if (Pawn->GetType() == Piece->GetType() 
+			&& Pawn->GetColor() == Piece->GetColor()
+			&& Pawn->GetPieceNum() != Piece->GetPieceNum())
 		{
-			if (Pawn->GetType() == Piece->GetType() 
-				&& Pawn->GetColor() == Piece->GetColor()
-				&& Pawn->GetPieceNum() != Piece->GetPieceNum())
+			if (PreviousGridPosition[1] == Piece->GetGridPosition()[1])
 			{
-				if (PreviousGridPosition[1] == Piece->GetGridPosition()[1])
-				{
-					StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
-				}
-				else
-				{
-					StartTileStr += PreviousTile->GetLetterId().ToLower();
-				}
+				StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
+			}
+			else
+			{
+				StartTileStr += PreviousTile->GetLetterId().ToLower();
 			}
 		}
+	}
 
-		if (Pawn && !Tile->GetId().IsEmpty())
-		{
-			MoveStr = ((IsPawn || PawnPromotionFlag)? TEXT("") : Pawn->GetId()) +
-				StartTileStr +
-				(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
-				(EatFlag ? TEXT("x") : TEXT("")) + 
-				Tile->GetId().ToLower() +
-				(PawnPromotionFlag? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
-				((CheckFlag != EPawnColor::NONE &&  CheckMateFlag == EPawnColor::NONE)? TEXT("+") : TEXT("")) +
-				(CheckMateFlag != EPawnColor::NONE ? TEXT("#") : TEXT(""));
-		}
+	if (Pawn && !Tile->GetId().IsEmpty())
+	{
+		MoveStr = ((IsPawn || PawnPromotionFlag)? TEXT("") : Pawn->GetId()) +
+			StartTileStr +
+			(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
+			(EatFlag ? TEXT("x") : TEXT("")) + 
+			Tile->GetId().ToLower() +
+			(PawnPromotionFlag? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
+			((CheckFlag != EPawnColor::NONE &&  CheckMateFlag == EPawnColor::NONE)? TEXT("+") : TEXT("")) +
+			(CheckMateFlag != EPawnColor::NONE ? TEXT("#") : TEXT(""));
+
+		// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, MoveStr);
 	}
 
 	return MoveStr;
