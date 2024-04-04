@@ -355,8 +355,10 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
 					}
 					else {
-						// If the piece cannot do a move with n steps, it will not do it with n+1 steps
-						break;
+						// If the piece cannot do a move with n steps in a direction (due to the presence of another piece),
+						//  it will not do it with n+1 steps in that direction
+						if (GField->IsValidTile(X + XOffset, Y + YOffset) && !GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->GetTileStatus().EmptyFlag)
+							break;
 					}
 				}
 			}
@@ -607,6 +609,12 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 
 bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate)
 {
+	// TODO => just to test
+	if (Piece->GetType() == EPawnType::ROOK && !Simulate)
+	{
+		Simulate = Simulate;
+	}
+
 	bool EatFlag = false;
 	int8 OldX = Piece->GetGridPosition()[0];
 	int8 OldY = Piece->GetGridPosition()[1];

@@ -86,6 +86,11 @@ FVector2D ABasePawn::GetGridPosition() const
 
 void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 {
+	// TODO => just to test
+	if (Type == EPawnType::ROOK)
+	{
+		Type = Type;
+	}
 	if (OldTile && NewTile)
 	{
 		OldTile->ClearInfo();

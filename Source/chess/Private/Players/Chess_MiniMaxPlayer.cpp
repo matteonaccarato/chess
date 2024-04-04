@@ -53,7 +53,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), GameMode->BlackPiecesCanMove.Num()));
 
-				// If there are black pawns eligible to move
+				// If there are black pieces eligible to move
 				if (GameMode->BlackPiecesCanMove.Num() > 0)
 				{
 
@@ -66,7 +66,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 					int8 NewX = BestMove.second.first;
 					int8 NewY = BestMove.second.second;
 
-					// do the move
+					// make the move
 					bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
 
 					// Pawn promotion handling
@@ -85,14 +85,14 @@ void AChess_MiniMaxPlayer::OnTurn()
 					else
 					{
 						// End Turn
-						GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
+						GameMode->IsCheck(); // TODO => da rimuovere in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
 						GameMode->AddToReplay(Pawn, EatFlag);
 						GameMode->EndTurn(PlayerNumber);
 					}
 				}
 				else
 				{
-					// No pawns can make eligible moves => BLACK is checkmated
+					// No pieces can make eligible moves => BLACK is checkmated
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
 
 					GameMode->CheckMateFlag = EPawnColor::BLACK;
@@ -115,6 +115,10 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		// se re sotto scacco => cosa metto ?
 		// se re sotto scacco matto => metto infinito
 		int8 Score = 0;
+		int8 WhiteMobility = 0;
+		int8 BlackMobility = 0;
+		bool WhiteCheckMate = false;
+		bool BlackCheckMate = false;
 	
 		/* f(p) =	200(K - K')
 					+ 9(Q - Q')
@@ -128,46 +132,74 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			D, S, I = doubled, blocked and isolated pawns
 			M = Mobility(the number of legal moves) */
 
-		// White, Black
-		int8 QueenCounts[2] = {0, 0};
-		int8 RookCounts[2] = {0, 0};
-		int8 BishopCounts[2] = {0, 0};
-		int8 KnightsCounts[2] = {0, 0};
-		int8 PawnsCounts[2] = {0, 0};
+		/* TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> WhiteMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE);
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> BlackMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK); 
 
-		ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
-		ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
-		int8 AttackableKings[2] = { 
-			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1] == true ? 1 : 0, 
-			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0] == true ? 1 : 0
-		};
-		for (const auto& Piece : GameMode->GField->PawnArray)
+		if (WhiteMoves.Num() == 0)
+			WhiteCheckMate = true;
+		if (BlackMoves.Num() == 0)
+			BlackCheckMate = true; */
+
+		if (!WhiteCheckMate && !BlackCheckMate)
 		{
-			if (Piece->GetStatus() == EPawnStatus::ALIVE)
+			// White, Black
+			int8 QueenCounts[2] = {0, 0};
+			int8 RookCounts[2] = {0, 0};
+			int8 BishopCounts[2] = {0, 0};
+			int8 KnightsCounts[2] = {0, 0};
+			int8 PawnsCounts[2] = {0, 0};
+
+			ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
+			ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
+			int8 AttackableKings[2] = { 
+				GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1] == true ? 1 : 0, 
+				GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0] == true ? 1 : 0
+			};
+
+			// TODO => raggruppare i due cicli in funzione
+			/* for (const auto& WhiteMove : WhiteMoves)
 			{
-				int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
-				switch (Piece->GetType())
+				WhiteMobility += WhiteMove.second.Num();
+			}
+			for (const auto& BlackMove : BlackMoves)
+			{
+				BlackMobility += BlackMove.second.Num();
+			} */
+
+			for (const auto& Piece : GameMode->GField->PawnArray)
+			{
+				if (Piece->GetStatus() == EPawnStatus::ALIVE)
 				{
-				case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
-				case EPawnType::ROOK: RookCounts[IdxColor]++; break;
-				case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
-				case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
-				case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
+					int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
+					switch (Piece->GetType())
+					{
+					case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
+					case EPawnType::ROOK: RookCounts[IdxColor]++; break;
+					case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
+					case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
+					case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
+					}
 				}
 			}
+
+
+			if (AttackableKings[0])
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("White king POTENTIALLY under attack"));
+			if (AttackableKings[1]) 
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Orange, TEXT("Black king POTENTIALLY under attack"));
+
+			Score = 90 * (AttackableKings[0] - AttackableKings[1])
+				+ 9 * (QueenCounts[1] - QueenCounts[0])
+				+ 5 * (RookCounts[1] - RookCounts[0])
+				+ 3 * (BishopCounts[1] - BishopCounts[0])
+				+ 3 * (KnightsCounts[1] - KnightsCounts[0])
+				+ 1 * (PawnsCounts[1] - PawnsCounts[0])
+				+ 0.1 * (BlackMobility - WhiteMobility);
 		}
-
-
-		if (AttackableKings[0]) GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("White king POTENTIALLY under attack"));
-		if (AttackableKings[1]) GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("Black king POTENTIALLY under attack"));
-
-		// TODO => aggiungere conto mosse possibili e condizione di scacco o scacco matto
-		Score = 200 * (AttackableKings[0] - AttackableKings[1])
-			+ 9 * (QueenCounts[1] - QueenCounts[0])
-			+ 5 * (RookCounts[1] - RookCounts[0])
-			+ 3 * (BishopCounts[1] - BishopCounts[0])
-			+ 3 * (KnightsCounts[1] - KnightsCounts[0])
-			+ 1 * (PawnsCounts[1] - PawnsCounts[0]);
+		else
+		{
+			Score = WhiteCheckMate ? 1000 : -1000;
+		}
 
 		return Score;
 	}
@@ -242,6 +274,13 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 						MaxPieceNum = PieceMove.first;
 						MaxX = Move.first;
 						MaxY = Move.second;
+
+						// TODO => magic number (CHECKMATE_VALUE)
+						if (CurrentEval == 1000)
+						{
+							// DA QUALE CICLO ESCO ?
+							break;
+						}
 					}
 					
 					/* ... */
@@ -310,6 +349,13 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 						MinPieceNum = PieceMove.first;
 						MinX = Move.first;
 						MinY = Move.second;
+						
+						// TODO => magic number (CHECKMATE_VALUE)
+						if (CurrentEval == -1000)
+						{
+							// DA QUALE CICLO ESCO ?
+							break;
+						}
 					}
 
 					/* ... */
@@ -399,6 +445,8 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 		}
 	}
 	
+	if (BestVal == 10000)
+		BestVal = BestVal;
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
 
 

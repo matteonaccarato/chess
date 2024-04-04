@@ -6,32 +6,25 @@ partita patta
 	=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
 	=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
-Arrocco (da verificare se soddisfa le condizioni di non passare, essere, andare in scacco)
-En Passant
 
-
-
-
-
-to add => return immediately if checkmate
+EVALUATION
+	return immediately if checkmate
 
 incongruenza della grid position durante il calcolo delle possibili mosse
 (e.g. simulo che la rook si sposti in 6,4 da 6,3 in show possible moves viene ancora considerata in 6,3
 (cosa mistica: viene eseguita una IsCheck durante la funzione menzionata sopra)
 
 
-
-
 SPOSTAMENTO TORRI A CASO (con MiniMax, DEBUG => in move quando c'è tipo torre)
 
+
+
+!!! PROBLEMA => king tenta di mangiare king !!!
 
 
 
 How To Create UMG UI in Unreal Engine - Animating Widgets 
 https://youtu.be/SD66UgyHiMM?si=ZoCKFO_R1YV-gRLk
-
-
-il pawn promotion è obbligatorio o l'utente può non farlo?
 
 bottoni legno:
 	- <a href="https://www.freepik.com/free-vector/wooden-buttons-different-shapes-vector-illustrations-set-play-stop-check-star-buttons-with-wood-texture-progress-bar-white-background-user-interface-concept-game-app-website-design_24645050.htm">Image by pch.vector</a> on Freepik
@@ -42,33 +35,23 @@ bottoni legno:
 - [ ] MiniMax Player
 - [X] Replay
 - [X] Pawn Promotion
-- [ ] Arrocco / En Passant
+- [X] Arrocco
+- [ ] En Passant
 
 #### TODO:
 segnalazione di elementi null tramite UE_LOG()
-Nomenclatura mosse:
-	- pawn promotion
-	- scacco matto
-	- esito partita (vittoria/sconfitta/pareggio)
-	- BUG nomenclatura mossa => se tolgo da scacco, rimane comunque il +
 - [ ] Leggere regolamento (e implementare regole particolari di mangiare e proteggere re)
 - [ ] aggiungere controlli nei parametri per != nullptr
 - [ ] calcolo ischeck 1° for superfluo se gli passo un pawn (vuol dire che è sottoscacco e voglio provare a liberarmi)
 - [ ] std::pair va bene o unreal si offende
 - [ ] se king si posiziona tale che vuole mangiare l'altro king => situazione da gestire come non consentita (non la gestisco perché appena trovo king sotto attacco, faccio break)
-- [ ] quando si vedono le possibili mosse (cambio material) e clicco su un replay, le mosse possibili rimangono visibili
-
 
 
 #### BUGS
 - [ ] Nomenclatura quando sotto scacco matto non funzionante
 - [ ] Save board status quando scacco matto (salva due mosse in una (fatto video con telefono))
 - [ ] quando clicco back mentre gioca l'avversario, crasha tutto :) (disabilito i bottoni)
-
-#### TO REVIEW (if already implemented)
-- [ ] in random player => toglliere case epawntype@101, gestire tutti i movimenti nelle direzioni cardinali, eat flag dipende da se in newx e newy è NON occupata (occupata da bianco)
-- [ ] Sostituire north sout, con forward backward
-
+- [ ] score counting
 
 
 #### EXTRA
@@ -92,3 +75,7 @@ Nomenclatura mosse:
 - [ ] REPLAY => va bene così, o conviene fare man mano dallo stato iniziale convertendo #id mossa a mossa sul campo ?
 - [ ] cambiare EatFlag => in CaptureFlag
 - [ ] Aggiungere attributo a piece => riferimento a tile
+- [ ] 
+- [ ] SETTINGS
+- [ ]	=> Audio
+- [ ]	=> Difficulty (Random / MiniMax )
