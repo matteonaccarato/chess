@@ -130,7 +130,7 @@ void AChess_HumanPlayer::OnClick()
 							TileStatus.EmptyFlag = 1;
 							TileStatus.PawnColor = EPawnColor::NONE;
 							TileStatus.PawnType = EPawnType::NONE;
-							TileStatus.AttackableFrom.SetNum(2, false);
+							TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 							TileStatus.WhoCanGo.Empty();
 							Tile->SetTileStatus(TileStatus);
 							Tile->SetPawn(nullptr);
@@ -332,6 +332,7 @@ void AChess_HumanPlayer::OnClick()
 						
 						
 						// Update info with last move
+						GameMode->LastPiece = PawnTemp;
 						GameMode->LastGridPosition = NewTile->GetGridPosition();
 						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
 						GameMode->LastEatFlag = PawnToEat ? true : false;
@@ -361,7 +362,7 @@ void AChess_HumanPlayer::OnClick()
 							GameMode->IsCheck();
 
 							// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
-							GameMode->AddToReplay(PawnTemp, PawnToEat ? 1 : 0);
+							// GameMode->AddToReplay(PawnTemp, PawnToEat ? 1 : 0);
 							GameMode->EndTurn(PlayerNumber);
 						}						
 					}

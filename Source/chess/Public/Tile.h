@@ -18,7 +18,7 @@ struct FTileStatus
 
 	ABasePawn* Piece;
 	bool EmptyFlag; // 1 => Empty, 0 => Occupied
-	TArray<bool> AttackableFrom; // 0-cell => from WHITE, 1-cell => from BLACK
+	int8 AttackableFrom[2] = { 0, 0}; // 0-cell => from WHITE, 1-cell => from BLACK
 	TArray<ABasePawn*> WhoCanGo;
 	EPawnColor PawnColor;
 	EPawnType PawnType;

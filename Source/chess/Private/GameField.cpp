@@ -415,8 +415,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 	{
 		ATile* TileObj = GetTileArray()[X * Size + Y];
 		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
-		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		FTileStatus TileStatus = { nullptr, 0, TmpFalse, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED };
+		FTileStatus TileStatus = { nullptr, 0, {0, 0}, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED };
 
 		TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_PawnClass };
 		TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_PawnClass };
@@ -509,8 +508,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 		{
 			// Reset old tile status
 			Tile->SetPawn(nullptr);
-			TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-			Tile->SetTileStatus({ nullptr, 1, TmpFalse, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
+			Tile->SetTileStatus({ nullptr, 1, {0, 0}, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE});
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		}
 

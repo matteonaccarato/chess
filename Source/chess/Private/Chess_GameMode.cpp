@@ -98,16 +98,17 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
  * ----------------------------
  *   Handles the end of turn of the player passed as parameter
  *
- *   PlayerNumber	int32	The number of the player whose turn ends
+ *   PlayerNumber		int32	The number of the player whose turn ends
+ *   PiecePromotionFlag	bool	Flag to notify piece promotion, required in the computation of the move name
  */
-void AChess_GameMode::EndTurn(const int32 PlayerNumber)
+void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotionFlag)
 {
-
 	// -1 to notify checkmate
 	if (PlayerNumber == -1)
 	{
 		IsGameOver = true;
-
+		// Increment needed to perform replay last two moves properly
+		MoveCounter++;
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d under CHECK MATE"), CheckMateFlag));
 
 		// On Win and On Lose events
@@ -117,11 +118,11 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 				Players[i]->OnLose();
 	
 		// Timer to reset the field ( TODO => magari non faccio reset, così l'utente può guardarsi tutto con calma)
-		FTimerHandle TimerHandle;
+		/* FTimerHandle TimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 			{
 				GField->ResetField();
-			}, 3, false);
+			}, 3, false); */
 	}
 	else
 	{
@@ -143,7 +144,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		for (ATile* Tile : GField->GetTileArray())
 		{
 			FTileStatus TileStatus = Tile->GetTileStatus();
-			TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)] = false;
+			TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)] = 0;
 			TileStatus.WhoCanGo.Empty();
 			Tile->SetTileStatus(TileStatus);
 		}
@@ -173,6 +174,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 		// Operation to init data strcture
 		InitTurn();
 
+
 		if (CheckFlag != EPawnColor::NONE)
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
 		
@@ -180,6 +182,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber)
 			CheckMateFlag = EPawnColor::WHITE;
 		if (BlackPiecesCanMove.Num() == 0)
 			CheckMateFlag = EPawnColor::BLACK;
+
+		AddToReplay(LastPiece, LastEatFlag, PiecePromotionFlag);
 
 		if (CheckMateFlag != EPawnColor::NONE)
 			EndTurn(-1);
@@ -233,7 +237,7 @@ void AChess_GameMode::InitTurn()
 	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
-		TileStatus.AttackableFrom.SetNum(2, false);
+		TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 		TileStatus.WhoCanGo.Empty();
 		Tile->SetTileStatus(TileStatus);
 	}
@@ -284,8 +288,10 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 
 	// TODO => vedere se si può alleggerire (posso rimuovere, viene fatto quando l'ai inizia il turno)
 	IsCheck();
-	AddToReplay(PawnTemp, LastEatFlag, true);
-	EndTurn(CurrentPlayer);
+	// AddToReplay(PawnTemp, LastEatFlag, true);
+	LastPiece = PawnTemp;
+	LastEatFlag = LastEatFlag;
+	EndTurn(CurrentPlayer, true);
 }
 
 /*
@@ -347,7 +353,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 						{
 							// Index 0 means attackable from whites
 							// Index 1 means attackable from blacks 
-							TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] = true;
+							TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] += 1;
 						}
 						if (UpdateWhoCanGoFlag)
 							TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
@@ -453,7 +459,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 				FTileStatus TileStatus = Tile->GetTileStatus();
 				TileStatusBackup.Add(std::make_pair(std::make_pair(X, Y), TileStatus));
 
-				TileStatus.AttackableFrom.SetNum(2, false);
+				TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 				Tile->SetTileStatus(TileStatus);
 			}
 
@@ -509,8 +515,7 @@ void AChess_GameMode::ComputeAttackableTiles()
 	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
-		TArray<bool> TmpFalse; TmpFalse.SetNum(2, false);
-		TileStatus.AttackableFrom = TmpFalse;
+		TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 		Tile->SetTileStatus(TileStatus);
 	}
 
@@ -609,12 +614,6 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 
 bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate)
 {
-	// TODO => just to test
-	if (Piece->GetType() == EPawnType::ROOK && !Simulate)
-	{
-		Simulate = Simulate;
-	}
-
 	bool EatFlag = false;
 	int8 OldX = Piece->GetGridPosition()[0];
 	int8 OldY = Piece->GetGridPosition()[1];
@@ -660,17 +659,24 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 				ATile* NewRookTile = GField->TileArray[RookX * GField->Size + NewRookY];
 				if (RookToMove)
 				{
-					RookToMove->Move(OldRookTile, NewRookTile);
+					RookToMove->Move(OldRookTile, NewRookTile, Simulate);
 					// TODO => qui specifico CastlingInfoBLACK (farlo o generale o altro)
-					CastlingInfoBlack.KingMoved = true;
-					CastlingInfoBlack.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
+					FCastlingInfo CastlingInfo = Piece->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
+					CastlingInfo.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
 				}
 			}
+		}
+		
+		if (Piece->GetType() == EPawnType::KING)
+		{
+			FCastlingInfo CastlingInfo = Piece->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
+			CastlingInfoBlack.KingMoved = true;
 		}
 
 		if (Piece->GetType() == EPawnType::ROOK)
 		{
-			CastlingInfoBlack.RooksMoved[NewY == 0 ? 0 : 1] = true;
+			FCastlingInfo CastlingInfo = Piece->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
+			CastlingInfo.RooksMoved[NewY == 0 ? 0 : 1] = true;
 		}
 
 
@@ -766,7 +772,10 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 			case EPawnType::QUEEN: // so it works like an OR for Queen and King
 			case EPawnType::KING:
-				TArray<bool> AttackableFrom = GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom;
+				int8 AttackableFrom[2] = {
+					GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom[0],
+					GField->GetTileArray()[NewGridPosition[0] * GField->Size + NewGridPosition[1]]->GetTileStatus().AttackableFrom[1] 
+				};
 				
 				if (CastlingFlag)
 				{
@@ -948,8 +957,8 @@ void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
 			Tile->SetTileStatus(TilesStatusBackup[i]);
 			Tile->SetPlayerOwner(TilesStatusBackup[i].PlayerOwner);
 			Tile->SetPawn(TilesStatusBackup[i].Piece);
-			i++;
 		}
+		i++;
 	}
 }
 
@@ -1015,7 +1024,8 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando")));
+			// TODO => commento da rimuovere
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando questo è il turno corrente")));
 			GField->LoadBoard(CurrentBoard);
 			// CanPlay = true;
 			ReplayInProgress = MoveCounter;

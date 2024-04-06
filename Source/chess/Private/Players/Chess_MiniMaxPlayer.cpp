@@ -86,12 +86,15 @@ void AChess_MiniMaxPlayer::OnTurn()
 					{
 						// End Turn
 						GameMode->IsCheck(); // TODO => da rimuovere in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
-						GameMode->AddToReplay(Pawn, EatFlag);
+						// GameMode->AddToReplay(Pawn, EatFlag);
+						GameMode->LastPiece = Pawn;
+						GameMode->LastEatFlag = EatFlag;
 						GameMode->EndTurn(PlayerNumber);
 					}
 				}
 				else
 				{
+					// TODO => else superfluo => gestito in gamemode (tolgo anche da human player )
 					// No pieces can make eligible moves => BLACK is checkmated
 					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
 
@@ -152,8 +155,8 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
 			ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
 			int8 AttackableKings[2] = { 
-				GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1] == true ? 1 : 0, 
-				GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0] == true ? 1 : 0
+				GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1], 
+				GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
 			};
 
 			// TODO => raggruppare i due cicli in funzione
@@ -200,7 +203,10 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		{
 			Score = WhiteCheckMate ? 1000 : -1000;
 		}
-
+		if (FMath::Abs(Score) == 10000)
+		{
+			Score = Score;
+		}
 		return Score;
 	}
 	else
@@ -444,9 +450,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 
 		}
 	}
-	
-	if (BestVal == 10000)
-		BestVal = BestVal;
+
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
 
 

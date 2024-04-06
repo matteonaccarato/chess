@@ -48,7 +48,7 @@ void AChess_RandomPlayer::OnTurn()
 				for (auto& Tile : GameMode->GField->GetTileArray())
 				{
 					FTileStatus TileStatus = Tile->GetTileStatus();
-					TileStatus.AttackableFrom.SetNum(2, false);
+					TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 					TileStatus.WhoCanGo.Empty();
 					Tile->SetTileStatus(TileStatus);
 				}
@@ -94,7 +94,9 @@ void AChess_RandomPlayer::OnTurn()
 						{
 							// End Turn
 							GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
-							GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
+							GameMode->LastPiece = GameMode->GField->PawnArray[RandPieceNum];
+							GameMode->LastEatFlag = EatFlag;
+							// GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
 							GameMode->EndTurn(PlayerNumber);
 						}
 

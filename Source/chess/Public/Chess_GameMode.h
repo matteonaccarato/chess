@@ -132,9 +132,9 @@ public:
 	// Type chosen for pawn promotion
 	EPawnType PawnPromotionType;
 
-	// Used to remember which pawn to promote
+	// Used to remember which information about last move
+	ABasePawn* LastPiece;
 	FVector2D LastGridPosition;
-
 	bool LastEatFlag = false;
 
 	// Used to remember previous grid position in notation
@@ -148,7 +148,7 @@ public:
 
 	void ChoosePlayerAndStartGame();
 
-	void EndTurn(const int32 PlayerNumber);
+	void EndTurn(const int32 PlayerNumber, const bool PiecePromotionFlag = false);
 
 	int32 GetNextPlayer(int32 Player);
 

@@ -1,25 +1,25 @@
 # CHESS
 
+NEXT:
+	- Scelta difficoltà con toggle
 
-partita patta 
-	=> king vs king
-	=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
-	=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
+	- partita patta 
+		=> king vs king
+		=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
+		=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
+	- !!! PROBLEMA => king tenta di mangiare king !!!
 
-EVALUATION
-	return immediately if checkmate
-
-incongruenza della grid position durante il calcolo delle possibili mosse
-(e.g. simulo che la rook si sposti in 6,4 da 6,3 in show possible moves viene ancora considerata in 6,3
-(cosa mistica: viene eseguita una IsCheck durante la funzione menzionata sopra)
-
-
-SPOSTAMENTO TORRI A CASO (con MiniMax, DEBUG => in move quando c'è tipo torre)
+	- EVALUATION
+		return immediately if checkmate
 
 
 
-!!! PROBLEMA => king tenta di mangiare king !!!
+
+
+
+
+
 
 
 

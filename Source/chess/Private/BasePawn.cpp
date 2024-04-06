@@ -87,7 +87,7 @@ FVector2D ABasePawn::GetGridPosition() const
 void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 {
 	// TODO => just to test
-	if (Type == EPawnType::ROOK)
+	if (Type == EPawnType::ROOK && !Simulate)
 	{
 		Type = Type;
 	}
@@ -97,8 +97,7 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 
 		int8 PlayerOwner = GetColor() == EPawnColor::WHITE ? 0 : 1;
 		NewTile->SetPlayerOwner(PlayerOwner);
-		TArray<bool> TmpFalse; TmpFalse.Add(false); TmpFalse.Add(false);
-		NewTile->SetTileStatus({ this, 0, TmpFalse, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType(), PlayerOwner });
+		NewTile->SetTileStatus({ this, 0, { 0, 0 }, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType(), PlayerOwner });
 		NewTile->SetPawn(this);
 
 		FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
