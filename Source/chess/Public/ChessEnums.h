@@ -22,7 +22,8 @@ enum class EPawnColor : int8
 {
 	NONE = 0,
 	WHITE = 1,
-	BLACK = -1
+	BLACK = -1,
+	BOTH = 2
 };
 
 UENUM()

@@ -195,7 +195,8 @@ void AChess_HumanPlayer::OnClick()
 							}
 						}
 
-
+						
+						// TODO => Mettere in funzione a parte ma occhio che non funzionava
 						for (auto& Piece : GameMode->GField->PawnArray)
 						{
 							EPawnColor PreviousCheckFlag = GameMode->CheckFlag;
@@ -252,6 +253,7 @@ void AChess_HumanPlayer::OnClick()
 					// Visually show possible tile to go on
 					if (GameMode->TurnPossibleMoves.IsValidIndex(PawnTemp->GetPieceNum()))
 					{ 
+						// TODO => serve ShownPossibleMoves o si può raggruppare con TurnPossibleMoves
 						GameMode->ShownPossibleMoves = GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()];
 						for (const auto& move : GameMode->ShownPossibleMoves)
 						{

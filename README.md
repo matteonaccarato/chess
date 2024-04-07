@@ -8,7 +8,12 @@ NEXT:
 		=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
 		=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
-	- !!! PROBLEMA => king tenta di mangiare king !!!
+	- valutare promozione pedone in minimax 
+	- testare replay
+
+	- condizione di ripristino del castling (in human player) NON vanno bene 
+		=> l'essere in quella posizione non implica il non aver mai mosso quella pedina 
+			(salvo anche l'informazione del castling)
 
 	- EVALUATION
 		return immediately if checkmate

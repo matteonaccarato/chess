@@ -545,45 +545,40 @@ void AChess_GameMode::ComputeAttackableTiles()
  * ----------------------------
  *   Looks if each king is on a tile which is attackable from an opponent piece
  *
- *   return: EPawnColor		Color of the king under check (NONE, WHITE, BLACK)
+ *   return: EPawnColor		Color of the king under check (NONE, WHITE, BLACK, BOTH). BOTH means a NOT valid situation
  */
 EPawnColor AChess_GameMode::CheckKingUnderAttack() const
 {
 	EPawnColor TmpCheckFlag = EPawnColor::NONE;
 	// TODO => non faccio ciclo , ma guardo i piece num dei king nella gamemode
-	for (auto& Piece : GField->GetPawnArray())
+	// Check white king
+	const ABasePawn* WhiteKing = GField->PawnArray[KingWhitePieceNum];
+	const ABasePawn* BlackKing = GField->PawnArray[KingBlackPieceNum];
+
+
+	for (auto& King : { WhiteKing, BlackKing })
 	{
-		if (Piece->GetType() == EPawnType::KING && Piece->GetStatus() == EPawnStatus::ALIVE)
+		int8 KingX = King->GetGridPosition()[0];
+		int8 KingY = King->GetGridPosition()[1];
+		int8 OpponentIdx = (static_cast<int>(King->GetColor()) == 1) ? 1 : 0;
+		if (King->GetStatus() == EPawnStatus::ALIVE && GField->IsValidTile(KingX, KingY))
 		{
-			FVector2D PawnGrid = Piece->GetGridPosition();
-			int8 OpponentIdx = (static_cast<int>(Piece->GetColor()) == 1) ? 1 : 0;
-			if (GField->GetTileArray()[PawnGrid[0] * GField->Size + PawnGrid[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
+			if (GField->GetTileArray()[KingX * GField->Size + KingY]->GetTileStatus().AttackableFrom[OpponentIdx])
 			{
-				TmpCheckFlag = Piece->GetColor();
-				break;
+				if (TmpCheckFlag == EPawnColor::NONE)
+					TmpCheckFlag = King->GetColor();
+				else
+					TmpCheckFlag = EPawnColor::BOTH; // Error kings cannot be under check at the same time
 			}
 		}
 	}
+
 	return TmpCheckFlag;
 }
 
 TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
 {
 	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
-	/* TArray<FTileStatus> TileStatusBackup;
-	for (auto& Tile : GField->TileArray)
-	{
-		FTileStatus TileStatus = Tile->GetTileStatus();
-		TileStatusBackup.Add(TileStatus);
-
-		TileStatus.AttackableFrom.SetNum(2, false);
-		TileStatus.WhoCanGo.Empty();
-		Tile->SetTileStatus(TileStatus);
-	} */
-
-	/* WhitePiecesCanMove.Empty();
-	BlackPiecesCanMove.Empty(); */
-
 	// TODO => compute possible moves of current player 
 	// (tarray di tarray per mosse possibli, accedo con pieceNum
 	// bool BlackCanMove = false;
@@ -601,13 +596,6 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
 			}
 		}
-		
-			/* switch (Piece->GetColor())
-			{
-			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); break;
-			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); break;
-			} */
-
 	}
 	return PiecesMoves;
 }
@@ -1028,6 +1016,7 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando questo è il turno corrente")));
 			GField->LoadBoard(CurrentBoard);
 			// CanPlay = true;
+			
 			ReplayInProgress = MoveCounter;
 			Players[CurrentPlayer]->OnTurn();
 		}
