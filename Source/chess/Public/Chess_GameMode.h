@@ -95,11 +95,11 @@ public:
 	int8 KingWhitePieceNum = -1;
 	int8 KingBlackPieceNum = -1;
 
-	// Who is under check || NONE || WHITE || BLACK
+	// Notifies check situation || NONE || WHITE || BLACK || BOTH
 	EPawnColor CheckFlag; 
 
-	// Who has been Check Mated || NONE || WHITE || BLACK
-	EPawnColor CheckMateFlag; 
+	// Match result
+	EMatchResult MatchStatus; 
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGameField> GameFieldClass;
@@ -143,18 +143,13 @@ public:
 
 
 	AChess_GameMode();
-
 	virtual void BeginPlay() override;
 
 	void ChoosePlayerAndStartGame();
-
+	int32 GetNextPlayer(int32 Player);
+	void TurnNextPlayer();
 	void EndTurn(const int32 PlayerNumber, const bool PiecePromotionFlag = false);
 
-	int32 GetNextPlayer(int32 Player);
-
-	void TurnNextPlayer();
-
-	// void ComputeCheck();
 
 	/*
 	*/
@@ -199,6 +194,11 @@ public:
 
 
 private:
-	EPawnColor CheckKingUnderAttack() const;
+	EPawnColor CheckKingsUnderAttack() const;
 	void InitTurn();
+
+
+	bool SameConfigurationBoard(const int8 Times) const;
+	bool SeventyFive_MoveRule() const;
+	bool ImpossibilityToCheckmate() const;
 };

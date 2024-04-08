@@ -36,7 +36,7 @@ public:
 
 	UStaticMeshComponent* GetStaticMeshComponent() const;
 
-	void SetPawn(ABasePawn* TilePawn);
+	void SetPawn(ABasePawn* Piece);
 	ABasePawn* GetPawn() const;
 
 	FString GetId() const;
@@ -82,9 +82,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInstance* MaterialInstance;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ABasePawn* Pawn;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString LetterId;

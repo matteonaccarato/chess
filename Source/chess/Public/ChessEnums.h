@@ -27,6 +27,18 @@ enum class EPawnColor : int8
 };
 
 UENUM()
+enum class EMatchResult : int8
+{
+	NONE,					// nothing to notify
+	WHITE,					// white checkmated
+	BLACK,					// black checkmated
+	STALEMATE,				// no eligible moves available but the king is not under check
+	FIVEFOLD_REPETITION,	// five times the same board configuration
+	SEVENTY_FIVE_MOVE_RULE,	// in the previous 75 moves by each side no pawns has move and no capture has been made
+	INSUFFICIENT_MATERIAL	// impossibility to checkmate (e.g. king vs king, ...)
+};
+
+UENUM()
 enum class ECardinalDirection : uint8
 {
 	NORTH,

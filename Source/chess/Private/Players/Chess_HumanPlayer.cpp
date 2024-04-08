@@ -132,21 +132,24 @@ void AChess_HumanPlayer::OnClick()
 							TileStatus.PawnType = EPawnType::NONE;
 							TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 							TileStatus.WhoCanGo.Empty();
-							Tile->SetTileStatus(TileStatus);
-							Tile->SetPawn(nullptr);
-						}
+							Tile->SetTileStatus({ nullptr, 1, {0, 0}, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE });
+							// Tile->SetPawn(nullptr);
+						} 
 
 						for (const auto& Piece : GameMode->GField->PawnArray)
 						{
 							if (Piece->GetStatus() == EPawnStatus::ALIVE && GameMode->GField->IsValidTile(Piece->GetGridPosition()[0], Piece->GetGridPosition()[1]))
 							{
 								ATile* Tile = GameMode->GField->TileArray[Piece->GetGridPosition()[0] * GameMode->GField->Size + Piece->GetGridPosition()[1]];
-								FTileStatus TileStatus = Tile->GetTileStatus();
-								TileStatus.EmptyFlag = 0;
-								TileStatus.PawnColor = Piece->GetColor();
-								TileStatus.PawnType = Piece->GetType();
-								Tile->SetTileStatus(TileStatus);
-								Tile->SetPawn(Piece);
+								Tile->SetTileStatus({
+									Piece,
+									0,
+									{0, 0},
+									{},
+									Piece->GetColor(),
+									Piece->GetType()
+								});
+								// Tile->SetPawn(Piece);
 
 								switch (Piece->GetType())
 								{
@@ -195,14 +198,15 @@ void AChess_HumanPlayer::OnClick()
 							}
 						}
 
+						GameMode->IsCheck();
 						
 						// TODO => Mettere in funzione a parte ma occhio che non funzionava
-						for (auto& Piece : GameMode->GField->PawnArray)
+						for (const auto& Piece : GameMode->GField->PawnArray)
 						{
-							EPawnColor PreviousCheckFlag = GameMode->CheckFlag;
+							//EPawnColor PreviousCheckFlag = GameMode->CheckFlag;
 							TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(Piece, false, true, true);
 							GameMode->TurnPossibleMoves.Add(Tmp);
-							GameMode->CheckFlag = PreviousCheckFlag;
+							//GameMode->CheckFlag = PreviousCheckFlag;
 							if (Tmp.Num() > 0)
 							{
 								switch (Piece->GetColor())
@@ -211,7 +215,7 @@ void AChess_HumanPlayer::OnClick()
 								case EPawnColor::BLACK: GameMode->BlackPiecesCanMove.Add(Piece->GetPieceNum()); break;
 								}
 							}
-						}
+						} 
 
 						
 						// delete following moves from replay history
@@ -296,52 +300,10 @@ void AChess_HumanPlayer::OnClick()
 							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
 
 						ATile* OldTile = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
-						PawnTemp->Move(OldTile, NewTile);
+						GameMode->MakeMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-						// Castling Handling (King moves by two tiles)
-						if (PawnTemp->GetType() == EPawnType::KING
-							&& FMath::Abs(NewTile->GetGridPosition()[1] - OldTile->GetGridPosition()[1]) == 2)
-						{
-							// Move the rook
-							bool ShortCastling = (NewTile->GetGridPosition()[1] - OldTile->GetGridPosition()[1]) > 0;
-							int8 RookX = PawnTemp->GetColor() == EPawnColor::WHITE ? 0 : 7;
-							int8 OldRookY = ShortCastling ? 7 : 0;
-							ATile* OldRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + OldRookY];
-							ABasePawn* RookToMove = OldRookTile->GetPawn();
-
-							int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
-							if (GameMode->GField->IsValidTile(RookX, NewRookY))
-							{
-								ATile* NewRookTile = GameMode->GField->TileArray[RookX * GameMode->GField->Size + NewRookY];
-								if (RookToMove)
-								{
-									RookToMove->Move(OldRookTile, NewRookTile);
-									GameMode->CastlingInfoWhite.KingMoved = true;
-									GameMode->CastlingInfoWhite.RooksMoved[NewRookY == 0 ? 0 : 1];
-								}
-							}
-						}
-
-						if (PawnTemp->GetType() == EPawnType::ROOK)
-						{
-							GameMode->CastlingInfoWhite.RooksMoved[OldTile->GetGridPosition()[1] == 0 ? 0 : 1] = true;
-						}
-						
-
-						// TODO => forse già fatto ?
-						if (PawnTemp->GetType() == EPawnType::PAWN)
-							PawnTemp->SetMaxNumberSteps(1);
-						
-						
-						// Update info with last move
-						GameMode->LastPiece = PawnTemp;
-						GameMode->LastGridPosition = NewTile->GetGridPosition();
-						GameMode->PreviousGridPosition = OldTile->GetGridPosition();
-						GameMode->LastEatFlag = PawnToEat ? true : false;
 						SelectedPawnFlag = 0;
-						// IsMyTurn = false;
-
-
+						
 						// Pawn promotion handling
 						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 
 							&& PawnTemp->GetType() == EPawnType::PAWN)
@@ -359,12 +321,6 @@ void AChess_HumanPlayer::OnClick()
 						}
 						else
 						{
-							// GameMode->ComputeCheck();
-							// TODO => superfluo, aggiunto in end turn
-							GameMode->IsCheck();
-
-							// GameMode->ShowPossibleMoves(PawnTemp, true, true, false);
-							// GameMode->AddToReplay(PawnTemp, PawnToEat ? 1 : 0);
 							GameMode->EndTurn(PlayerNumber);
 						}						
 					}

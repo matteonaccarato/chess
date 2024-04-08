@@ -85,8 +85,6 @@ void AChess_MiniMaxPlayer::OnTurn()
 					else
 					{
 						// End Turn
-						GameMode->IsCheck(); // TODO => da rimuovere in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
-						// GameMode->AddToReplay(Pawn, EatFlag);
 						GameMode->LastPiece = Pawn;
 						GameMode->LastEatFlag = EatFlag;
 						GameMode->EndTurn(PlayerNumber);
@@ -94,12 +92,12 @@ void AChess_MiniMaxPlayer::OnTurn()
 				}
 				else
 				{
-					// TODO => else superfluo => gestito in gamemode (tolgo anche da human player )
+					// TODO => rimuovere
 					// No pieces can make eligible moves => BLACK is checkmated
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
 
-					GameMode->CheckMateFlag = EPawnColor::BLACK;
-					GameMode->EndTurn(-1);
+					/* GameMode->MatchStatus = EPawnColor::BLACK;
+					GameMode->EndTurn(-1); */
 				}
 			}
 			else
@@ -144,7 +142,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				// compute evaluation function for this move ( TODO => restituire solo newX newY)
 				// { { piece_num, { newX, newY } }, move_value }
 				// TODO => 10000s are magic numbers (INFINITEs)
-				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, -10000, 10000, true);
+				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, -10000, 10000, false);
 
 				// undo the move
 				GameMode->RestoreTiles(TilesStatusBackup);
@@ -443,12 +441,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			}
 
 
-			if (AttackableKings[0])
+			/*if (AttackableKings[0])
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("White king POTENTIALLY under attack"));
 			if (AttackableKings[1])
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Orange, TEXT("Black king POTENTIALLY under attack"));
-
-			Score = 10 * (AttackableKings[0] - AttackableKings[1])
+*/
+			Score = 8 * (AttackableKings[0] - AttackableKings[1])
 				+ 9 * (QueenCounts[1] - QueenCounts[0])
 				+ 5 * (RookCounts[1] - RookCounts[0])
 				+ 3 * (BishopCounts[1] - BishopCounts[0])

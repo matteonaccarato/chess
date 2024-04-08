@@ -34,15 +34,16 @@ UStaticMeshComponent* ATile::GetStaticMeshComponent() const
 	return StaticMeshComponent;
 }
 
-void ATile::SetPawn(ABasePawn* TilePawn)
-{
-	Pawn = TilePawn;
-}
-
 ABasePawn* ATile::GetPawn() const
 {
-	return Pawn;
+	return Status.Piece;
 }
+
+void ATile::SetPawn(ABasePawn* Piece)
+{
+	Status.Piece = Piece;
+}
+
 
 FString ATile::GetId() const
 {
@@ -101,7 +102,6 @@ FVector2D ATile::GetGridPosition() const
 
 void ATile::ClearInfo()
 {
-	SetPawn(nullptr);
 	SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 	SetTileStatus({ nullptr, 1, {0, 0},  GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED});
 }

@@ -111,7 +111,7 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 			GetType(),
 			PlayerOwner 
 		});
-		NewTile->SetPawn(this);
+		//NewTile->SetPawn(this);
 
 		FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
 		SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);

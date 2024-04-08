@@ -101,7 +101,7 @@ void AGameField::ResetField()
 		// OnResetEvent.Broadcast();
 
 		GameMode->CheckFlag = EPawnColor::NONE;
-		GameMode->CheckMateFlag = EPawnColor::NONE;
+		GameMode->MatchStatus = EMatchResult::NONE;
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
 		GameMode->ReplayInProgress = 0;
@@ -478,7 +478,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		TileStatus.PlayerOwner = PlayerOwner;
 		TileObj->SetPlayerOwner(PlayerOwner);
 		TileObj->SetTileStatus(TileStatus);
-		TileObj->SetPawn(BasePawnObj);
+		// TileObj->SetPawn(BasePawnObj);
 		if (BasePawnObj->GetType() == EPawnType::KING)
 		{
 			int8& KingPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
@@ -507,7 +507,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 		if (Tile)
 		{
 			// Reset old tile status
-			Tile->SetPawn(nullptr);
+			// Tile->SetPawn(nullptr);
 			Tile->SetTileStatus({ nullptr, 1, {0, 0}, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE});
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		}

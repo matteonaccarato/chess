@@ -93,22 +93,20 @@ void AChess_RandomPlayer::OnTurn()
 						else
 						{
 							// End Turn
-							GameMode->IsCheck(); // TODO => da rimuoevre in end turn => già fatto prima QUI, o altrimenti inglobo il AddToReplay a EndTurn
 							GameMode->LastPiece = GameMode->GField->PawnArray[RandPieceNum];
 							GameMode->LastEatFlag = EatFlag;
-							// GameMode->AddToReplay(GameMode->GField->PawnArray[RandPieceNum], EatFlag);
 							GameMode->EndTurn(PlayerNumber);
 						}
-
 					}
 				}
 				else
 				{
-					// No pawns can make eligible moves => BLACK is checkmated
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("AI cannot move anything"));
+					// TODO => rimuovere
+					// No pieces can make eligible moves => BLACK is checkmated
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
 
-					GameMode->CheckMateFlag = EPawnColor::BLACK;
-					GameMode->EndTurn(-1);
+					/* GameMode->MatchStatus = EPawnColor::BLACK;
+					GameMode->EndTurn(-1); */
 				}
 			}
 			else

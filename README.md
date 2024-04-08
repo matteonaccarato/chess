@@ -1,13 +1,6 @@
 # CHESS
 
 NEXT:
-	- Scelta difficoltà con toggle
-
-	- partita patta 
-		=> king vs king
-		=> king non può essere mangiato ma tutte le tile intorno a lui sono attaccabili
-		=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
-
 	- valutare promozione pedone in minimax 
 	- testare replay (soprattutto con checkmate)
 
@@ -53,17 +46,16 @@ segnalazione di elementi null tramite UE_LOG()
 
 
 #### BUGS
-- [ ] Nomenclatura quando sotto scacco matto non funzionante
+- Save board 
+	=> a volte l'ultima mossa non viene caricata correttamente (video sul telefono)
 - [ ] Save board status quando scacco matto (salva due mosse in una (fatto video con telefono))
 - [ ] quando clicco back mentre gioca l'avversario, crasha tutto :) (disabilito i bottoni)
 - [ ] score counting
 
 
 #### EXTRA
-- [ ] Rinominare la classe ABasePawn in AChessPiece (Pawn è solo pedone)
 - [ ] MEttere tutte le stringhe in TEXT("...")
 - [ ] vedere bene quali metodi possono essere definiti costanti (const)
-- [ ] al posto di const Class* => const Class&
 - [ ] Fare menu in cui si sceglie il colore delle tile, delle pedine e del tavolo da gioco (sfondo, piuttosto che vuoto)
 - [ ] Material dei blueprint pezzi dinamico => non 6 e 6 ma solo 6
 - [ ] Transizione da menu a tavolo da gioco, con luce che incrementa man mano
@@ -72,15 +64,18 @@ segnalazione di elementi null tramite UE_LOG()
 - [ ] Commenti avversario (tipo chess.com)
 - [ ] Caricare specifica configurazione di partita (per allenarti) digitando dove posizionare le varie pedine
 - [ ] Account per registrare uno storico delle partite fatte con i risultati e uno ?screenshot? della board finale
-- [ ] Animazione dello spostamento delle pedine
 
 - [ ] FUNZIONI CHE RITORNANO VALORI PER IDENTIFICARE ERRORI ?
 
 - [ ] cercare modo efficiente scacco e salvataggio partita (anche se memorizzando solo posizione hai tempo di ricostruzione della partita in O(1))
 - [ ] REPLAY => va bene così, o conviene fare man mano dallo stato iniziale convertendo #id mossa a mossa sul campo ?
-- [ ] cambiare EatFlag => in CaptureFlag
 - [ ] Aggiungere attributo a piece => riferimento a tile
 - [ ] 
 - [ ] SETTINGS
 - [ ]	=> Audio
-- [ ]	=> Difficulty (Random / MiniMax )
+
+
+#### CHANGES
+	- Pawn		->	Piece
+	- EatFlag	->	in CaptureFlag
+	- Field		->	Board
