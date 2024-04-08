@@ -396,6 +396,10 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			if (BlackMoves.Num() == 0)
 				BlackCheckMate = true; */
 
+
+		// TODO => fare showpossiblemoves x SCACCO e numero mosse possibili
+		//		oppure solo attackabletiles x SCACCO
+
 		if (!WhiteCheckMate && !BlackCheckMate)
 		{
 			// White, Black

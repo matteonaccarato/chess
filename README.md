@@ -9,7 +9,7 @@ NEXT:
 		=> la stessa configurazione di partita si ripete 3 o 5 volte (tramite hash o controllo sequenziale?)
 
 	- valutare promozione pedone in minimax 
-	- testare replay
+	- testare replay (soprattutto con checkmate)
 
 	- condizione di ripristino del castling (in human player) NON vanno bene 
 		=> l'essere in quella posizione non implica il non aver mai mosso quella pedina 
