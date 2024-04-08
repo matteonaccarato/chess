@@ -84,20 +84,33 @@ FVector2D ABasePawn::GetGridPosition() const
 	return TileGridPosition;
 }
 
+/*
+ * Function: Move
+ * ----------------------------
+ *   It makes the move specified through paramters
+ *
+ *	 OldTile	ATile*	Tile where the piece starts from
+ *	 NewTile	ATile*	Tile where the piece moves to
+ *	 Simulate	bool = false	Determines if the move is just a simulation or not.
+ *								If so, graphically moving the piece is not required
+ */
 void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 {
-	// TODO => just to test
-	if (Type == EPawnType::ROOK && !Simulate)
-	{
-		Type = Type;
-	}
 	if (OldTile && NewTile)
 	{
 		OldTile->ClearInfo();
 
 		int8 PlayerOwner = GetColor() == EPawnColor::WHITE ? 0 : 1;
 		NewTile->SetPlayerOwner(PlayerOwner);
-		NewTile->SetTileStatus({ this, 0, { 0, 0 }, NewTile->GetTileStatus().WhoCanGo, GetColor(), GetType(), PlayerOwner });
+		NewTile->SetTileStatus({ 
+			this, 
+			0, // TODO => empty flag da fare come enum FEmptyStatus EMPTY | OCCUPIED
+			{ 0, 0 },
+			NewTile->GetTileStatus().WhoCanGo, 
+			GetColor(), 
+			GetType(),
+			PlayerOwner 
+		});
 		NewTile->SetPawn(this);
 
 		FVector SpawnPosition = NewTile->GetActorLocation() + FVector(0, 0, GetActorLocation()[2]);
@@ -111,20 +124,7 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 // Called when the game starts or when spawned
 void ABasePawn::BeginPlay()
 {
-	Super::BeginPlay();
-
-
-	/* AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode != nullptr)
-	{
-		// TODO => riposizionare pedina nel punto di partenza
-		GameMode->GField->OnResetEvent.AddDynamic(this, &ABasePawn::SelfDestroy);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-	} */
-	
+	Super::BeginPlay();	
 }
 
 // Called every frame

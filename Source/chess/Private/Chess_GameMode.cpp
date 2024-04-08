@@ -539,6 +539,31 @@ void AChess_GameMode::ComputeAttackableTiles()
 	}
 }
 
+// 1st TODO => inglobarla con computeattackabletiles (una richiama l'altra con flag di attackable)
+// 2nd TODO => aggiungere reset dell'attackable status delle tile (toglierlo dal punto in cui chiamo questa funzione 
+TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
+{
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
+	// TODO => compute possible moves of current player 
+	// (tarray di tarray per mosse possibli, accedo con pieceNum
+	// bool BlackCanMove = false;
+	// bool WhiteCanMove = false;
+	for (auto& Piece : GField->PawnArray)
+	{
+		if (Piece->GetStatus() == EPawnStatus::ALIVE && Piece->GetColor() == Color)
+		{
+			EPawnColor PreviousCheckFlag = CheckFlag;
+			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, false);
+			TurnPossibleMoves.Add(Tmp);
+			CheckFlag = PreviousCheckFlag;
+			if (Tmp.Num() > 0)
+			{
+				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
+			}
+		}
+	}
+	return PiecesMoves;
+}
 
 /*
  * Function: CheckKingUnderAttack
@@ -576,30 +601,19 @@ EPawnColor AChess_GameMode::CheckKingUnderAttack() const
 	return TmpCheckFlag;
 }
 
-TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
-{
-	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
-	// TODO => compute possible moves of current player 
-	// (tarray di tarray per mosse possibli, accedo con pieceNum
-	// bool BlackCanMove = false;
-	// bool WhiteCanMove = false;
-	for (auto& Piece : GField->PawnArray)
-	{
-		if (Piece->GetStatus() == EPawnStatus::ALIVE && Piece->GetColor() == Color)
-		{
-			EPawnColor PreviousCheckFlag = CheckFlag;
-			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, false);
-			TurnPossibleMoves.Add(Tmp);
-			CheckFlag = PreviousCheckFlag;
-			if (Tmp.Num() > 0)
-			{
-				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
-			}
-		}
-	}
-	return PiecesMoves;
-}
-
+/*
+ * Function: MakeMove
+ * ----------------------------
+ *   It makes the move specified through paramters
+ * 
+ *	 Piece		ABasePawn*		Piece to move
+ *	 NewX		const int8		X to end to
+ *	 NewY		const int8		Y to end to
+ *	 Simulate	bool = false	Determines if the move is just a simulation or not.
+ *								If so, graphically moving the piece is not required
+ *
+ *   return		bool	Flag to notify if a capture happened	
+ */
 bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate)
 {
 	bool EatFlag = false;
@@ -908,9 +922,10 @@ std::pair<int8, int8> AChess_GameMode::GetXYOffset(const int8 Steps, const ECard
 
 	}
 
+	// TODO => cast to int8, not int
 	// If a piece should go forward (NORTH), 
 	//	if it white, the X should be increased (X = 3; NewX = 4),
-	//	otherwise, it should be decreased (X = 3; NewX = 2)
+	//	otherwise, it should be decreased (X = 3; NewX = 2).
 	// To do so, piece color value (casted to int) is used: 
 	//	Black => -1
 	//	White => +1
@@ -921,20 +936,29 @@ std::pair<int8, int8> AChess_GameMode::GetXYOffset(const int8 Steps, const ECard
 }
 
 
-
+/*
+ * Function: BackupTiles
+ * ----------------------------
+ * It does a backup of the tiles status information in the data structured passed as parameter
+ *
+ * TilesStatus  TArray<FTileStatus>&	Ordered collection to store tiles status information
+ */
 void AChess_GameMode::BackupTiles(TArray<FTileStatus>& TilesStatus)
 {
 	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
 		TilesStatus.Add(TileStatus);
-
-		/* TileStatus.AttackableFrom.SetNum(2, false);
-		TileStatus.WhoCanGo.Empty();
-		Tile->SetTileStatus(TileStatus); */
 	}
 }
 
+/*
+ * Function: RestoreTiles
+ * ----------------------------
+ * It restores the tiles status information through the data structured passed as parameter
+ *
+ * TilesStatusBackup  TArray<FTileStatus>&	Ordered collection to store tiles status information
+ */
 void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
 {
 	int8 i = 0;
@@ -950,6 +974,15 @@ void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
 	}
 }
 
+/*
+ * Function: BackupPiecesInfo
+ * ----------------------------
+ * It does a backup of pieces information in the data structured passed as parameter
+ *
+ * PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
+ *															1st element: piece status (ALIVE / DEAD)
+ *															2nd element: grid position
+ */
 void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo)
 {
 	// TODO const auto& (anche sopra)
@@ -959,6 +992,15 @@ void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>
 	}
 }
 
+/*
+ * Function: RestorePiecesInfo
+ * ----------------------------
+ * It restores pieces information in the data structured through the TArray passed as parameter
+ *
+ * PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+ *																	1st element: piece status (ALIVE / DEAD)
+ *																	2nd element: grid position			
+ */
 void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
 {
 	int8 i = 0;
@@ -991,6 +1033,8 @@ void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>
  */
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
+	// TODO => x le due AI che giocano non va bene
+	//	fare Players[CurrentPlayer].IsA(HumanPlayer)
 	if (CurrentPlayer == 0)
 	{
 		// Human is playing (replay available)
@@ -1028,6 +1072,18 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 	}
 }
 
+
+/*
+ * Function: AddToReplay | TODO => make it const
+ * ----------------------------
+ *   Adds the last move to the replay box.
+*		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
+*		(PreviousGridPosition: FVector2D)
+*	 
+*	 Pawn				const ABasePawn*		The pawn which has been moved
+*	 EatFlag			const bool = false		If another piece has been captured
+*	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened 
+ */
 void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
 	FString MoveStr = ComputeMoveName(Pawn, EatFlag, PawnPromotionFlag);
@@ -1062,6 +1118,17 @@ void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag, con
 	}
 }
 
+/*
+ * Function: ComputeMoveName const
+ * ----------------------------
+ *   Generates the algebraic notation of the last move.
+ *		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
+ *			(PreviousGridPosition: FVector2D)
+ *	 
+ *   Pawn				const ABasePawn*		The pawn which has been moved
+ *	 EatFlag			const bool = false		If another piece has been captured
+ *	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened 
+ */
 FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag) const
 {
 	FVector2D GridPosition = Pawn->GetGridPosition();
