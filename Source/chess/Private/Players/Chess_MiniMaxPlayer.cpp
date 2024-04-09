@@ -366,98 +366,104 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
-		// se re sotto scacco => cosa metto ?
 		// se re sotto scacco matto => metto infinito
-		int32 Score = 0;
-		int8 WhiteMobility = 0;
-		int8 BlackMobility = 0;
-		bool WhiteCheckMate = false;
-		bool BlackCheckMate = false;
-
-		/* f(p) =	200(K - K')
-					+ 9(Q - Q')
-					+ 5(R - R')
-					+ 3(B - B' + N-N')
-					+ 1(P - P')
-					- 0.5(D - D' + S-S' + I - I')
-					+ 0.1(M - M') + ...
-
-			KQRBNP = number of kings, queens, rooks, bishops, knights and pawns
-			D, S, I = doubled, blocked and isolated pawns
-			M = Mobility(the number of legal moves) */
-
-			/* TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> WhiteMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE);
-			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> BlackMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
-
-			if (WhiteMoves.Num() == 0)
-				WhiteCheckMate = true;
-			if (BlackMoves.Num() == 0)
-				BlackCheckMate = true; */
+		int Score = 0;
+		// int WhiteMobility = 0;
+		// int BlackMobility = 0;
 
 
-		// TODO => fare showpossiblemoves x SCACCO e numero mosse possibili
-		//		oppure solo attackabletiles x SCACCO
+		// TODO => non so se lasciarlo o meno
+		/* TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> WhiteMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE, false, true, false);
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> BlackMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK, false, true, false);
+		
+		TArray<int8> WhitePiecesCanMove;
+		TArray<int8> BlackPiecesCanMove;
 
-		if (!WhiteCheckMate && !BlackCheckMate)
+		bool IsWhite = true;
+		for (const auto& Moves : { WhiteMoves, BlackMoves })
 		{
-			// White, Black
-			int8 QueenCounts[2] = { 0, 0 };
-			int8 RookCounts[2] = { 0, 0 };
-			int8 BishopCounts[2] = { 0, 0 };
-			int8 KnightsCounts[2] = { 0, 0 };
-			int8 PawnsCounts[2] = { 0, 0 };
-
-			ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
-			ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
-			int8 AttackableKings[2] = {
-				GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
-				GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
-			};
-
-			// TODO => raggruppare i due cicli in funzione
-			/* for (const auto& WhiteMove : WhiteMoves)
+			TArray<int8>& PiecesCanMove = IsWhite ? WhitePiecesCanMove : BlackPiecesCanMove;
+			for (const auto& Move : Moves)
 			{
-				WhiteMobility += WhiteMove.second.Num();
+				PiecesCanMove.Add(Move.first);
 			}
-			for (const auto& BlackMove : BlackMoves)
-			{
-				BlackMobility += BlackMove.second.Num();
-			} */
+			IsWhite = false;
+		}
+		EMatchResult MatchResult = GameMode->ComputeMatchResult(WhitePiecesCanMove, BlackPiecesCanMove);
+		int MatchResultValue = 0;
+		switch (MatchResult)
+		{
+		case EMatchResult::NONE: break;
+		case EMatchResult::WHITE: MatchResultValue = 1000; break;
+		case EMatchResult::BLACK: MatchResultValue = -1000; break;
+		default: MatchResultValue = -50; break;	
+		} */
 
-			for (const auto& Piece : GameMode->GField->PawnArray)
+		/* EPawnColor PreviousCheck = GameMode->CheckFlag;
+		EPawnColor NewCheck = GameMode->IsCheck();
+		GameMode->CheckFlag = PreviousCheck; */
+		GameMode->ComputeAttackableTiles();
+
+
+		// White, Black
+		int8 QueenCounts[2] = { 0, 0 };
+		int8 RookCounts[2] = { 0, 0 };
+		int8 BishopCounts[2] = { 0, 0 };
+		int8 KnightsCounts[2] = { 0, 0 };
+		int8 PawnsCounts[2] = { 0, 0 };
+
+		ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
+		ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
+		int8 AttackableKings[2] = {
+			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
+			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
+		};
+
+		// TODO => da testare
+		/* bool IsWhite = true;
+		for (const auto& ColorMoves : { WhiteMoves, BlackMoves })
+		{
+			for (const auto& Move : ColorMoves)
 			{
-				if (Piece->GetStatus() == EPawnStatus::ALIVE)
+				int& Mobility = IsWhite ? WhiteMobility : BlackMobility;
+				Mobility += Move.second.Num();
+			}
+			IsWhite = false;
+		} */
+
+		for (const auto& Piece : GameMode->GField->PawnArray)
+		{
+			if (Piece->GetStatus() == EPawnStatus::ALIVE)
+			{
+				int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
+				switch (Piece->GetType())
 				{
-					int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
-					switch (Piece->GetType())
-					{
-					case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
-					case EPawnType::ROOK: RookCounts[IdxColor]++; break;
-					case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
-					case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
-					case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
-					}
+				case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
+				case EPawnType::ROOK: RookCounts[IdxColor]++; break;
+				case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
+				case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
+				case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
 				}
 			}
-
-
-			/*if (AttackableKings[0])
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("White king POTENTIALLY under attack"));
-			if (AttackableKings[1])
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Orange, TEXT("Black king POTENTIALLY under attack"));
-*/
-			Score = 8 * (AttackableKings[0] - AttackableKings[1])
-				+ 9 * (QueenCounts[1] - QueenCounts[0])
-				+ 5 * (RookCounts[1] - RookCounts[0])
-				+ 3 * (BishopCounts[1] - BishopCounts[0])
-				+ 3 * (KnightsCounts[1] - KnightsCounts[0])
-				+ 1 * (PawnsCounts[1] - PawnsCounts[0])
-				+ 0.1 * (BlackMobility - WhiteMobility);
 		}
-		else
-		{
-			Score = WhiteCheckMate ? 1000 : -1000;
-		}
+
+		Score = 8 * (AttackableKings[0] - AttackableKings[1])
+			+ 9 * (QueenCounts[1] - QueenCounts[0])
+			+ 5 * (RookCounts[1] - RookCounts[0])
+			+ 3 * (BishopCounts[1] - BishopCounts[0])
+			+ 3 * (KnightsCounts[1] - KnightsCounts[0])
+			+ 1 * (PawnsCounts[1] - PawnsCounts[0]);
+
+		/* Score = // MatchResultValue
+			9 * (QueenCounts[1] - QueenCounts[0])
+			+ 8 * ( - static_cast<int8>(NewCheck) ) // BLACK = -1 | WHITE = 1
+			+ 5 * (RookCounts[1] - RookCounts[0])
+			+ 3 * (BishopCounts[1] - BishopCounts[0])
+			+ 3 * (KnightsCounts[1] - KnightsCounts[0])
+			+ 1 * (PawnsCounts[1] - PawnsCounts[0]); */
+			// + 1 * (BlackMobility - WhiteMobility);
+		
+		// TODO => test
 		if (FMath::Abs(Score) == 10000)
 		{
 			Score = Score;

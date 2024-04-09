@@ -158,6 +158,8 @@ public:
 	*/
 	EPawnColor IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1);
 
+	EMatchResult ComputeMatchResult(TArray<int8>& WhitePieces, TArray<int8>& BlackPieces);
+
 	/*
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
@@ -169,14 +171,14 @@ public:
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);
 
 	bool MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate = false);
-	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable = false, const bool CheckCheck = true);
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable = false, const bool CheckCheck = true, const bool UpdateTurnMoves = true);
 
 
 
-	void BackupTiles(TArray<FTileStatus>& TilesStatus);
+	void BackupTiles(TArray<FTileStatus>& TilesStatus) const;
 	void RestoreTiles(TArray<FTileStatus>& TilesStatusBackup);
 
-	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo);
+	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const;
 	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
 
 

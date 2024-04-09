@@ -195,24 +195,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		
 
 		// Match situation
-		ABasePawn* WhiteKing = GField->PawnArray[KingWhitePieceNum];
-		ABasePawn* BlackKing = GField->PawnArray[KingBlackPieceNum];
-		if (WhitePiecesCanMove.Num() == 0)
-			if (GField->TileArray[WhiteKing->GetGridPosition()[0] * GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
-				MatchStatus = EMatchResult::WHITE;
-			else
-				MatchStatus = EMatchResult::STALEMATE;
-		else if (BlackPiecesCanMove.Num() == 0)
-			if (GField->TileArray[BlackKing->GetGridPosition()[0] * GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
-				MatchStatus = EMatchResult::BLACK;
-			else
-				MatchStatus = EMatchResult::STALEMATE;
-		else if (SameConfigurationBoard(5))
-			MatchStatus = EMatchResult::FIVEFOLD_REPETITION;
-		else if (SeventyFive_MoveRule())
-			MatchStatus = EMatchResult::SEVENTY_FIVE_MOVE_RULE;
-		else if (ImpossibilityToCheckmate())
-			MatchStatus = EMatchResult::INSUFFICIENT_MATERIAL;
+		MatchStatus = ComputeMatchResult(WhitePiecesCanMove, BlackPiecesCanMove);
 
 		if (LastPiece->GetType() == EPawnType::PAWN)
 			LastPawnMoveHappened = MoveCounter;
@@ -227,6 +210,32 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		else
 			TurnNextPlayer();
 	}
+}
+
+EMatchResult AChess_GameMode::ComputeMatchResult(TArray<int8>& WhitePieces, TArray<int8>& BlackPieces)
+{
+	EMatchResult Result = EMatchResult::NONE;
+
+	ABasePawn* WhiteKing = GField->PawnArray[KingWhitePieceNum];
+	ABasePawn* BlackKing = GField->PawnArray[KingBlackPieceNum];
+	if (WhitePieces.Num() == 0)
+		if (GField->TileArray[WhiteKing->GetGridPosition()[0] * GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
+			Result = EMatchResult::WHITE;
+		else
+			Result = EMatchResult::STALEMATE;
+	else if (BlackPieces.Num() == 0)
+		if (GField->TileArray[BlackKing->GetGridPosition()[0] * GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
+			Result = EMatchResult::BLACK;
+		else
+			Result = EMatchResult::STALEMATE;
+	else if (SameConfigurationBoard(5))
+		Result = EMatchResult::FIVEFOLD_REPETITION;
+	else if (SeventyFive_MoveRule())
+		Result = EMatchResult::SEVENTY_FIVE_MOVE_RULE;
+	else if (ImpossibilityToCheckmate())
+		Result = EMatchResult::INSUFFICIENT_MATERIAL;
+
+	return Result;
 }
 
 /*
@@ -548,7 +557,7 @@ void AChess_GameMode::ComputeAttackableTiles()
 
 // 1st TODO => inglobarla con computeattackabletiles (una richiama l'altra con flag di attackable)
 // 2nd TODO => aggiungere reset dell'attackable status delle tile (toglierlo dal punto in cui chiamo questa funzione 
-TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable, const bool CheckCheck)
+TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable, const bool CheckCheck, const bool UpdateTurnMoves)
 {
 	// < piece_num , < newx, newy > >
 	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
@@ -566,7 +575,7 @@ TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeA
 		if (Piece->GetStatus() == EPawnStatus::ALIVE && (Piece->GetColor() == Color || Color == EPawnColor::BOTH))
 		{
 			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, ShowAttackable, CheckCheck);
-			if (!ShowAttackable)
+			if (!ShowAttackable && UpdateTurnMoves)
 				TurnPossibleMoves.Add(Tmp);
 			if (Tmp.Num() > 0)
 				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
@@ -652,8 +661,6 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 			}
 		}
 
-		// TilesArray[OldX * GField->Size + OldY]->ClearInfo();
-
 		// Clear starting tile (no player owner, no pawn on it, ...)
 		// Update ending tile (new player owner, new tile status, new pawn)
 		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY], Simulate);
@@ -711,13 +718,12 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
  *	 Pawn				ABasePawn*			: pawn to move on new x and new y and compute check situation
  *   NewX				const int8			: new x position of the piece
  *	 NewY				const int8			: new y position of the piece
- *	 TestFlag	TODO => forse superfluo		const bool = false	: flag which identifies if this function is called as test or effective move
- *	 ShowAttackable	bool = false: flag to determine if only the attackable tiles should be taken into account 
-									(possible tiles to move on and attackable tiles are different for pawns)
+ *	 ShowAttackable		bool = false		: flag to determine if only the attackable tiles should be taken into account 
+												(possible tiles to move on and attackable tiles are different for pawns)
  *	 CheckCheckFlag		const bool = true	: flag to determine if checking check state after this move is required
  *   CastlingFlag		const bool = false	: flag to determine if checking castling situation is required
  * 
- *   return 			bool				Determines if a move is valid or not
+ *   return 			bool				: Determines if a move is valid or not
  */
 bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag, const bool ShowAttackable, const bool CheckCheckFlag, const bool CastlingFlag)
 {
@@ -740,13 +746,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 		int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]); 
 		int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
 
-
-		// TODO => se IsCheck e dopo la potenziale mossa è ancora IsCheck => mossa non valida (a meno di checkmate)
-
-		// TODO => se il pawn è king e la cella è attackable from the opposite color, invalid move
-		// EPawnColor CheckFlag; // which color is under check
-
-		// TODO => forse condizione già gestite in validMove()
+		// Compute the eligibily of the move based on piece type and starting/ending grid position
 		if ((NewTile->GetTileStatus().EmptyFlag && !EatFlag) 
 			|| (EatFlag && !NewTile->GetTileStatus().EmptyFlag && (NewTile->GetTileStatus().PawnColor != Pawn->GetColor())))
 		{
@@ -814,12 +814,6 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 							IsValid = NewCheckFlag == EPawnColor::NONE
 								|| (NewCheckFlag == EPawnColor::BLACK && Pawn->GetColor() != EPawnColor::BLACK)
 								|| (NewCheckFlag == EPawnColor::WHITE && Pawn->GetColor() != EPawnColor::WHITE);
-						
-
-							/* if (GField->GetTileArray()[NewGridPosition[0] * GField->Size + CurrGridPosition[1] + i * FMath::Sign(DeltaY)]->GetTileStatus().AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0])
-							{
-								IsValid = false;
-							} */
 						}
 					}
 				}
@@ -867,7 +861,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
  *
  * TilesStatus  TArray<FTileStatus>&	Ordered collection to store tiles status information
  */
-void AChess_GameMode::BackupTiles(TArray<FTileStatus>& TilesStatus)
+void AChess_GameMode::BackupTiles(TArray<FTileStatus>& TilesStatus) const
 {
 	for (auto& Tile : GField->TileArray)
 	{
@@ -892,7 +886,6 @@ void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
 		{
 			Tile->SetTileStatus(TilesStatusBackup[i]);
 			Tile->SetPlayerOwner(TilesStatusBackup[i].PlayerOwner);
-			// Tile->SetPawn(TilesStatusBackup[i].Piece);
 		}
 		i++;
 	}
@@ -907,10 +900,9 @@ void AChess_GameMode::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
  *															1st element: piece status (ALIVE / DEAD)
  *															2nd element: grid position
  */
-void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo)
+void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const
 {
-	// TODO const auto& (anche sopra)
-	for (auto& Piece : GField->PawnArray)
+	for (const auto& Piece : GField->PawnArray)
 	{
 		PiecesInfo.Add(std::make_pair(Piece->GetStatus(), Piece->GetGridPosition()));
 	}
@@ -919,11 +911,11 @@ void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>
 /*
  * Function: RestorePiecesInfo
  * ----------------------------
- *  It restores pieces information in the data structured through the TArray passed as parameter
+ * It restores pieces information in the data structured through the TArray passed as parameter
  *
- *  PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
- *																		1st element: piece status (ALIVE / DEAD)
- *																		2nd element: grid position			
+ * PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+ *																	1st element: piece status (ALIVE / DEAD)
+ *																	2nd element: grid position			
  */
 void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
 {
@@ -939,7 +931,13 @@ void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>
 	}
 }
 
-
+/*
+ * Function: SeventyFive_MoveRule
+ * -----------------------------
+ * If the same position occurs five times during the course of the game, the game is automatically a draw.
+ * 
+ *  Times	int8	Times which the same board configuration has to occured to make the game a draw.
+ */
 bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 {
 	// ciclo su tutte le configurazioni finché sono uguali, altrimenti break
@@ -988,6 +986,11 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 	return Cnt >= Times;
 }
 
+/*
+ * Function: SeventyFive_MoveRule
+ * ----------------------------
+ * If no capture or no pawn move has occurred in the last 75 moves (by both players), the game is automatically a draw.
+ */
 bool AChess_GameMode::SeventyFive_MoveRule() const
 {
 	return (MoveCounter - LastPawnMoveHappened > 75
@@ -998,14 +1001,14 @@ bool AChess_GameMode::SeventyFive_MoveRule() const
 /*
  * Function: ImpossibilityToCheckmate
  * ----------------------------
- *  Impossibility of checkmate evaluation:
- *	 If a position arises in which neither player could possibly give checkmate by a series of legal moves, the game is a draw. 
- *	 Such a position is called a dead position. This is usually because there is insufficient material left.
- *	Combinations:
- *	 - king versus king
- *	 - king and bishop versus king
- *   - king and knight versus king
- *   - king and bishop versus king and bishop with the bishops on the same color.
+ * Impossibility of checkmate evaluation:
+ *	If a position arises in which neither player could possibly give checkmate by a series of legal moves, the game is a draw. 
+ *	Such a position is called a dead position. This is usually because there is insufficient material left.
+ * Combinations:
+ *  - king versus king
+ *	- king and bishop versus king
+ *  - king and knight versus king
+ *  - king and bishop versus king and bishop with the bishops on the same color.
  */
 bool AChess_GameMode::ImpossibilityToCheckmate() const
 {
@@ -1018,7 +1021,7 @@ bool AChess_GameMode::ImpossibilityToCheckmate() const
 
 	for (const auto& Piece : GField->PawnArray)
 	{
-		if (Piece->GetStatus() == EPawnStatus::ALIVE)
+		if (Piece->GetStatus() == EPawnStatus::ALIVE && TurnPossibleMoves[Piece->GetPieceNum()].Num() > 0)
 		{
 			int8 ColorIdx = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
 
@@ -1064,11 +1067,11 @@ bool AChess_GameMode::ImpossibilityToCheckmate() const
 /*
  * Function: ReplayMove
  * ----------------------------
- *   Loads the turn specified as parameter (e.g. "1. e4" => Replay of the turn number 4.
- *		If user decides to rewind the game (clicking the move N and selecting one of his pieces) at turn N,
- *			the board will be bring back to the status at turn N and the user is allowed to start again the turn N+1
+ * Loads the turn specified as parameter (e.g. "1. e4" => Replay of the turn number 4.
+ *	If user decides to rewind the game (clicking the move N and selecting one of his pieces) at turn N,
+ *	the board will be bring back to the status at turn N and the user is allowed to start again the turn N+1
  *
- *	 TxtBlock	UTextBlock*		Text block containing the turn to replay (e.g. "1. e4)"
+ *	TxtBlock	UTextBlock*		Text block containing the turn to replay (e.g. "1. e4)"
  */
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
