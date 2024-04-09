@@ -123,6 +123,10 @@ public:
 	FVector2D LastGridPosition;
 	bool LastEatFlag = false;
 
+	// Usefult for the seventy-five move rule
+	int LastPawnMoveHappened = 0;
+	int LastCaptureHappened = 0;
+
 	// Used to remember previous grid position in notation
 	FVector2D PreviousGridPosition;
 
@@ -158,7 +162,6 @@ public:
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool UpdateWhoCanGoFlag = false);
-
 	void ComputeAttackableTiles();
 
 	/*
@@ -166,7 +169,7 @@ public:
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);
 
 	bool MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate = false);
-	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color);
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable = false, const bool CheckCheck = true);
 
 
 

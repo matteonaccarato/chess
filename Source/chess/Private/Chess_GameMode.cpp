@@ -15,6 +15,8 @@ AChess_GameMode::AChess_GameMode()
 	DefaultPawnClass = AChess_HumanPlayer::StaticClass();
 	PawnPromotionType = EPawnType::NONE;
 	LastGridPosition = FVector2D(-1, -1);
+	LastPawnMoveHappened = 0;
+	LastCaptureHappened = 0;
 }
 
 void AChess_GameMode::BeginPlay()
@@ -212,6 +214,11 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		else if (ImpossibilityToCheckmate())
 			MatchStatus = EMatchResult::INSUFFICIENT_MATERIAL;
 
+		if (LastPiece->GetType() == EPawnType::PAWN)
+			LastPawnMoveHappened = MoveCounter;
+		if (LastEatFlag)
+			LastCaptureHappened = MoveCounter;
+
 		ReplayManager::AddToReplay(this, LastPiece, LastEatFlag, PiecePromotionFlag);
 
 
@@ -363,7 +370,6 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? 4 : 28]) <= Pawn->GetMaxNumberSteps())
 			|| Pawn->GetType() == EPawnType::KNIGHT)
 		{
-		// TODO => if show attackable => show only mine attacks, not the enenemy ones
 			for (const auto& PawnDirection : PawnDirections)
 			{
 				// TODO => fare stesso check di prima controllando la direzione  
@@ -502,17 +508,14 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 
 			EPawnColor OldCheckFlag = CheckFlag;
 			EPawnColor NewCheckFlag = CheckKingsUnderAttack();
-			// EPawnColor NewCheckFlag = IsCheck();
 
 			// Undo and restore backed-up info
 			for (const auto& pair : TileStatusBackup)
 				GField->GetTileArray()[pair.first.first * GField->Size + pair.first.second]->SetTileStatus(pair.second);
 			
-			// OldTile->SetPawn(Backup_OldPawn);
 			OldTile->SetPlayerOwner(Backup_OldPlayerOwner);
 			OldTile->SetTileStatus(Backup_OldTileStatus);
 
-			// NewTile->SetPawn(PawnToEat);
 			NewTile->SetPlayerOwner(Backup_NewPlayerOwner);
 			NewTile->SetTileStatus(Backup_NewTileStatus);
 			Pawn->SetGridPosition(Backup_OldPosition[0], Backup_OldPosition[1]);
@@ -536,63 +539,37 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
  * ----------------------------
  *   Computes all attackable tiles based on the current situation of data structure 
  *		( GameMode->GField->TileArray, GameMode->GField->PawnArray )
- *	 updating the AttackableTileStatus attribute of each Tile where necessary
+ *	 updates the AttackableTileStatus attribute of each Tile where necessary
  */
 void AChess_GameMode::ComputeAttackableTiles()
 {
-	// TODO => they are unused
-	bool BlackCanMove = false;
-	bool WhiteCanMove = false;
+	ComputeAllPossibleMoves(EPawnColor::BOTH, true, false);
+}
 
+// 1st TODO => inglobarla con computeattackabletiles (una richiama l'altra con flag di attackable)
+// 2nd TODO => aggiungere reset dell'attackable status delle tile (toglierlo dal punto in cui chiamo questa funzione 
+TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable, const bool CheckCheck)
+{
+	// < piece_num , < newx, newy > >
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
+	
 	// Reset AttackableFrom info
 	for (auto& Tile : GField->TileArray)
 	{
 		FTileStatus TileStatus = Tile->GetTileStatus();
 		TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 		Tile->SetTileStatus(TileStatus);
-	}
+	} 
 
-	// Compute new AttackableFrom info
-	for (auto& Piece : GField->GetPawnArray())
-	{
-		if (Piece->GetStatus() == EPawnStatus::ALIVE)
-		{
-			// Obtain, as TArray, the possible tiles where CurrPawn can move on
-			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, true, false);
-
-			if (Tmp.Num() > 0)
-			{
-				switch (Piece->GetColor())
-				{
-				case EPawnColor::BLACK: BlackCanMove = true; break;
-				case EPawnColor::WHITE: WhiteCanMove = true; break;
-				}
-			}
-		}
-	}
-}
-
-// 1st TODO => inglobarla con computeattackabletiles (una richiama l'altra con flag di attackable)
-// 2nd TODO => aggiungere reset dell'attackable status delle tile (toglierlo dal punto in cui chiamo questa funzione 
-TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> AChess_GameMode::ComputeAllPossibleMoves(EPawnColor Color)
-{
-	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves;
-	// TODO => compute possible moves of current player 
-	// (tarray di tarray per mosse possibli, accedo con pieceNum
-	// bool BlackCanMove = false;
-	// bool WhiteCanMove = false;
 	for (auto& Piece : GField->PawnArray)
 	{
-		if (Piece->GetStatus() == EPawnStatus::ALIVE && Piece->GetColor() == Color)
+		if (Piece->GetStatus() == EPawnStatus::ALIVE && (Piece->GetColor() == Color || Color == EPawnColor::BOTH))
 		{
-			//EPawnColor PreviousCheckFlag = CheckFlag;
-			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, false);
-			TurnPossibleMoves.Add(Tmp);
-			//CheckFlag = PreviousCheckFlag;
+			TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, ShowAttackable, CheckCheck);
+			if (!ShowAttackable)
+				TurnPossibleMoves.Add(Tmp);
 			if (Tmp.Num() > 0)
-			{
 				PiecesMoves.Add(std::make_pair(Piece->GetPieceNum(), Tmp));
-			}
 		}
 	}
 	return PiecesMoves;
@@ -942,11 +919,11 @@ void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>
 /*
  * Function: RestorePiecesInfo
  * ----------------------------
- * It restores pieces information in the data structured through the TArray passed as parameter
+ *  It restores pieces information in the data structured through the TArray passed as parameter
  *
- * PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
- *																	1st element: piece status (ALIVE / DEAD)
- *																	2nd element: grid position			
+ *  PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+ *																		1st element: piece status (ALIVE / DEAD)
+ *																		2nd element: grid position			
  */
 void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
 {
@@ -1013,20 +990,77 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 
 bool AChess_GameMode::SeventyFive_MoveRule() const
 {
-	// 
-	return false;
+	return (MoveCounter - LastPawnMoveHappened > 75
+		|| MoveCounter - LastCaptureHappened > 75);
+	
 }
 
+/*
+ * Function: ImpossibilityToCheckmate
+ * ----------------------------
+ *  Impossibility of checkmate evaluation:
+ *	 If a position arises in which neither player could possibly give checkmate by a series of legal moves, the game is a draw. 
+ *	 Such a position is called a dead position. This is usually because there is insufficient material left.
+ *	Combinations:
+ *	 - king versus king
+ *	 - king and bishop versus king
+ *   - king and knight versus king
+ *   - king and bishop versus king and bishop with the bishops on the same color.
+ */
 bool AChess_GameMode::ImpossibilityToCheckmate() const
 {
-	// casistiche su wikipedia
-	return false;
+	bool Result = true;
+	bool KingVsKing = true;
+	bool KingBishopVsKing[2] = { true, true }; // 1st: white info, 2nd: black info
+	bool KingKnightVsKing[2] = { true, true }; // 1st: white info, 2nd: black info
+	bool KingBishopVsKingBishop = true;
+	int8 PreviousBishopTileColor[2] = { -1, -1 }; // -1: no bishops | 0: light color | 1: dark color
+
+	for (const auto& Piece : GField->PawnArray)
+	{
+		if (Piece->GetStatus() == EPawnStatus::ALIVE)
+		{
+			int8 ColorIdx = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
+
+			if (Piece->GetType() != EPawnType::KING)
+				KingVsKing = false;
+
+			if (Piece->GetType() != EPawnType::KNIGHT)
+				KingKnightVsKing[0] = false; KingKnightVsKing[1] = false;
+
+			if (Piece->GetType() != EPawnType::BISHOP)
+			{
+				KingBishopVsKing[0] = false; KingBishopVsKing[1] = false;
+				KingBishopVsKingBishop = false;
+			}
+			else
+			{
+				if (PreviousBishopTileColor[ColorIdx] == -1)
+				{
+					int8 tmp = Piece->GetGridPosition()[0] + Piece->GetGridPosition()[1];
+					PreviousBishopTileColor[ColorIdx] = tmp % 2 ? 0 : 1;
+				}
+				else
+					KingBishopVsKingBishop = false; // two bishops of the same color
+
+				if (PreviousBishopTileColor[FMath::Abs(ColorIdx - 1)] != -1 
+					&& PreviousBishopTileColor[0] != PreviousBishopTileColor[1]) 
+					KingBishopVsKingBishop = false; // already analyzed opponent's bishop, it is on different color tile		
+			}
+
+			Result = KingVsKing
+				|| KingBishopVsKing[0] || KingBishopVsKing[1]
+				|| KingKnightVsKing[0] || KingKnightVsKing[1]
+				|| KingBishopVsKingBishop;
+
+			if (!Result)
+				break;
+		}
+	}
+	
+	return Result;
 }
 
-
-
-
-/* REPLAY (add to separated class) */
 /*
  * Function: ReplayMove
  * ----------------------------

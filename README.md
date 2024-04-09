@@ -63,7 +63,7 @@ segnalazione di elementi null tramite UE_LOG()
 - [ ] Material dei blueprint pezzi dinamico => non 6 e 6 ma solo 6
 - [ ] Transizione da menu a tavolo da gioco, con luce che incrementa man mano
 - [ ] sito web (how to play chess)
-- [ ] Movement pawn sound
+- [ ] Movement&capture pawn sound (anche musica sottofondo e vittoria / sconfitta + messaggio vittoria/sconfitta/pareggio a centro schermo)
 - [ ] Commenti avversario (tipo chess.com)
 - [ ] Caricare specifica configurazione di partita (per allenarti) digitando dove posizionare le varie pedine
 - [ ] Account per registrare uno storico delle partite fatte con i risultati e uno ?screenshot? della board finale
