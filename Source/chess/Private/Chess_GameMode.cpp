@@ -67,19 +67,21 @@ void AChess_GameMode::BeginPlay()
 		// Random player
 		// auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		// Minimax player
-
-		Players.Add(AI);
-
-		// Create replay widget
-		UWorld* World = GetWorld();
-		if (World && ReplayWidgetRef)
+		if (AI)
 		{
-			ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
-			ReplayWidget->AddToViewport(0);
-		}
+			Players.Add(AI);
 
-		// Ready to start the game
-		this->ChoosePlayerAndStartGame();
+			// Create replay widget
+			UWorld* World = GetWorld();
+			if (World && ReplayWidgetRef)
+			{
+				ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
+				ReplayWidget->AddToViewport(0);
+			}
+
+			// Ready to start the game
+			this->ChoosePlayerAndStartGame();
+		}
 	}
 	else
 	{
