@@ -13,17 +13,17 @@ void UChess_GameInstance::IncrementScoreAiPlayer()
 	ScoreAiPlayer++;
 }
 
-int32 UChess_GameInstance::GetScoreHumanPlayer()
+int32 UChess_GameInstance::GetScoreHumanPlayer() const
 {
 	return ScoreHumanPlayer;
 }
 
-int32 UChess_GameInstance::GetScoreAiPlayer()
+int32 UChess_GameInstance::GetScoreAiPlayer() const
 {
 	return ScoreAiPlayer;
 }
 
-FString UChess_GameInstance::GetTurnMessage()
+FString UChess_GameInstance::GetTurnMessage() const
 {
 	return CurrentTurnMessage;
 }
@@ -31,4 +31,14 @@ FString UChess_GameInstance::GetTurnMessage()
 void UChess_GameInstance::SetTurnMessage(FString Message)
 {
 	CurrentTurnMessage = Message;
+}
+
+EMatchMode UChess_GameInstance::GetMatchMode() const
+{
+	return MatchMode;
+}
+
+void UChess_GameInstance::SetMatchMode(EMatchMode Mode)
+{
+	MatchMode = Mode;
 }

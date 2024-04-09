@@ -18,6 +18,7 @@
 #include "ChessEnums.h"
 #include "Managers/ReplayManager.h"
 #include "GameFramework/GameModeBase.h"
+#include "Chess_GameInstance.h"
 #include "Chess_GameMode.generated.h"
 
 class IChess_PlayerInterface;
@@ -59,6 +60,8 @@ class CHESS_API AChess_GameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	UChess_GameInstance* GameInstance;
+
 	bool IsGameOver;
 	int8 ReplayInProgress; // shows the number of turn currently replaying
 	TArray<IChess_PlayerInterface*> Players;

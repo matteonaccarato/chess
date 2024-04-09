@@ -6,6 +6,16 @@
 #include "Engine/GameInstance.h"
 #include "Chess_GameInstance.generated.h"
 
+UENUM()
+enum class EMatchMode : uint8
+{
+	HUMAN_CPU_RANDOM, 
+	HUMAN_CPU_MINIMAX,
+	RANDOM_RANDOM,
+	RANDOM_MINIMAX,
+	MINIMAX_MINIMAX
+};
+
 /**
  * 
  */
@@ -24,18 +34,27 @@ public:
 	UPROPERTY(EditAnywhere)
 	FString CurrentTurnMessage = "Current Player";
 
+	UPROPERTY(EditAnywhere)
+	EMatchMode MatchMode;
+
 	void IncrementScoreHumanPlayer();
 	void IncrementScoreAiPlayer();
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetScoreHumanPlayer();
+	int32 GetScoreHumanPlayer() const;
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetScoreAiPlayer();
+	int32 GetScoreAiPlayer() const;
 
 	UFUNCTION(BlueprintCallable)
-	FString GetTurnMessage();
+	FString GetTurnMessage() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetTurnMessage(FString Message);
+
+	UFUNCTION(BlueprintCallable)
+	EMatchMode GetMatchMode() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetMatchMode(EMatchMode Mode);
 };

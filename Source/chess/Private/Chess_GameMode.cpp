@@ -2,6 +2,7 @@
 
 #include "Chess_GameMode.h"
 #include "GameField.h"
+#include "Players/Chess_PlayerInterface.h"
 #include "Players/Chess_PlayerController.h"
 #include "Players/Chess_HumanPlayer.h"
 #include "Players/Chess_RandomPlayer.h"
@@ -17,6 +18,7 @@ AChess_GameMode::AChess_GameMode()
 	LastGridPosition = FVector2D(-1, -1);
 	LastPawnMoveHappened = 0;
 	LastCaptureHappened = 0;
+	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 }
 
 void AChess_GameMode::BeginPlay()
@@ -31,7 +33,7 @@ void AChess_GameMode::BeginPlay()
 	MatchStatus = EMatchResult::NONE;
 
 	// Spawn GameField
-	if (GameFieldClass)
+	if (GameFieldClass && GameInstance)
 	{
 		GField = GetWorld()->SpawnActor<AGameField>(GameFieldClass);
 
@@ -42,13 +44,29 @@ void AChess_GameMode::BeginPlay()
 		HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 	
 		// Human player at INDEX 0
-		Players.Add(HumanPlayer);
+		// It is always in the game (it is linked with the camera). 
+		// If it does not play, it woks like a spectator
+		Players.Add(HumanPlayer); 
 
+		IChess_PlayerInterface* AI = nullptr;
+		switch (GameInstance->GetMatchMode())
+		{
+		case EMatchMode::HUMAN_CPU_RANDOM:
+			AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			break;
+		case EMatchMode::HUMAN_CPU_MINIMAX:
+			AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			break;
+		case EMatchMode::RANDOM_RANDOM:
+		case EMatchMode::RANDOM_MINIMAX:
+		case EMatchMode::MINIMAX_MINIMAX:
+			// TODO
+			break;
+		}
 		// TODO AI based on a value passed through parameter (button)
 		// Random player
 		// auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		// Minimax player
-		auto* AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
 		Players.Add(AI);
 
@@ -65,7 +83,7 @@ void AChess_GameMode::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("GameFieldClass is null"));
+		UE_LOG(LogTemp, Error, TEXT("GameFieldClass OR GameInstance is null"));
 	}
 }
 
