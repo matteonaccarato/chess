@@ -45,7 +45,7 @@ void AGameField::ResetField()
 			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
 		
 		// load initial board
-		TArray<FTileSaving> InitialBoard;
+		TArray<FPieceSaving> InitialBoard;
 		int n = PawnArray.Num();
 		for (int i = 0; i < n; i++)
 		{
@@ -224,7 +224,7 @@ int8 AGameField::DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2
 	return tmp;
 }
 
-void AGameField::LoadBoard(const TArray<FTileSaving>& Board)
+void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 {
 	// memorizzo in ordine come pawnarray [0..32] e ottengo tile X Y | for()
 	// in load board
@@ -342,6 +342,100 @@ bool AGameField::CheckDirection(const EDirection Direction, ABasePawn* Pawn, con
 
 
 
+
+/*
+ * Function: GetXYOffset
+ * ----------------------------
+ *   Computes the offsets (X,Y) based on the paramaters (steps, direction and color)
+ *
+ *	 Steps		const int8				number of steps to perform
+ *	 Direction	ECardinalDirection		direction to follow during the move
+ *	 PieceColor	EPawnColor				color of the piece
+ *
+ *   return		std::pair<int8, int8>	pair containing XOffset as first and YOffset as second
+ */
+std::pair<int8, int8> AGameField::GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const
+{
+	// Flag to determine if going to north or south / east or west / ... / and exploit symmetry
+	int8 FlagDirection = 0;
+	int8 XOffset = 0, YOffset = 0;
+
+	switch (Direction)
+	{
+	case ECardinalDirection::NORTH:
+		FlagDirection = 1;
+	case ECardinalDirection::SOUTH:
+		FlagDirection = FlagDirection ? FlagDirection : -1;
+		XOffset = Steps * FlagDirection;
+		YOffset = 0;
+		break;
+
+	case ECardinalDirection::NORTHEAST:
+		FlagDirection = 1;
+	case ECardinalDirection::SOUTHWEST:
+		FlagDirection = FlagDirection ? FlagDirection : -1;
+		XOffset = Steps * FlagDirection;
+		YOffset = Steps * FlagDirection;
+		break;
+
+	case ECardinalDirection::EAST:
+		FlagDirection = 1;
+	case ECardinalDirection::WEST:
+		FlagDirection = FlagDirection ? FlagDirection : -1;
+		XOffset = 0;
+		YOffset = Steps * FlagDirection;
+		break;
+
+	case ECardinalDirection::NORTHWEST:
+		FlagDirection = 1;
+	case ECardinalDirection::SOUTHEAST:
+		FlagDirection = FlagDirection ? FlagDirection : -1;
+		XOffset = Steps * FlagDirection;
+		YOffset = Steps * (-FlagDirection);
+		break;
+
+	case ECardinalDirection::KNIGHT_TL:
+		YOffset = -1;
+	case ECardinalDirection::KNIGHT_TR:
+		XOffset = 2;
+		YOffset = YOffset ? YOffset : 1;
+		break;
+
+	case ECardinalDirection::KNIGHT_RT:
+		XOffset = 1;
+	case ECardinalDirection::KNIGHT_RB:
+		XOffset = XOffset ? XOffset : -1;
+		YOffset = 2;
+		break;
+
+	case ECardinalDirection::KNIGHT_BR:
+		YOffset = 1;
+	case ECardinalDirection::KNIGHT_BL:
+		XOffset = -2;
+		YOffset = YOffset ? YOffset : -1;
+		break;
+
+	case ECardinalDirection::KNIGHT_LT:
+		XOffset = 1;
+	case ECardinalDirection::KNIGHT_LB:
+		XOffset = XOffset ? XOffset : -1;
+		YOffset = -2;
+		break;
+
+	}
+
+	// TODO => cast to int8, not int
+	// If a piece should go forward (NORTH), 
+	//	if it white, the X should be increased (X = 3; NewX = 4),
+	//	otherwise, it should be decreased (X = 3; NewX = 2).
+	// To do so, piece color value (casted to int) is used: 
+	//	Black => -1
+	//	White => +1
+	XOffset = XOffset * static_cast<int>(PieceColor);
+	YOffset = YOffset * static_cast<int>(PieceColor);
+
+	return std::make_pair(XOffset, YOffset);
+}
 
 
 

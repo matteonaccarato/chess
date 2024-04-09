@@ -60,12 +60,29 @@ enum class ECardinalDirection : uint8
 };
 
 UENUM()
+enum class EDirection : uint8
+{
+	FORWARD,
+	BACKWARD,
+	HORIZONTAL,
+	DIAGONAL,
+	KNIGHT
+};
+
+UENUM()
+enum class ELine : uint8
+{
+	HORIZONTAL,
+	VERTICAL,
+	DIAGONAL
+};
+
+UENUM()
 enum class EPawnStatus : int8
 {
 	ALIVE, // 0
 	DEAD // 1
 };
-
 
 /**
  * 
@@ -74,7 +91,6 @@ class CHESS_API ChessEnums
 {
 public:
 	static const int32 NOT_ASSIGNED = -1;
-
 
 	ChessEnums();
 	~ChessEnums();

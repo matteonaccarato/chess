@@ -111,11 +111,23 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		MoveCounter++;
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d under CHECK MATE"), MatchStatus));
 
-		// On Win and On Lose events
-		Players[CurrentPlayer]->OnWin();
-		for (int32 i = 0; i < Players.Num(); i++)
-			if (i != CurrentPlayer)
-				Players[i]->OnLose();
+		// End game events
+		switch (MatchStatus)
+		{
+		case EMatchResult::WHITE:
+		case EMatchResult::BLACK:
+			Players[CurrentPlayer]->OnWin();
+			for (int32 i = 0; i < Players.Num(); i++)
+				if (i != CurrentPlayer)
+					Players[i]->OnLose();
+			break;
+		default:
+			for (int32 i = 0; i < Players.Num(); i++)
+				Players[i]->OnDraw();
+			break;
+		}
+
+		
 	
 		// Timer to reset the field ( TODO => magari non faccio reset, così l'utente può guardarsi tutto con calma)
 		/* FTimerHandle TimerHandle;
@@ -156,7 +168,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		//	     White knight next to it is at 1,
 		//		 ...
 		//  e.g. [{0,0}, {2,0}, {1,3}, ...] means the Bottom-left white rook is at (0,0), the knight next to it is at (2,0), ...
-		TArray<FTileSaving> BoardSaving;
+		TArray<FPieceSaving> BoardSaving;
 		for (auto& Piece : GField->PawnArray)
 		{
 			BoardSaving.Add({
@@ -200,7 +212,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		else if (ImpossibilityToCheckmate())
 			MatchStatus = EMatchResult::INSUFFICIENT_MATERIAL;
 
-		AddToReplay(LastPiece, LastEatFlag, PiecePromotionFlag);
+		ReplayManager::AddToReplay(this, LastPiece, LastEatFlag, PiecePromotionFlag);
 
 
 		if (MatchStatus != EMatchResult::NONE)
@@ -357,7 +369,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				// TODO => fare stesso check di prima controllando la direzione  
 				for (int8 i = 1; i <= MaxSteps; i++)
 				{
-					std::pair<int8, int8> Offsets = GetXYOffset(i, PawnDirection, Pawn->GetColor());
+					std::pair<int8, int8> Offsets = GField->GetXYOffset(i, PawnDirection, Pawn->GetColor());
 					XOffset = Offsets.first;
 					YOffset = Offsets.second;
 
@@ -395,7 +407,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				// short castling and long castling
 				for (ECardinalDirection Direction : { ECardinalDirection::EAST, ECardinalDirection::WEST })
 				{
-					std::pair<int8, int8> Offsets = GetXYOffset(2, Direction, Pawn->GetColor());
+					std::pair<int8, int8> Offsets = GField->GetXYOffset(2, Direction, Pawn->GetColor());
 					XOffset = Offsets.first;
 					YOffset = Offsets.second;
 					// Evaluate if this move is valid or not
@@ -603,12 +615,11 @@ EPawnColor AChess_GameMode::CheckKingsUnderAttack() const
 			GField->PawnArray[KingWhitePieceNum], 
 			GField->PawnArray[KingBlackPieceNum] })
 		{
-			int8 KingX = King->GetGridPosition()[0];
-			int8 KingY = King->GetGridPosition()[1];
+			FVector2D KingXY = King->GetGridPosition();
 			int8 OpponentIdx = (static_cast<int>(King->GetColor()) == 1) ? 1 : 0;
-			if (King->GetStatus() == EPawnStatus::ALIVE && GField->IsValidTile(KingX, KingY))
+			if (King->GetStatus() == EPawnStatus::ALIVE && GField->IsValidTile(KingXY[0], KingXY[1]))
 			{
-				if (GField->GetTileArray()[KingX * GField->Size + KingY]->GetTileStatus().AttackableFrom[OpponentIdx])
+				if (GField->GetTileArray()[KingXY[0] * GField->Size + KingXY[1]]->GetTileStatus().AttackableFrom[OpponentIdx])
 				{
 					if (TmpCheckFlag == EPawnColor::NONE)
 						TmpCheckFlag = King->GetColor();
@@ -870,99 +881,6 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 
 
-/*
- * Function: GetXYOffset
- * ----------------------------
- *   Computes the offsets (X,Y) based on the paramaters (steps, direction and color)
- *
- *	 Steps		const int8				number of steps to perform
- *	 Direction	ECardinalDirection		direction to follow during the move
- *	 PieceColor	EPawnColor				color of the piece
- *	 
- *   return		std::pair<int8, int8>	pair containing XOffset as first and YOffset as second
- */
-std::pair<int8, int8> AChess_GameMode::GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const
-{
-	// Flag to determine if going to north or south / east or west / ... / and exploit symmetry
-	int8 FlagDirection = 0; 
-	int8 XOffset = 0, YOffset = 0;
-	
-	switch (Direction)
-	{
-	case ECardinalDirection::NORTH:
-		FlagDirection = 1;
-	case ECardinalDirection::SOUTH:
-		FlagDirection = FlagDirection ? FlagDirection : -1;
-		XOffset = Steps * FlagDirection;
-		YOffset = 0;
-		break;
-
-	case ECardinalDirection::NORTHEAST:
-		FlagDirection = 1;
-	case ECardinalDirection::SOUTHWEST:
-		FlagDirection = FlagDirection ? FlagDirection : -1;
-		XOffset = Steps * FlagDirection;
-		YOffset = Steps * FlagDirection;
-		break;
-
-	case ECardinalDirection::EAST:
-		FlagDirection = 1;
-	case ECardinalDirection::WEST:
-		FlagDirection = FlagDirection ? FlagDirection : -1;
-		XOffset = 0;
-		YOffset = Steps * FlagDirection;
-		break;
-
-	case ECardinalDirection::NORTHWEST:
-		FlagDirection = 1;
-	case ECardinalDirection::SOUTHEAST:
-		FlagDirection = FlagDirection ? FlagDirection : -1;
-		XOffset = Steps * FlagDirection;
-		YOffset = Steps * (-FlagDirection);
-		break;
-
-	case ECardinalDirection::KNIGHT_TL:
-		YOffset = -1;
-	case ECardinalDirection::KNIGHT_TR:
-		XOffset = 2;
-		YOffset = YOffset ? YOffset : 1;
-		break;
-
-	case ECardinalDirection::KNIGHT_RT:
-		XOffset = 1;
-	case ECardinalDirection::KNIGHT_RB:
-		XOffset = XOffset ? XOffset : -1;
-		YOffset = 2;
-		break;
-
-	case ECardinalDirection::KNIGHT_BR:
-		YOffset = 1;
-	case ECardinalDirection::KNIGHT_BL:
-		XOffset = -2;
-		YOffset = YOffset ? YOffset : -1;
-		break;
-
-	case ECardinalDirection::KNIGHT_LT:
-		XOffset = 1;
-	case ECardinalDirection::KNIGHT_LB:
-		XOffset = XOffset ? XOffset : -1;
-		YOffset = -2;
-		break;
-
-	}
-
-	// TODO => cast to int8, not int
-	// If a piece should go forward (NORTH), 
-	//	if it white, the X should be increased (X = 3; NewX = 4),
-	//	otherwise, it should be decreased (X = 3; NewX = 2).
-	// To do so, piece color value (casted to int) is used: 
-	//	Black => -1
-	//	White => +1
-	XOffset = XOffset * static_cast<int>(PieceColor);
-	YOffset = YOffset * static_cast<int>(PieceColor);
-
-	return std::make_pair(XOffset, YOffset);
-}
 
 
 /*
@@ -1047,20 +965,63 @@ void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>
 
 bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 {
-	return false;
+	// ciclo su tutte le configurazioni finché sono uguali, altrimenti break
+	int8 Cnt = 0;
+	for (const auto& PieceConfiguration : GameSaving)
+	{
+		int8 ArePiecesEqual = 1;
+		int8 i = 0;
+		// TArray<> PiecesDoNotMatch
+		for (const auto& Piece : PieceConfiguration)
+		{
+			if (CurrentBoard.IsValidIndex(i))
+			{
+				if (Piece.Status != CurrentBoard[i].Status
+					|| Piece.X != CurrentBoard[i].X
+					|| Piece.Y != CurrentBoard[i].Y)
+				{
+					ArePiecesEqual = 0;
+				}
+			} 
+			else
+			{
+				int EndPieceConfiguration = PieceConfiguration.Num();
+				for (int idx2 = EndPieceConfiguration; idx2 < CurrentBoard.Num(); idx2++)
+				{
+					if (GField->PawnArray.IsValidIndex(idx2)
+						&& GField->PawnArray[idx2]->GetType() == GField->PawnArray[i]->GetType()
+						&& GField->PawnArray[idx2]->GetColor() == GField->PawnArray[i]->GetColor()
+						&& GField->PawnArray[idx2]->GetStatus() == GField->PawnArray[i]->GetStatus()
+						&& Piece.X == CurrentBoard[idx2].X
+						&& Piece.Y == CurrentBoard[idx2].Y)
+						break; // the two pieces has the same color, type and grid position
+					else
+						ArePiecesEqual = 0;
+				}
+			}
+			if (ArePiecesEqual == 0)
+				break;
+			i++;
+		}
+		Cnt += ArePiecesEqual;
+		if (Cnt >= Times)
+			break;
+	}
+
+	return Cnt >= Times;
 }
 
 bool AChess_GameMode::SeventyFive_MoveRule() const
 {
+	// 
 	return false;
 }
 
 bool AChess_GameMode::ImpossibilityToCheckmate() const
 {
+	// casistiche su wikipedia
 	return false;
 }
-
-
 
 
 
@@ -1070,7 +1031,7 @@ bool AChess_GameMode::ImpossibilityToCheckmate() const
  * Function: ReplayMove
  * ----------------------------
  *   Loads the turn specified as parameter (e.g. "1. e4" => Replay of the turn number 4.
- *		If user decides to rewind the game (clicking the move N and selecting one of his pieces) at turn N, 
+ *		If user decides to rewind the game (clicking the move N and selecting one of his pieces) at turn N,
  *			the board will be bring back to the status at turn N and the user is allowed to start again the turn N+1
  *
  *	 TxtBlock	UTextBlock*		Text block containing the turn to replay (e.g. "1. e4)"
@@ -1087,13 +1048,13 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 		BtnName.Split(TEXT("."), &NumMoveStr, NULL);
 		int8 NumMove = FCString::Atoi(*NumMoveStr);
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Replay mossa %d"), NumMove));
-	
+
 		if ((NumMove + 1) != MoveCounter)
 		{
 			ReplayInProgress = NumMove;
 			if (GameSaving.IsValidIndex(NumMove - 1))
 			{
-				TArray<FTileSaving> BoardToLoad = GameSaving[NumMove - 1];
+				TArray<FPieceSaving> BoardToLoad = GameSaving[NumMove - 1];
 				GField->LoadBoard(BoardToLoad);
 			}
 		}
@@ -1102,7 +1063,7 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 			// TODO => commento da rimuovere
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Bro cosa stai cercando questo è il turno corrente")));
 			GField->LoadBoard(CurrentBoard);
-			
+
 			ReplayInProgress = MoveCounter;
 			Players[CurrentPlayer]->OnTurn();
 		}
@@ -1112,111 +1073,4 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 		// AI is playing (replay NOT available)
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO, non puoi replayare mentre gioco IO! :)"));
 	}
-}
-
-
-/*
- * Function: AddToReplay | TODO => make it const
- * ----------------------------
- *   Adds the last move to the replay box.
-*		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
-*		(PreviousGridPosition: FVector2D)
-*	 
-*	 Pawn				const ABasePawn*		The pawn which has been moved
-*	 EatFlag			const bool = false		If another piece has been captured
-*	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened 
- */
-void AChess_GameMode::AddToReplay(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
-{
-	FString MoveStr = ComputeMoveName(Pawn, EatFlag, PawnPromotionFlag);
-
-	// Update RecordMoves
-	RecordMoves.Add(MoveStr);
-
-	// Update Replay widget content
-	UWorld* World = GetWorld();
-	UScrollBox* ScrollBox = Pawn->GetColor() == EPawnColor::WHITE ? 
-		Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")))
-		: Cast<UScrollBox>(ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
-	if (World && ScrollBox && ButtonWidgetRef)
-	{
-		UUserWidget* WidgetBtn = CreateWidget(World, ButtonWidgetRef);
-		if (WidgetBtn)
-		{
-			UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(TEXT("txtBlock")));
-			if (BtnText)
-			{
-				BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), MoveCounter, *MoveStr)));
-			}
-
-			FWidgetTransform Transform; 
-			Transform.Angle = 180;
-			WidgetBtn->SetRenderTransform(Transform);
-			UScrollBoxSlot* ScrollSlot = Cast<UScrollBoxSlot>(ScrollBox->AddChild(WidgetBtn));
-			ScrollSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
-			ScrollSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Top);
-			ScrollBox->ScrollToEnd();
-		}
-	}
-}
-
-/*
- * Function: ComputeMoveName const
- * ----------------------------
- *   Generates the algebraic notation of the last move.
- *		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
- *			(PreviousGridPosition: FVector2D)
- *	 
- *   Pawn				const ABasePawn*		The pawn which has been moved
- *	 EatFlag			const bool = false		If another piece has been captured
- *	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened 
- */
-FString AChess_GameMode::ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag) const
-{
-	FVector2D GridPosition = Pawn->GetGridPosition();
-	ATile* Tile = GField->GetTileArray()[GridPosition[0] * GField->Size + GridPosition[1]];
-	ATile* PreviousTile = GField->GetTileArray()[PreviousGridPosition[0] * GField->Size + PreviousGridPosition[1]];
-	bool IsPawn = Pawn->GetType() == EPawnType::PAWN;
-	
-	FString MoveStr = TEXT("");
-	FString StartTileStr = TEXT("");
-	int8 DeltaY = Pawn->GetGridPosition()[1] - PreviousGridPosition[1];
-	if (Pawn && Pawn->GetType() == EPawnType::KING && FMath::Abs(DeltaY) > 1 && !Tile->GetId().IsEmpty())
-	{
-		// Castling handling
-		MoveStr = FMath::Sign(DeltaY) > 0 ? "0-0" : "0-0-0";
-	}
-	else
-	{
-		for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
-		{
-			if (Pawn->GetType() == Piece->GetType() 
-				&& Pawn->GetColor() == Piece->GetColor()
-				&& Pawn->GetPieceNum() != Piece->GetPieceNum())
-			{
-				if (PreviousGridPosition[1] == Piece->GetGridPosition()[1])
-				{
-					StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
-				}
-				else
-				{
-					StartTileStr += PreviousTile->GetLetterId().ToLower();
-				}
-			}
-		}
-
-		if (Pawn && !Tile->GetId().IsEmpty())
-		{
-			MoveStr = ((IsPawn || PawnPromotionFlag)? TEXT("") : Pawn->GetId()) +
-				StartTileStr +
-				(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
-				(EatFlag ? TEXT("x") : TEXT("")) + 
-				Tile->GetId().ToLower() +
-				(PawnPromotionFlag? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
-				((CheckFlag != EPawnColor::NONE &&  MatchStatus == EMatchResult::NONE)? TEXT("+") : TEXT("")) +
-				(MatchStatus != EMatchResult::NONE ? TEXT("#") : TEXT(""));
-		}
-	}
-
-	return MoveStr;
 }

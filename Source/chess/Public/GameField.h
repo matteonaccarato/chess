@@ -6,9 +6,11 @@
 #include "CoreMinimal.h"
 #include "Tile.h"
 #include "BasePawn.h"
+#include "ChessEnums.h"
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
 
+struct FPieceSaving;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReset);
 
@@ -35,11 +37,8 @@ public:
 	UPROPERTY(Transient)
 	TMap<FVector2D, ABasePawn*> PawnMap;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
-
-	// static const int32 NOT_ASSIGNED = -1;
 
 	// BlueprintAssignable usable with multicast delegates only.
 	// Exposes the property for assigning in Blueprints.
@@ -195,9 +194,15 @@ public:
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
+	/*
+	*/
+	bool IsValidTile(const int8 X, const int8 Y) const;
+
 	int8 DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const;
 	
-
+	/*
+	*/
+	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
 
 	/*
 	*/
@@ -205,9 +210,6 @@ public:
 
 
 
-	/*
-	*/
-	bool IsValidTile(const int8 X, const int8 Y) const;
 
 	/*
 	*/
@@ -217,7 +219,7 @@ public:
 
 
 
-	void LoadBoard(const TArray<FTileSaving>& Board);
+	void LoadBoard(const TArray<FPieceSaving>& Board);
 
 
 	/*

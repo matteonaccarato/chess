@@ -475,12 +475,23 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 void AChess_MiniMaxPlayer::OnWin()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("AI Wins"));
-	GameInstance->IncrementScoreAiPlayer();
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("AI Wins"));
+		GameInstance->IncrementScoreAiPlayer();
+	}
 }
 
 void AChess_MiniMaxPlayer::OnLose()
 {
 	// TODO
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
+}
+
+void AChess_MiniMaxPlayer::OnDraw()
+{
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("DRAW"));
+	}
 }

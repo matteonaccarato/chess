@@ -15,6 +15,8 @@
 
 #include "CoreMinimal.h"
 #include "BasePawn.h"
+#include "ChessEnums.h"
+#include "Managers/ReplayManager.h"
 #include "GameFramework/GameModeBase.h"
 #include "Chess_GameMode.generated.h"
 
@@ -26,26 +28,9 @@ class ABasePawn;
 enum class EPawnType : uint8;
 enum class EPawnColor : int8;
 
-UENUM()
-enum class EDirection : uint8
-{
-	FORWARD,
-	BACKWARD,
-	HORIZONTAL,
-	DIAGONAL,
-	KNIGHT
-};
-
-UENUM()
-enum class ELine : uint8
-{
-	HORIZONTAL,
-	VERTICAL,
-	DIAGONAL
-};
 
 USTRUCT(BlueprintType)
-struct FTileSaving
+struct FPieceSaving
 {
 	GENERATED_BODY()
 
@@ -63,6 +48,7 @@ struct FCastlingInfo
 	bool KingMoved = false;
 	bool RooksMoved[2] = { false, false }; // left / right
 };
+
 
 /**
  * TODO => mettere attributi come protected
@@ -89,8 +75,8 @@ public:
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;
 
-	TArray<TArray<FTileSaving>> GameSaving;
-	TArray<FTileSaving> CurrentBoard;
+	TArray<TArray<FPieceSaving>> GameSaving;
+	TArray<FPieceSaving> CurrentBoard;
 
 	int8 KingWhitePieceNum = -1;
 	int8 KingBlackPieceNum = -1;
@@ -161,8 +147,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReplayMove(UTextBlock* TxtBlock);
 
-	void AddToReplay(const ABasePawn* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false);
-	FString ComputeMoveName(const ABasePawn* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false) const;
+	
 
 
 	/*
@@ -176,7 +161,6 @@ public:
 
 	void ComputeAttackableTiles();
 
-	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
 	/*
 	*/
 	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);

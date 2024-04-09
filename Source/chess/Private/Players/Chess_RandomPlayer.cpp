@@ -119,8 +119,11 @@ void AChess_RandomPlayer::OnTurn()
 void AChess_RandomPlayer::OnWin()
 {
 	// TODO
-	GameInstance->SetTurnMessage(TEXT("AI Wins"));
-	GameInstance->IncrementScoreAiPlayer();
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("AI Wins"));
+		GameInstance->IncrementScoreAiPlayer();
+	}
 }
 
 void AChess_RandomPlayer::OnLose()
@@ -129,3 +132,11 @@ void AChess_RandomPlayer::OnLose()
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }
 
+void AChess_RandomPlayer::OnDraw()
+{
+	// TODO
+	if (GameInstance)
+	{
+		GameInstance->SetTurnMessage(TEXT("DRAW"));
+	}
+}

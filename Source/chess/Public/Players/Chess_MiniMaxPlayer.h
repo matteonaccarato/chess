@@ -34,6 +34,7 @@ public:
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
 	virtual void OnLose() override;
+	virtual void OnDraw() override;
 
 	int32 EvaluateBoard(TArray<ATile*> Board) const;
 	// are moves left (se ci sono mosse rimanenti => guardo PossibleMoves.Num()

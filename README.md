@@ -1,12 +1,15 @@
 # CHESS
 
 NEXT:
+	- FARE PARITA'
 	- valutare promozione pedone in minimax 
 	- testare replay (soprattutto con checkmate)
 
 	- condizione di ripristino del castling (in human player) NON vanno bene 
 		=> l'essere in quella posizione non implica il non aver mai mosso quella pedina 
 			(salvo anche l'informazione del castling)
+
+	- testare il castling quando il re è minacciato o si muove sotto scacco
 
 	- EVALUATION
 		return immediately if checkmate
