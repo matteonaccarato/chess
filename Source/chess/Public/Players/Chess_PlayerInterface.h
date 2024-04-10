@@ -6,14 +6,14 @@
 #include "UObject/Interface.h"
 #include "../BasePawn.h"
 #include "../Chess_GameMode.h"
-#include "../GameField.h"
+// #include "../GameField.h"
 #include "../Chess_GameInstance.h"
 
 #include "Chess_PlayerInterface.generated.h"
 
 enum class EPawnColor : int8;
 
-// class AChess_GameField;
+class AChess_GameField;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -35,6 +35,7 @@ public:
 	EPawnColor Color;
 	TArray<TArray<std::pair<int8, int8>>> AttackableTiles;
 	bool IsMyTurn = false;
+	bool bIsActivePlayer = true;
 
 	virtual void OnTurn() {};
 	virtual void OnWin() {};

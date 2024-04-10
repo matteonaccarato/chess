@@ -4,9 +4,10 @@
 
 #include "Chess_GameMode.h"
 #include "CoreMinimal.h"
+#include "ChessEnums.h"
 #include "Tile.h"
 #include "BasePawn.h"
-#include "ChessEnums.h"
+#include "Players/Chess_PlayerInterface.h"
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
 

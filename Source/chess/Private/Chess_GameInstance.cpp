@@ -3,24 +3,24 @@
 
 #include "Chess_GameInstance.h"
 
-void UChess_GameInstance::IncrementScoreHumanPlayer()
+void UChess_GameInstance::IncrementScorePlayer_1()
 {
-	ScoreHumanPlayer++;
+	ScorePlayer_1++;
 }
 
-void UChess_GameInstance::IncrementScoreAiPlayer()
+void UChess_GameInstance::IncrementScorePlayer_2()
 {
-	ScoreAiPlayer++;
+	ScorePlayer_2++;
 }
 
-int32 UChess_GameInstance::GetScoreHumanPlayer() const
+int32 UChess_GameInstance::GetScorePlayer_1() const
 {
-	return ScoreHumanPlayer;
+	return ScorePlayer_1;
 }
 
-int32 UChess_GameInstance::GetScoreAiPlayer() const
+int32 UChess_GameInstance::GetScorePlayer_2() const
 {
-	return ScoreAiPlayer;
+	return ScorePlayer_2;
 }
 
 FString UChess_GameInstance::GetTurnMessage() const

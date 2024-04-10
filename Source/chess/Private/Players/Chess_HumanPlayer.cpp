@@ -64,7 +64,10 @@ void AChess_HumanPlayer::OnWin()
 	if (GameInstance)
 	{
 		GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-		GameInstance->IncrementScoreHumanPlayer();
+
+		PlayerNumber ?
+			GameInstance->IncrementScorePlayer_2() :
+			GameInstance->IncrementScorePlayer_1();
 	}
 }
 
@@ -304,11 +307,7 @@ void AChess_HumanPlayer::OnClick()
 					// if (GameMode->IsValidMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]))
 					if (GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()].Contains(std::make_pair<int8,int8>(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1])))
 					{
-						if (PawnToEat)
-							GameMode->GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1]);
-
-						ATile* OldTile = GameMode->GField->TileArray[PawnTemp->GetGridPosition()[0] * GameMode->GField->Size + PawnTemp->GetGridPosition()[1]];
-						GameMode->MakeMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
+						bool EatFlag = GameMode->MakeMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
 						SelectedPawnFlag = 0;
 						
@@ -329,6 +328,9 @@ void AChess_HumanPlayer::OnClick()
 						}
 						else
 						{
+							// End Turn 
+							GameMode->LastPiece = PawnTemp;
+							GameMode->LastEatFlag = EatFlag;
 							GameMode->EndTurn(PlayerNumber);
 						}						
 					}

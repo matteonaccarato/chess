@@ -69,7 +69,7 @@ void AGameField::ResetField()
 					x,
 					y,
 					EPawnStatus::ALIVE
-					});
+				});
 			}
 			else
 			{
@@ -105,6 +105,8 @@ void AGameField::ResetField()
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
 		GameMode->ReplayInProgress = 0;
+		for (int8 i = 0; i < GameMode->Players.Num(); i++)
+			GameMode->Players[i]->IsMyTurn = false;
 		GameMode->ChoosePlayerAndStartGame();
 	}
 }

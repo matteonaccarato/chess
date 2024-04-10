@@ -46,42 +46,56 @@ void AChess_GameMode::BeginPlay()
 		// Human player at INDEX 0
 		// It is always in the game (it is linked with the camera). 
 		// If it does not play, it woks like a spectator
-		Players.Add(HumanPlayer); 
 
-		IChess_PlayerInterface* AI = nullptr;
+		IChess_PlayerInterface* AI_1 = nullptr;
+		IChess_PlayerInterface* AI_2 = nullptr;
 		switch (GameInstance->GetMatchMode())
 		{
 		case EMatchMode::HUMAN_CPU_RANDOM:
-			AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
-			break;
+			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		case EMatchMode::HUMAN_CPU_MINIMAX:
-			AI = GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+
+			HumanPlayer->bIsActivePlayer = true;
+			AI_1->bIsActivePlayer = true;
+
+			Players.Add(HumanPlayer);	// white
+			Players.Add(AI_1);			// black
 			break;
 		case EMatchMode::RANDOM_RANDOM:
+			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			AI_2 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		case EMatchMode::RANDOM_MINIMAX:
+			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 		case EMatchMode::MINIMAX_MINIMAX:
-			// TODO
+			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+
+			AI_1->bIsActivePlayer = true;
+			AI_2->bIsActivePlayer = true;
+			HumanPlayer->bIsActivePlayer = false;
+
+			Players.Add(AI_1);			// white
+			Players.Add(AI_2);			// black
+			Players.Add(HumanPlayer);	// spectator
 			break;
 		}
 		// TODO AI based on a value passed through parameter (button)
 		// Random player
 		// auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		// Minimax player
-		if (AI)
+
+		// Create replay widget
+		UWorld* World = GetWorld();
+		if (World && ReplayWidgetRef)
 		{
-			Players.Add(AI);
-
-			// Create replay widget
-			UWorld* World = GetWorld();
-			if (World && ReplayWidgetRef)
-			{
-				ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
-				ReplayWidget->AddToViewport(0);
-			}
-
-			// Ready to start the game
-			this->ChoosePlayerAndStartGame();
+			ReplayWidget = CreateWidget<UUserWidget>(World, ReplayWidgetRef, FName("Replay"));
+			ReplayWidget->AddToViewport(0);
 		}
+
+		// Ready to start the game
+		this->ChoosePlayerAndStartGame();
 	}
 	else
 	{
@@ -96,11 +110,14 @@ void AChess_GameMode::BeginPlay()
  */
 void AChess_GameMode::ChoosePlayerAndStartGame()
 {
-	CurrentPlayer = 0;
+	CurrentPlayer = 0; // its value will change from 0 to 1 and viceversa during the game 
 	for (int32 i = 0; i < Players.Num(); i++)
 	{
-		Players[i]->PlayerNumber = i;
-		Players[i]->Color = i == CurrentPlayer ? EPawnColor::WHITE : EPawnColor::BLACK;
+		if (Players[i]->bIsActivePlayer)
+		{
+			Players[i]->PlayerNumber = i;
+			Players[i]->Color = i == CurrentPlayer ? EPawnColor::WHITE : EPawnColor::BLACK;
+		}
 	}
 
 	CheckFlag = EPawnColor::NONE;
@@ -140,12 +157,13 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		case EMatchResult::BLACK:
 			Players[CurrentPlayer]->OnWin();
 			for (int32 i = 0; i < Players.Num(); i++)
-				if (i != CurrentPlayer)
+				if (Players[i]->bIsActivePlayer && i != CurrentPlayer)
 					Players[i]->OnLose();
 			break;
 		default:
 			for (int32 i = 0; i < Players.Num(); i++)
-				Players[i]->OnDraw();
+				if (Players[i]->bIsActivePlayer)
+					Players[i]->OnDraw();
 			break;
 		}
 
@@ -261,7 +279,11 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<int8>& WhitePieces, TArr
 /*
  * Function: GetNextPlayer
  * ----------------------------
- *   Returns next player index
+ *   Returns next player index. Active players are positioned at index 0 and 1.
+ *	 This function switch between these two values.
+ *	 e.g.
+ *		Player = 0		->		return 1
+ *		Player = 1		->		return 0
  *
  *   Player		int32	Number of the current player
  * 
@@ -269,13 +291,7 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<int8>& WhitePieces, TArr
  */
 int32 AChess_GameMode::GetNextPlayer(int32 Player)
 {
-	// TODO => sostituire con FMath::Abs(Player - 1)
-	Player++;
-	if (!Players.IsValidIndex(Player))
-	{
-		Player = 0;
-	}
-	return Player;
+	return FMath::Abs(Player - 1); 
 }
 
 /*

@@ -41,88 +41,110 @@ void AChess_RandomPlayer::OnTurn()
 	int8 RandTimer = FMath::Rand() % 21 + 10;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
-			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode && GameMode->ReplayInProgress == 0 && IsMyTurn)
+			if (IsMyTurn)
 			{
-				// Setting all tiles as NON attackable from Nobody (TODO => già fatto nell'inizio turno)
-				for (auto& Tile : GameMode->GField->GetTileArray())
+				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+				if (GameMode && GameMode->ReplayInProgress == 0)
 				{
-					FTileStatus TileStatus = Tile->GetTileStatus();
-					TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
-					TileStatus.WhoCanGo.Empty();
-					Tile->SetTileStatus(TileStatus);
-				}
-
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), GameMode->BlackPiecesCanMove.Num()));
-
-				// If there are black pawns eligible to move
-				if (GameMode->BlackPiecesCanMove.Num() > 0)
-				{
-					// Select randomically the index of the pawn to move
-					int8 RandPawnIdx = FMath::Rand() % GameMode->BlackPiecesCanMove.Num();
-					int8 RandPieceNum = GameMode->BlackPiecesCanMove[RandPawnIdx];
-					TArray<std::pair<int8, int8>> AttackableTiles = GameMode->TurnPossibleMoves[RandPieceNum];
-					// Select randomically the index of the tile to move to
-					int8 RandNewTile = FMath::Rand() % AttackableTiles.Num();
-
-					int32 OldX = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[0];
-					int32 OldY = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[1];
-					int8 NewX = AttackableTiles[RandNewTile].first;
-					int8 NewY = AttackableTiles[RandNewTile].second;
-
-					if (GameMode->GField->IsValidTile(OldX, OldY)
-						&& GameMode->GField->IsValidTile(NewX, NewY))
+					// Setting all tiles as NON attackable from Nobody ( TODO => già fatto nell'inizio turno)
+					for (auto& Tile : GameMode->GField->GetTileArray())
 					{
-						
-						bool EatFlag = GameMode->MakeMove(GameMode->GField->PawnArray[RandPieceNum], NewX, NewY);
-					
+						FTileStatus TileStatus = Tile->GetTileStatus();
+						TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
+						TileStatus.WhoCanGo.Empty();
+						Tile->SetTileStatus(TileStatus);
+					}
 
-						// Pawn promotion handling
-						if (NewX == 0 && GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
+
+
+					TArray<int8>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
+
+
+
+
+
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), PlayerPiecesCanMove.Num()));
+
+					// If there are black pawns eligible to move
+					if (PlayerPiecesCanMove.Num() > 0)
+					{
+						// Select randomically the index of the pawn to move
+						int8 RandPawnIdx = FMath::Rand() % PlayerPiecesCanMove.Num();
+						int8 RandPieceNum = PlayerPiecesCanMove[RandPawnIdx];
+						TArray<std::pair<int8, int8>> AttackableTiles = GameMode->TurnPossibleMoves[RandPieceNum];
+						// Select randomically the index of the tile to move to
+						int8 RandNewTile = FMath::Rand() % AttackableTiles.Num();
+
+						int32 OldX = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[0];
+						int32 OldY = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[1];
+						int8 NewX = AttackableTiles[RandNewTile].first;
+						int8 NewY = AttackableTiles[RandNewTile].second;
+
+						if (GameMode->GField->IsValidTile(OldX, OldY)
+							&& GameMode->GField->IsValidTile(NewX, NewY))
 						{
-							// Randomically choice of what to promote to
-							int8 RandSpawnPawn = FMath::Rand() % 4;
-							switch (RandSpawnPawn)
+
+							bool EatFlag = GameMode->MakeMove(GameMode->GField->PawnArray[RandPieceNum], NewX, NewY);
+
+
+							// Pawn promotion handling
+							if (NewX == 0 && GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
 							{
-							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-							case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
-							case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
-							case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
-							}						
+								// Randomically choice of what to promote to
+								int8 RandSpawnPawn = FMath::Rand() % 4;
+								switch (RandSpawnPawn)
+								{
+								case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
+								case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
+								case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
+								case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+								}
+							}
+							else
+							{
+								// End Turn
+								GameMode->LastPiece = GameMode->GField->PawnArray[RandPieceNum];
+								GameMode->LastEatFlag = EatFlag;
+								GameMode->EndTurn(PlayerNumber);
+							}
 						}
-						else
-						{
-							// End Turn
-							GameMode->LastPiece = GameMode->GField->PawnArray[RandPieceNum];
-							GameMode->LastEatFlag = EatFlag;
-							GameMode->EndTurn(PlayerNumber);
-						}
+					}
+					else
+					{
+						// TODO => rimuovere
+						// No pieces can make eligible moves => BLACK is checkmated
+						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("BRO | smth strange happened. u should not be here!"));
+
+						/* GameMode->MatchStatus = EPawnColor::BLACK;
+						GameMode->EndTurn(-1); */
 					}
 				}
 				else
 				{
-					// TODO => rimuovere
-					// No pieces can make eligible moves => BLACK is checkmated
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
-
-					/* GameMode->MatchStatus = EPawnColor::BLACK;
-					GameMode->EndTurn(-1); */
+					UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 				}
 			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-			}
-		}, RandTimer/10.f, false);
+				
+		}, RandTimer / 10.f, false);
+	
 }
 
 void AChess_RandomPlayer::OnWin()
 {
 	// TODO
-	if (GameInstance)
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode && GameInstance)
 	{
-		GameInstance->SetTurnMessage(TEXT("AI Wins"));
-		GameInstance->IncrementScoreAiPlayer();
+		FString Msg = TEXT("AI ");
+		if (GameMode->Players.Num() == 3) // ai vs ai
+			Msg += FString::FromInt(PlayerNumber);
+
+		Msg += "WON";
+		GameInstance->SetTurnMessage(Msg);
+
+		PlayerNumber ?
+			GameInstance->IncrementScorePlayer_2() :
+			GameInstance->IncrementScorePlayer_1();
 	}
 }
 

@@ -43,69 +43,74 @@ void AChess_MiniMaxPlayer::OnTurn()
 	// RandTimer [1.0, 3.0] seconds
 	// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
 	int8 RandTimer = FMath::Rand() % 5 + 5; // + 10;
+
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 		{
-			AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode && GameMode->ReplayInProgress == 0 && IsMyTurn)
+			if (IsMyTurn)
 			{
-
-
-
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), GameMode->BlackPiecesCanMove.Num()));
-
-				// If there are black pieces eligible to move
-				if (GameMode->BlackPiecesCanMove.Num() > 0)
+				AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+				if (GameMode && GameMode->ReplayInProgress == 0)
 				{
 
-					// piece and move X Y
-					std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray);
+					TArray<int8>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
 
-					ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
-					int8 OldX = Pawn->GetGridPosition()[0];
-					int8 OldY = Pawn->GetGridPosition()[1];
-					int8 NewX = BestMove.second.first;
-					int8 NewY = BestMove.second.second;
 
-					// make the move
-					bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
+					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), PlayerPiecesCanMove.Num()));
 
-					// Pawn promotion handling
-					if (NewX == 0 && Pawn->GetType() == EPawnType::PAWN)
+					// If there are black pieces eligible to move
+					if (PlayerPiecesCanMove.Num() > 0)
 					{
-						// Randomically choice of what to promote to
-						int8 RandSpawnPawn = FMath::Rand() % 4;
-						switch (RandSpawnPawn)
+
+						// piece and move X Y
+						std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray);
+
+						ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
+						int8 OldX = Pawn->GetGridPosition()[0];
+						int8 OldY = Pawn->GetGridPosition()[1];
+						int8 NewX = BestMove.second.first;
+						int8 NewY = BestMove.second.second;
+
+						// make the move
+						bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
+
+						// Pawn promotion handling
+						if (NewX == 0 && Pawn->GetType() == EPawnType::PAWN)
 						{
-						case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-						case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
-						case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
-						case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+							// Randomically choice of what to promote to
+							int8 RandSpawnPawn = FMath::Rand() % 2;
+							switch (RandSpawnPawn)
+							{
+							case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
+							/*  case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
+							case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break; */
+							case 1: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+							}
+						}
+						else
+						{
+							// End Turn
+							GameMode->LastPiece = Pawn;
+							GameMode->LastEatFlag = EatFlag;
+							GameMode->EndTurn(PlayerNumber);
 						}
 					}
 					else
 					{
-						// End Turn
-						GameMode->LastPiece = Pawn;
-						GameMode->LastEatFlag = EatFlag;
-						GameMode->EndTurn(PlayerNumber);
+						// TODO => rimuovere
+						// No pieces can make eligible moves => BLACK is checkmated
+						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
+
+						/* GameMode->MatchStatus = EPawnColor::BLACK;
+						GameMode->EndTurn(-1); */
 					}
 				}
 				else
 				{
-					// TODO => rimuovere
-					// No pieces can make eligible moves => BLACK is checkmated
-					GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
-
-					/* GameMode->MatchStatus = EPawnColor::BLACK;
-					GameMode->EndTurn(-1); */
+					UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 				}
 			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
-			}
-		}, RandTimer / 10.f, false);
 
+		}, RandTimer / 10.f, false);
 }
 
 std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*> Board)
@@ -120,7 +125,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 		// for mosse possibili
 		// do / undo ciascuna mossa
 
-		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(Color);
 		for (const auto& PieceMove : PiecesMoves)
 		{
 			for (const auto& Move : PieceMove.second)
@@ -142,7 +147,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				// compute evaluation function for this move ( TODO => restituire solo newX newY)
 				// { { piece_num, { newX, newY } }, move_value }
 				// TODO => 10000s are magic numbers (INFINITEs)
-				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, -10000, 10000, false);
+				std::pair<std::pair<int8, std::pair<int8, int8>>, int32> PieceMoveVal = MiniMax(Board, 2, -10000, 10000, Color != EPawnColor::BLACK);
 
 				// undo the move
 				GameMode->RestoreTiles(TilesStatusBackup);
@@ -193,7 +198,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 		if (MaximizingPlayer)
 		{
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
-			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::BLACK);
+			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(Color);
 
 			int8 MaxPieceNum = -1;
 			int8 MaxX = -1;
@@ -218,7 +223,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
 
 					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
-					int32 CurrentEval = MiniMax(Board, Depth - 1, alpha, beta, false).second;
+					int32 CurrentEval = MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer).second;
 
 					// undo the move
 					GameMode->RestoreTiles(TilesStatusBackup);
@@ -272,7 +277,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 		else
 		{
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
-			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(EPawnColor::WHITE);
+			TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> PiecesMoves = GameMode->ComputeAllPossibleMoves(Color == EPawnColor::BLACK ? EPawnColor::WHITE : EPawnColor::BLACK);
 
 			int8 MinPieceNum = -1;
 			int8 MinX = -1;
@@ -297,7 +302,7 @@ std::pair<std::pair<int8, std::pair<int8, int8>>, int32> AChess_MiniMaxPlayer::M
 					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
 
 					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
-					int32 CurrentEval = MiniMax(Board, Depth - 1, alpha, beta, true).second;
+					int32 CurrentEval = MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer).second;
 
 					// undo the move
 					GameMode->RestoreTiles(TilesStatusBackup);
@@ -480,11 +485,19 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 
 void AChess_MiniMaxPlayer::OnWin()
 {
-	// TODO
-	if (GameInstance)
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode && GameInstance)
 	{
-		GameInstance->SetTurnMessage(TEXT("AI Wins"));
-		GameInstance->IncrementScoreAiPlayer();
+		FString Msg = TEXT("AI ");
+		if (GameMode->Players.Num() == 3) // ai vs ai
+			Msg += FString::FromInt(PlayerNumber);
+		
+		Msg += "WON";
+		GameInstance->SetTurnMessage(Msg);
+
+		PlayerNumber ?
+			GameInstance->IncrementScorePlayer_2() :
+			GameInstance->IncrementScorePlayer_1();
 	}
 }
 

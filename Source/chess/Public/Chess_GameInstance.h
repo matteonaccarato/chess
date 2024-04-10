@@ -26,10 +26,10 @@ class CHESS_API UChess_GameInstance : public UGameInstance
 	
 public:
 	UPROPERTY(EditAnywhere)
-	int32 ScoreHumanPlayer = 0;
+	int32 ScorePlayer_1 = 0;
 
 	UPROPERTY(EditAnywhere)
-	int32 ScoreAiPlayer = 0;
+	int32 ScorePlayer_2 = 0;
 
 	UPROPERTY(EditAnywhere)
 	FString CurrentTurnMessage = "Current Player";
@@ -37,14 +37,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	EMatchMode MatchMode;
 
-	void IncrementScoreHumanPlayer();
-	void IncrementScoreAiPlayer();
+	void IncrementScorePlayer_1();
+	void IncrementScorePlayer_2();
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetScoreHumanPlayer() const;
+	int32 GetScorePlayer_1() const;
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetScoreAiPlayer() const;
+	int32 GetScorePlayer_2() const;
 
 	UFUNCTION(BlueprintCallable)
 	FString GetTurnMessage() const;
