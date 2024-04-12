@@ -122,8 +122,8 @@ void AGameField::GenerateField()
 	int8 PieceIdx = 0;
 	/* TSubclassOf<AActor> Letters[] = {LetterA};
 	TSubclassOf<AActor> Numbers[] = { LetterA }; */
-	UMaterialInterface* Letters[] = { LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH };
-	UMaterialInterface* Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 };
+	UMaterialInterface* p_Letters[] = { LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH };
+	UMaterialInterface* p_Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 };
 
 	for (int32 x = 0; x < Size; x++)
 	{
@@ -153,7 +153,7 @@ void AGameField::GenerateField()
 						Letter->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
 						UStaticMeshComponent* MeshComponent = Letter->FindComponentByClass<UStaticMeshComponent>();
 						if (MeshComponent)
-							MeshComponent->SetMaterial(0, Letters[y]);
+							MeshComponent->SetMaterial(0, p_Letters[y]);
 					}
 				}
 				
@@ -166,7 +166,7 @@ void AGameField::GenerateField()
 						Number->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
 						UStaticMeshComponent* MeshComponent = Number->FindComponentByClass<UStaticMeshComponent>();
 						if (MeshComponent)
-							MeshComponent->SetMaterial(0, Numbers[x]);
+							MeshComponent->SetMaterial(0, p_Numbers[x]);
 					}
 				}
 

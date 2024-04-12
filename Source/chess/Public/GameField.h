@@ -72,6 +72,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInterface* MaterialDarkRed;
 
+	// TODO => fare unica tile (Set material in seguito)
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> B_TileClass;
 
@@ -79,6 +80,12 @@ public:
 	TSubclassOf<ATile> W_TileClass;
 
 	// Tile Letters/Numbers Materials
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TArray<UMaterialInterface*> Letters;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TArray<UMaterialInterface*> Numbers;
+
 	UPROPERTY(EditAnywhere, Category = "Materials")
 	UMaterialInterface* LetterA;
 
@@ -128,6 +135,9 @@ public:
 	UMaterialInterface* Number8;
 
 	// Pawns Classes
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<ABasePawn>> ChessPieces;
+
 	// Blacks
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABasePawn> B_BishopClass;
