@@ -35,11 +35,14 @@ void AGameField::BeginPlay()
 	GenerateField();
 }
 
-void AGameField::ResetField()
+void AGameField::ResetField(bool bRestartGame)
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
+		for (int8 i = 0; i < GameMode->Players.Num(); i++)
+			GameMode->Players[i]->IsMyTurn = false;
+
 		// clear tile status
 		for (ATile* Obj : TileArray)
 			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
@@ -105,9 +108,8 @@ void AGameField::ResetField()
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
 		GameMode->ReplayInProgress = 0;
-		for (int8 i = 0; i < GameMode->Players.Num(); i++)
-			GameMode->Players[i]->IsMyTurn = false;
-		GameMode->ChoosePlayerAndStartGame();
+		if (bRestartGame)
+			GameMode->ChoosePlayerAndStartGame();
 	}
 }
 

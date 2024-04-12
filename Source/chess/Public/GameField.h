@@ -194,7 +194,7 @@ public:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable)
-	void ResetField();
+	void ResetField(bool bRestartGame);
 	void GenerateField();
 
 	FVector2D GetPosition(const FHitResult& Hit);

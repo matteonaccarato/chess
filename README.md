@@ -1,7 +1,31 @@
 # CHESS
 
+## WHAT
+- Individual project for Design and Analysis of Algorithms course at the University of Genoa
+- Developing a chess game implementing two different CPU intelligences: Random and Smart. 
+The smart one is the result of specific algorithms such as MiniMax and Alpha-beta pruning
+
+## LEARNING
+- Decision algorithms
+- Fast prototyping
+
+## STACK
+- C++
+- Unreal Engine
+
+<hr>
+
+### SAMPLE GAME
+![Sample game](./Content/Images/sample_game.png)
+
+<hr>
+
+### UML
+TO ADD
+
+
+
 NEXT:
-	- FARE PARITA'
 	- valutare promozione pedone in minimax 
 	- testare replay (soprattutto con checkmate)
 
@@ -30,14 +54,7 @@ https://youtu.be/SD66UgyHiMM?si=ZoCKFO_R1YV-gRLk
 bottoni legno:
 	- <a href="https://www.freepik.com/free-vector/wooden-buttons-different-shapes-vector-illustrations-set-play-stop-check-star-buttons-with-wood-texture-progress-bar-white-background-user-interface-concept-game-app-website-design_24645050.htm">Image by pch.vector</a> on Freepik
 
-#### Main Feature
-- [?] Check and CheckMate (look at iphone notes)
-- [X] Reset
-- [ ] MiniMax Player
-- [X] Replay
-- [X] Pawn Promotion
-- [X] Arrocco
-- [ ] En Passant
+
 
 #### TODO:
 segnalazione di elementi null tramite UE_LOG()
