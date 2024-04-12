@@ -3,14 +3,15 @@
 
 #include "Chess_GameInstance.h"
 
-void UChess_GameInstance::IncrementScorePlayer_1()
+/* PLAYER 1 */
+FString UChess_GameInstance::GetPlayerText_1() const
 {
-	ScorePlayer_1++;
+	return TextPlayer_1;
 }
 
-void UChess_GameInstance::IncrementScorePlayer_2()
+void UChess_GameInstance::SetPlayerText_1(FString Text)
 {
-	ScorePlayer_2++;
+	TextPlayer_1 = Text;
 }
 
 int32 UChess_GameInstance::GetScorePlayer_1() const
@@ -18,11 +19,52 @@ int32 UChess_GameInstance::GetScorePlayer_1() const
 	return ScorePlayer_1;
 }
 
+void UChess_GameInstance::IncrementScorePlayer_1()
+{
+	ScorePlayer_1++;
+}
+
+
+/* PLAYER 2 */
+FString UChess_GameInstance::GetPlayerText_2() const
+{
+	return TextPlayer_2;
+}
+
+void UChess_GameInstance::SetPlayerText_2(FString Text)
+{
+	TextPlayer_2 = Text;
+}
+
 int32 UChess_GameInstance::GetScorePlayer_2() const
 {
 	return ScorePlayer_2;
 }
 
+void UChess_GameInstance::IncrementScorePlayer_2()
+{
+	ScorePlayer_2++;
+}
+
+
+/* GAMES COUNTER */
+void UChess_GameInstance::IncrementGamesCounter()
+{
+	GamesCounter++;
+}
+
+int32 UChess_GameInstance::GetGamesCounter() const
+{
+	return GamesCounter;
+}
+
+void UChess_GameInstance::SetGamesCounter(int32 Counter)
+{
+	GamesCounter = Counter;
+}
+
+
+/* TURN */
 FString UChess_GameInstance::GetTurnMessage() const
 {
 	return CurrentTurnMessage;
@@ -33,6 +75,8 @@ void UChess_GameInstance::SetTurnMessage(FString Message)
 	CurrentTurnMessage = Message;
 }
 
+
+/* MATCH MODE */
 EMatchMode UChess_GameInstance::GetMatchMode() const
 {
 	return MatchMode;

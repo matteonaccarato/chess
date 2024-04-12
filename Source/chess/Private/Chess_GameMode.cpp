@@ -27,6 +27,7 @@ void AChess_GameMode::BeginPlay()
 
 	// Init variables
 	IsGameOver = false;
+	bIsHumanPlaying = false;
 	ReplayInProgress = 0;
 	MoveCounter = 0;
 	CheckFlag = EPawnColor::NONE;
@@ -49,26 +50,35 @@ void AChess_GameMode::BeginPlay()
 
 		IChess_PlayerInterface* AI_1 = nullptr;
 		IChess_PlayerInterface* AI_2 = nullptr;
+		FString TextPlayer_1 = TEXT("");
+		FString TextPlayer_2 = TEXT("");
 		switch (GameInstance->GetMatchMode())
 		{
 		case EMatchMode::HUMAN_CPU_RANDOM:
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			TextPlayer_2 = TEXT("AI | RANDOM");
 		case EMatchMode::HUMAN_CPU_MINIMAX:
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-
+			TextPlayer_1 = TEXT("YOU");
+			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : TEXT("AI | MINIMAX");
 			HumanPlayer->bIsActivePlayer = true;
 			AI_1->bIsActivePlayer = true;
 
+			bIsHumanPlaying = true;
 			Players.Add(HumanPlayer);	// white
 			Players.Add(AI_1);			// black
 			break;
 		case EMatchMode::RANDOM_RANDOM:
-			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			TextPlayer_2 = TEXT("AI | RANDOM (2)");
 			AI_2 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 		case EMatchMode::RANDOM_MINIMAX:
-			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
+			TextPlayer_1 = TEXT("AI | RANDOM (1)");
+			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : TEXT("AI | MINIMAX (2)");
+			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 		case EMatchMode::MINIMAX_MINIMAX:
+			TextPlayer_1 = (TextPlayer_1 != TEXT("")) ? TextPlayer_1 : TEXT("AI | MINIMAX (1)");
+			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : TEXT("AI | MINIMAX (2)");
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
@@ -81,10 +91,13 @@ void AChess_GameMode::BeginPlay()
 			Players.Add(HumanPlayer);	// spectator
 			break;
 		}
-		// TODO AI based on a value passed through parameter (button)
-		// Random player
-		// auto* AI = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
-		// Minimax player
+		
+		if (GameInstance)
+		{
+			GameInstance->SetPlayerText_1(TextPlayer_1);
+			GameInstance->SetPlayerText_2(TextPlayer_2);
+			GameInstance->SetGamesCounter(0);
+		}
 
 		// Create replay widget
 		UWorld* World = GetWorld();
@@ -167,14 +180,23 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 			break;
 		}
 
+		if (GameInstance)
+			GameInstance->IncrementGamesCounter();
+
+
+		// SAVE_ON_FILE
 		
+
+		if (!bIsHumanPlaying)
+		{
+			// Timer to reset the field when only the two AIs are playing (Human is not playing, he is just a spectator)
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
+				{
+					GField->ResetField(true);
+				}, 3, false); 
+		}
 	
-		// Timer to reset the field ( TODO => magari non faccio reset, così l'utente può guardarsi tutto con calma)
-		/* FTimerHandle TimerHandle;
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
-			{
-				GField->ResetField();
-			}, 3, false); */
 	}
 	else
 	{

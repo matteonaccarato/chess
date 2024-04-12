@@ -46,7 +46,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 		// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
 		// RandTimer [0.5, 1.0] seconds
 		// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
-		int8 RandTimer = GameMode->bIsHumanPlaying ? FMath::Rand() % 5 + 5 : 1;
+		int8 RandTimer = FMath::Rand() % 5 + 5;
 
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 			{

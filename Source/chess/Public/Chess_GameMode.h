@@ -63,6 +63,7 @@ public:
 	UChess_GameInstance* GameInstance;
 
 	bool IsGameOver;
+	bool bIsHumanPlaying = false;
 	int8 ReplayInProgress; // shows the number of turn currently replaying
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;

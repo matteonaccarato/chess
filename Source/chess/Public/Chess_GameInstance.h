@@ -26,10 +26,19 @@ class CHESS_API UChess_GameInstance : public UGameInstance
 	
 public:
 	UPROPERTY(EditAnywhere)
+	FString TextPlayer_1 = "Player 1";
+
+	UPROPERTY(EditAnywhere)
+	FString TextPlayer_2 = "Player 2";
+
+	UPROPERTY(EditAnywhere)
 	int32 ScorePlayer_1 = 0;
 
 	UPROPERTY(EditAnywhere)
 	int32 ScorePlayer_2 = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 GamesCounter = 0;
 
 	UPROPERTY(EditAnywhere)
 	FString CurrentTurnMessage = "Current Player";
@@ -37,21 +46,43 @@ public:
 	UPROPERTY(EditAnywhere)
 	EMatchMode MatchMode;
 
-	void IncrementScorePlayer_1();
-	void IncrementScorePlayer_2();
+
+	/* PLAYER 1 */
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayerText_1() const;
+	void SetPlayerText_1(FString Text);
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetScorePlayer_1() const;
+	void IncrementScorePlayer_1();
+
+
+	/* PLAYER 2 */
+	UFUNCTION(BlueprintCallable)
+	FString GetPlayerText_2() const;
+	void SetPlayerText_2(FString Text);
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetScorePlayer_2() const;
+	void IncrementScorePlayer_2();
 
+
+	/* GAMES COUNTER */
+	UFUNCTION(BlueprintCallable)
+	int32 GetGamesCounter() const;
+	void SetGamesCounter(int32 Counter);
+	void IncrementGamesCounter();
+
+
+	/* TURN */
 	UFUNCTION(BlueprintCallable)
 	FString GetTurnMessage() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetTurnMessage(FString Message);
 
+
+	/* MATCH MODE */
 	UFUNCTION(BlueprintCallable)
 	EMatchMode GetMatchMode() const;
 
