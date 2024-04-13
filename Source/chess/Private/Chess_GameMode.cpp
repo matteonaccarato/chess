@@ -143,6 +143,20 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
 	Players[CurrentPlayer]->IsMyTurn = true;
 	Players[CurrentPlayer]->OnTurn();
+
+
+
+	// TODO => test
+	// bool bSuccess = false; FString OutInfoMessage = TEXT("");
+	// FString FilePath = FPaths::ProjectDir() + TEXT("GameData/data.csv");
+	/* switch (GameInstance->GetMatchMode())
+	{
+	case EMatchMode::HUMAN_CPU_RANDOM: FilePath += "/human_random.csv"; break;
+	case EMatchMode::HUMAN_CPU_MINIMAX: FilePath += "/human_minimax.csv"; break;
+	case EMatchMode::RANDOM_MINIMAX: FilePath += "/random_minimax.csv"; break;
+	case EMatchMode::MINIMAX_MINIMAX: FilePath += "/minimax_minimax.csv"; break;
+	} */
+	// SaveGameOnFile(FilePath, bSuccess, OutInfoMessage);
 }
 
 /*
@@ -181,11 +195,24 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		}
 
 		if (GameInstance)
+		{
 			GameInstance->IncrementGamesCounter();
 
+			// SAVE_ON_FILE
+			// TODO => nomi file in .ini
+			FString FilePath = FPaths::ProjectDir() + TEXT("GameData");
+			switch (GameInstance->GetMatchMode())
+			{
+			case EMatchMode::HUMAN_CPU_RANDOM: FilePath += "/human_random.csv"; break;
+			case EMatchMode::HUMAN_CPU_MINIMAX: FilePath += "/human_minimax.csv"; break;
+			case EMatchMode::RANDOM_RANDOM: FilePath += "/random_random.csv"; break;
+			case EMatchMode::RANDOM_MINIMAX: FilePath += "/random_minimax.csv"; break;
+			case EMatchMode::MINIMAX_MINIMAX: FilePath += "/minimax_minimax.csv"; break;
+			}
 
-		// SAVE_ON_FILE
-		
+			bool bSuccess = false; FString OutInfoMessage = TEXT("");
+			SaveGameOnFile(FilePath, bSuccess, OutInfoMessage);
+		}
 
 		if (!bIsHumanPlaying)
 		{
@@ -1168,4 +1195,144 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 		// AI is playing (replay NOT available)
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO, non puoi replayare mentre gioco IO! :)"));
 	}
+}
+
+void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FString& OutInfoMessage) const
+{
+	FString ReadFile = TEXT("");
+	int32 GamesCount = 0;
+	int32 Player1_Wins = 0;
+	int32 Player1_Losses = 0;
+	int32 Player1_Draws = 0;
+	int32 DrawsCount = 0;
+
+	// Get lines count
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	{
+		bOutSuccess = false;
+		OutInfoMessage = FString::Printf(TEXT("Read String From File Failed - File doesn't exist - '%s'"), *FilePath);
+	}
+	else
+	{
+		if (!FFileHelper::LoadFileToString(ReadFile, *FilePath))
+		{
+			bOutSuccess = false;
+			OutInfoMessage = FString::Printf(TEXT("Read String From File Failed - Was not able to read file. Is this a text file? - '%s'"), *FilePath);
+		}
+		else
+		{
+			FString Buffer = TEXT("");
+			TArray<TCHAR> WinStr = { 'W', 'I', 'N' };
+			TArray<TCHAR> LossStr = { 'L', 'O', 'S', 'S' };
+			TArray<TCHAR> DrawStr = { 'D', 'R', 'A', 'W' };
+			TCHAR tmp = '\n';
+			bool bIsFirstLineRead = false;
+			bool bGameResultPlayer1_AlreadyRead = false;
+			int Win_Idx = 0;
+			int Loss_Idx = 0;
+			int Draw_Idx = 0;
+			for (const auto Chr : ReadFile)
+			{
+				if (Chr == tmp)
+				{
+					bGameResultPlayer1_AlreadyRead = false;
+					bIsFirstLineRead = true;
+					GamesCount++;
+				} 
+				else
+				{
+					// 1st condition used to avoid "WINS" in the title will count in Player1_Wins
+					if (bIsFirstLineRead && !bGameResultPlayer1_AlreadyRead)
+					{
+						if (AChess_GameMode::SearchWordByChar(Chr, WinStr, Win_Idx, bGameResultPlayer1_AlreadyRead))
+							Player1_Wins++;
+						else if (AChess_GameMode::SearchWordByChar(Chr, LossStr, Loss_Idx, bGameResultPlayer1_AlreadyRead))
+							Player1_Losses++;
+						else if (AChess_GameMode::SearchWordByChar(Chr, DrawStr, Draw_Idx, bGameResultPlayer1_AlreadyRead))
+							Player1_Draws++;
+					}
+				}
+			}
+		}
+	}
+	GamesCount -= GamesCount > 0 ? 1 : 0; // remove last \n from count
+
+
+	// Try to write (append) into the file
+
+	// Game result
+	FString MatchResult_Player1 = TEXT("");
+	FString MatchResult_Player2 = TEXT("");
+	switch (MatchStatus)
+	{
+	case EMatchResult::WHITE: 
+		MatchResult_Player1 = "LOSS"; 
+		MatchResult_Player2 = "WIN";
+		Player1_Losses++;
+		break;
+	case EMatchResult::BLACK: 
+		MatchResult_Player1 = "WIN"; 
+		MatchResult_Player2 = "LOSS";
+		Player1_Wins++;
+		break;
+	default: 
+		MatchResult_Player1 = MatchResult_Player2 = "DRAW"; 
+		Player1_Draws++;
+		break;
+	}
+
+	// Ratios
+	float Wins_games_ratio_player1 = GamesCount ? Player1_Wins / (static_cast<float>(GamesCount)) : 0;
+	float Losses_games_ratio_player1 = GamesCount ? Player1_Losses / (static_cast<float>(GamesCount)) : 0;
+	float Draws_games_ratio_player1 = GamesCount ? Player1_Draws / (static_cast<float>(GamesCount)) : 0;
+
+	FString HeaderCSV = TEXT("#GAME,PLAYER_1_STATUS,PLAYER_2_STATUS,#MOVES,DURATION(seconds),PL_1_WINS/GAMES,PL_1_LOSSES/GAMES,PL_2_WINS/GAMES,PL_2_LOSSES/GAMES,DRAWS/GAMES\n");
+	FString GameToSaveCSV = FString::FromInt(GamesCount + 1) + "," +
+		MatchResult_Player1 + "," +
+		MatchResult_Player2 + "," +
+		FString::FromInt(MoveCounter - 1) + "," +
+		"50" + "," +
+		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1) +
+		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1) +
+		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1 ? 1 - Wins_games_ratio_player1 : 0) +
+		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1 ? 1 - Losses_games_ratio_player1 : 0) +
+		FString::Printf(TEXT("%.2f"), Draws_games_ratio_player1);
+	FString Str = (GamesCount == 0 ? HeaderCSV : TEXT("")) + GameToSaveCSV + TEXT("\n");
+	if (!FFileHelper::SaveStringToFile(Str, 
+		*FilePath, 
+		FFileHelper::EEncodingOptions::AutoDetect, 
+		&IFileManager::Get(), 
+		EFileWrite::FILEWRITE_Append))
+	{
+		bOutSuccess = false;
+		OutInfoMessage = FString::Printf(TEXT("Write String to File Failed - Was not able to write to file. Is your file read only? Is the path valid? - '%s'"), *FilePath);
+		return;
+	}
+
+	bOutSuccess = true;
+	OutInfoMessage = FString::Printf(TEXT("Write String to File succeeded - '%s'"), *FilePath);
+
+		
+	
+
+
+
+}
+
+
+bool AChess_GameMode::SearchWordByChar(TCHAR Chr, TArray<TCHAR>& WordToSearch, int& WordToSearch_Idx, bool& NotifyWordCompletion)
+{
+	if (Chr == WordToSearch[WordToSearch_Idx])
+	{
+		WordToSearch_Idx++;
+		if (WordToSearch_Idx == WordToSearch.Num())
+		{
+			NotifyWordCompletion = true;
+			WordToSearch_Idx = 0;
+			return true;
+		}
+	}
+	else
+		WordToSearch_Idx = 0;
+	return false;
 }

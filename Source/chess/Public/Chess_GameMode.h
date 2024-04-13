@@ -13,6 +13,7 @@
 #include "Components/ScrollBoxSlot.h"
 #include "Components/TextBlock.h"
 
+#include "HAL/PlatformFileManager.h"
 #include "CoreMinimal.h"
 #include "BasePawn.h"
 #include "ChessEnums.h"
@@ -186,12 +187,15 @@ public:
 	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
 
 
+	static bool SearchWordByChar(TCHAR Chr, TArray<TCHAR>& WordToSearch, int& WordToSearch_Idx, bool& NotifyWordCompletion);
 private:
 	EPawnColor CheckKingsUnderAttack() const;
 	void InitTurn();
 
-
+	/* DRAW */
 	bool SameConfigurationBoard(const int8 Times) const;
 	bool SeventyFive_MoveRule() const;
 	bool ImpossibilityToCheckmate() const;
+
+	void SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FString& OutInfoMessage) const;
 };
