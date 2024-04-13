@@ -1160,9 +1160,7 @@ bool AChess_GameMode::ImpossibilityToCheckmate() const
  */
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
-	// TODO => x le due AI che giocano CurrentPlayer==0 non va bene 
-	//	fare Players[CurrentPlayer].IsA(HumanPlayer)
-	if (CurrentPlayer == 0)
+	if (Cast<AChess_HumanPlayer>(Players[CurrentPlayer]))
 	{
 		// Human is playing (replay available)
 		FString BtnName = TxtBlock->GetText().ToString();
@@ -1255,7 +1253,8 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 			}
 		}
 	}
-	GamesCount -= GamesCount > 0 ? 1 : 0; // remove last \n from count
+	// GamesCount -= GamesCount > 0 ? 1 : 0; // remove last \n from count
+	GamesCount = GamesCount ? GamesCount : 1;
 
 
 	// Try to write (append) into the file
@@ -1282,22 +1281,22 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 	}
 
 	// Ratios
-	float Wins_games_ratio_player1 = GamesCount ? Player1_Wins / (static_cast<float>(GamesCount)) : 0;
-	float Losses_games_ratio_player1 = GamesCount ? Player1_Losses / (static_cast<float>(GamesCount)) : 0;
-	float Draws_games_ratio_player1 = GamesCount ? Player1_Draws / (static_cast<float>(GamesCount)) : 0;
+	float Wins_games_ratio_player1 = Player1_Wins / (static_cast<float>(GamesCount));
+	float Losses_games_ratio_player1 = Player1_Losses / (static_cast<float>(GamesCount));
+	float Draws_games_ratio_player1 = Player1_Draws / (static_cast<float>(GamesCount));
 
 	FString HeaderCSV = TEXT("#GAME,PLAYER_1_STATUS,PLAYER_2_STATUS,#MOVES,DURATION(seconds),PL_1_WINS/GAMES,PL_1_LOSSES/GAMES,PL_2_WINS/GAMES,PL_2_LOSSES/GAMES,DRAWS/GAMES\n");
-	FString GameToSaveCSV = FString::FromInt(GamesCount + 1) + "," +
+	FString GameToSaveCSV = FString::FromInt(GamesCount) + "," +
 		MatchResult_Player1 + "," +
 		MatchResult_Player2 + "," +
 		FString::FromInt(MoveCounter - 1) + "," +
 		"50" + "," +
 		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1) +
 		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1 ? 1 - Wins_games_ratio_player1 : 0) +
-		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1 ? 1 - Losses_games_ratio_player1 : 0) +
+		FString::Printf(TEXT("%.2f,"), Player1_Losses > 0 ? 1 - Wins_games_ratio_player1 : 0) +
+		FString::Printf(TEXT("%.2f,"), Player1_Wins > 0 ? 1 - Losses_games_ratio_player1 : 0) +
 		FString::Printf(TEXT("%.2f"), Draws_games_ratio_player1);
-	FString Str = (GamesCount == 0 ? HeaderCSV : TEXT("")) + GameToSaveCSV + TEXT("\n");
+	FString Str = (GamesCount == 1 ? HeaderCSV : TEXT("")) + GameToSaveCSV + TEXT("\n");
 	if (!FFileHelper::SaveStringToFile(Str, 
 		*FilePath, 
 		FFileHelper::EEncodingOptions::AutoDetect, 

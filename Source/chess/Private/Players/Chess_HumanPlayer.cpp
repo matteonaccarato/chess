@@ -312,7 +312,8 @@ void AChess_HumanPlayer::OnClick()
 						SelectedPawnFlag = 0;
 						
 						// Pawn promotion handling
-						if (NewTile->GetGridPosition()[0] == GameMode->GField->Size - 1 
+						int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
+						if (NewTile->GetGridPosition()[0] == OpponentSide
 							&& PawnTemp->GetType() == EPawnType::PAWN)
 						{
 							UWorld* World = GetWorld();							

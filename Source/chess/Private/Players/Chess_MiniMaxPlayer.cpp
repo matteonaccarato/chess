@@ -78,7 +78,8 @@ void AChess_MiniMaxPlayer::OnTurn()
 							bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
 
 							// Pawn promotion handling
-							if (NewX == 0 && Pawn->GetType() == EPawnType::PAWN)
+							int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
+							if (NewX == OpponentSide && Pawn->GetType() == EPawnType::PAWN)
 							{
 								// Randomically choice of what to promote to
 								int8 RandSpawnPawn = FMath::Rand() % 2;
