@@ -195,6 +195,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		// Increment needed to perform replay last two moves properly
 		MoveCounter++;
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("END - %d"), MatchStatus));
+		GetWorldTimerManager().ClearTimer(StopwatchTimerHandle);
 
 		// End game events
 		switch (MatchStatus)
@@ -218,7 +219,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		if (GameInstance)
 		{
 			GameInstance->IncrementGamesCounter();
-
+			
 			// SAVE_ON_FILE
 			// TODO => nomi file in .ini
 			FString FilePath = FPaths::ProjectDir() + TEXT("GameData");
@@ -797,7 +798,8 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 					CastlingInfo.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
 				}
 			}
-			UGameplayStatics::PlaySound2D(GetWorld(), CastlingSound, 1, 1, 0, NULL, false, true);
+			if (!Simulate)
+				UGameplayStatics::PlaySound2D(GetWorld(), CastlingSound, 1, 1, 0, NULL, false, true);
 		}
 		else
 		{
