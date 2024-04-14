@@ -92,12 +92,13 @@ void AChess_GameMode::BeginPlay()
 			break;
 		}
 		
-		if (GameInstance)
-		{
-			GameInstance->SetPlayerText_1(TextPlayer_1);
-			GameInstance->SetPlayerText_2(TextPlayer_2);
-			GameInstance->SetGamesCounter(0);
-		}
+	
+		GameInstance->SetPlayerText_1(TextPlayer_1);
+		GameInstance->SetPlayerText_2(TextPlayer_2);
+		GameInstance->SetGamesCounter(0);
+		GameInstance->Minutes = 0;
+		GameInstance->Seconds = 0;
+		
 
 		// Create replay widget
 		UWorld* World = GetWorld();
@@ -139,6 +140,13 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 
 	// Operation to init data strcture
 	InitTurn();
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, 
+		GameInstance, 
+		&UChess_GameInstance::IncrementStopwatch, 
+		1.0f, 
+		true);
 
 	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
 	Players[CurrentPlayer]->IsMyTurn = true;
@@ -1280,6 +1288,9 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 		break;
 	}
 
+	// Duration
+	int Duration = GameInstance ? GameInstance->Minutes * 60 + GameInstance->Seconds : 0;
+
 	// Ratios
 	float Wins_games_ratio_player1 = Player1_Wins / (static_cast<float>(GamesCount));
 	float Losses_games_ratio_player1 = Player1_Losses / (static_cast<float>(GamesCount));
@@ -1290,7 +1301,7 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 		MatchResult_Player1 + "," +
 		MatchResult_Player2 + "," +
 		FString::FromInt(MoveCounter - 1) + "," +
-		"50" + "," +
+		FString::FromInt(Duration) + "," +
 		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1) +
 		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1) +
 		FString::Printf(TEXT("%.2f,"), Player1_Losses > 0 ? 1 - Wins_games_ratio_player1 : 0) +

@@ -53,6 +53,28 @@ void UChess_GameInstance::IncrementGamesCounter()
 	GamesCounter++;
 }
 
+FString UChess_GameInstance::GetStopwatchStr() const
+{
+	return StopwatchStr;
+}
+
+void UChess_GameInstance::SetStopwatchStr(FString Text)
+{
+	StopwatchStr = Text;
+}
+
+void UChess_GameInstance::IncrementStopwatch()
+{
+	Seconds++;
+	if (Seconds >= 60)
+	{
+		Minutes++;
+		Seconds = 0;
+	}
+
+	StopwatchStr = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+}
+
 int32 UChess_GameInstance::GetGamesCounter() const
 {
 	return GamesCounter;

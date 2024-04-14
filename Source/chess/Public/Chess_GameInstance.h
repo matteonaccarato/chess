@@ -41,6 +41,9 @@ public:
 	int32 GamesCounter = 0;
 
 	UPROPERTY(EditAnywhere)
+	FString StopwatchStr = "00:00";
+
+	UPROPERTY(EditAnywhere)
 	FString CurrentTurnMessage = "Current Player";
 
 	UPROPERTY(EditAnywhere)
@@ -72,6 +75,14 @@ public:
 	int32 GetGamesCounter() const;
 	void SetGamesCounter(int32 Counter);
 	void IncrementGamesCounter();
+
+	/* STOPWATCH */
+	UFUNCTION(BlueprintCallable)
+	FString GetStopwatchStr() const;
+	int Minutes = 0;
+	int Seconds = 0;
+	void SetStopwatchStr(FString Text);
+	void IncrementStopwatch();
 
 
 	/* TURN */
