@@ -29,8 +29,6 @@ public:
 	// Camera attached to the player pawn
 	UCameraComponent* Camera;
 
-	UChess_GameInstance* GameInstance;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,7 +51,6 @@ public:
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
 	virtual void OnLose() override;
-	virtual void OnDraw() override;
 
 	// called on left mouse click (binding)
 	UFUNCTION()

@@ -19,6 +19,15 @@ AChess_GameMode::AChess_GameMode()
 	LastPawnMoveHappened = 0;
 	LastCaptureHappened = 0;
 	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	GameStartSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Start Sound"));
+	MoveSound = CreateDefaultSubobject<USoundBase>(TEXT("Move Sound"));
+	CastlingSound = CreateDefaultSubobject<USoundBase>(TEXT("Castling Sound"));
+	CaptureSound = CreateDefaultSubobject<USoundBase>(TEXT("Capture Sound"));
+	CheckSound = CreateDefaultSubobject<USoundBase>(TEXT("Check Sound"));
+	GameOverCheckmateSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Over Checkmate Sound"));
+	// GameOverSound
+	GameOverDrawSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Over Draw Sound"));
 }
 
 void AChess_GameMode::BeginPlay()
@@ -141,13 +150,15 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	// Operation to init data strcture
 	InitTurn();
 
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, 
+	GameInstance->Minutes = 0;
+	GameInstance->Seconds = 0;
+
+	GetWorld()->GetTimerManager().SetTimer(StopwatchTimerHandle, 
 		GameInstance, 
 		&UChess_GameInstance::IncrementStopwatch, 
 		1.0f, 
 		true);
-
+	
 	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
 	Players[CurrentPlayer]->IsMyTurn = true;
 	Players[CurrentPlayer]->OnTurn();
@@ -183,19 +194,21 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		IsGameOver = true;
 		// Increment needed to perform replay last two moves properly
 		MoveCounter++;
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d under CHECK MATE"), MatchStatus));
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("END - %d"), MatchStatus));
 
 		// End game events
 		switch (MatchStatus)
 		{
 		case EMatchResult::WHITE:
 		case EMatchResult::BLACK:
+			UGameplayStatics::PlaySound2D(GetWorld(), GameOverCheckmateSound, 1, 1, 0, NULL, false, true);
 			Players[CurrentPlayer]->OnWin();
 			for (int32 i = 0; i < Players.Num(); i++)
 				if (Players[i]->bIsActivePlayer && i != CurrentPlayer)
 					Players[i]->OnLose();
 			break;
 		default:
+			UGameplayStatics::PlaySound2D(GetWorld(), GameOverDrawSound, 1, 1, 0, NULL, false, true);
 			for (int32 i = 0; i < Players.Num(); i++)
 				if (Players[i]->bIsActivePlayer)
 					Players[i]->OnDraw();
@@ -225,8 +238,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		if (!bIsHumanPlaying)
 		{
 			// Timer to reset the field when only the two AIs are playing (Human is not playing, he is just a spectator)
-			FTimerHandle TimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
+			FTimerHandle ResetTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, [&]()
 				{
 					GField->ResetField(true);
 				}, 3, false); 
@@ -286,7 +299,10 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 
 
 		if (CheckFlag != EPawnColor::NONE)
+		{
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
+			UGameplayStatics::PlaySound2D(GetWorld(), CheckSound, 1, 1, 0, NULL, false, true);
+		}
 		
 
 		// Match situation
@@ -780,6 +796,16 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 					RookToMove->Move(OldRookTile, NewRookTile, Simulate);
 					CastlingInfo.RooksMoved[NewRookY == 0 ? 0 : 1] = true;
 				}
+			}
+			UGameplayStatics::PlaySound2D(GetWorld(), CastlingSound, 1, 1, 0, NULL, false, true);
+		}
+		else
+		{
+			if (!Simulate)
+			{
+				EatFlag ?
+					UGameplayStatics::PlaySound2D(GetWorld(), MoveSound, 1, 1, 0, NULL, false, true) :
+					UGameplayStatics::PlaySound2D(GetWorld(), CaptureSound, 1, 1, 0, NULL, false, true);
 			}
 		}
 		
@@ -1304,8 +1330,8 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 		FString::FromInt(Duration) + "," +
 		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1) +
 		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f,"), Player1_Losses > 0 ? 1 - Wins_games_ratio_player1 : 0) +
-		FString::Printf(TEXT("%.2f,"), Player1_Wins > 0 ? 1 - Losses_games_ratio_player1 : 0) +
+		FString::Printf(TEXT("%.2f,"), 1 - Wins_games_ratio_player1 - Draws_games_ratio_player1) +
+		FString::Printf(TEXT("%.2f,"), 1 - Losses_games_ratio_player1 - Draws_games_ratio_player1) +
 		FString::Printf(TEXT("%.2f"), Draws_games_ratio_player1);
 	FString Str = (GamesCount == 1 ? HeaderCSV : TEXT("")) + GameToSaveCSV + TEXT("\n");
 	if (!FFileHelper::SaveStringToFile(Str, 

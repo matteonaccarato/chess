@@ -40,6 +40,10 @@ void AGameField::ResetField(bool bRestartGame)
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
+		GameMode->GameInstance->Minutes = 0;
+		GameMode->GameInstance->Seconds = 0;
+		GetWorldTimerManager().ClearTimer(GameMode->StopwatchTimerHandle);
+
 		for (int8 i = 0; i < GameMode->Players.Num(); i++)
 			GameMode->Players[i]->IsMyTurn = false;
 

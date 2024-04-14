@@ -19,7 +19,7 @@ public:
 	// Sets default values for this pawn's properties
 	AChess_RandomPlayer();
 
-	UChess_GameInstance* GameInstance;
+	// UChess_GameInstance* GameInstance;
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,5 +35,5 @@ public:
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
 	virtual void OnLose() override;
-	virtual void OnDraw() override;
+	// virtual void OnDraw() override;
 };

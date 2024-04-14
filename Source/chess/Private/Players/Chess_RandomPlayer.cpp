@@ -158,12 +158,3 @@ void AChess_RandomPlayer::OnLose()
 	// TODO
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }
-
-void AChess_RandomPlayer::OnDraw()
-{
-	// TODO
-	if (GameInstance)
-	{
-		GameInstance->SetTurnMessage(TEXT("DRAW"));
-	}
-}

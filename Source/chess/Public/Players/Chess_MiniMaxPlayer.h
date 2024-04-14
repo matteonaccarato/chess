@@ -18,8 +18,6 @@ public:
 	// Sets default values for this pawn's properties
 	AChess_MiniMaxPlayer();
 
-	UChess_GameInstance* GameInstance;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,7 +32,6 @@ public:
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
 	virtual void OnLose() override;
-	virtual void OnDraw() override;
 
 	int32 EvaluateBoard(TArray<ATile*> Board) const;
 	// are moves left (se ci sono mosse rimanenti => guardo PossibleMoves.Num()

@@ -512,11 +512,3 @@ void AChess_MiniMaxPlayer::OnLose()
 	// TODO
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }
-
-void AChess_MiniMaxPlayer::OnDraw()
-{
-	if (GameInstance)
-	{
-		GameInstance->SetTurnMessage(TEXT("DRAW"));
-	}
-}

@@ -13,6 +13,8 @@
 #include "Components/ScrollBoxSlot.h"
 #include "Components/TextBlock.h"
 
+#include "Components/AudioComponent.h"
+
 #include "HAL/PlatformFileManager.h"
 #include "CoreMinimal.h"
 #include "BasePawn.h"
@@ -101,6 +103,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	AGameField* GField;
 
+	FTimerHandle StopwatchTimerHandle;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<class UUserWidget> PawnPromotionMenuWidgetRef;
 
@@ -118,6 +122,15 @@ public:
 
 	UPROPERTY()
 	UUserWidget* ButtonWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameStartSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* MoveSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* CastlingSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* CaptureSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* CheckSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverCheckmateSound;
+	// UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverDrawSound;
 
 
 	// Type chosen for pawn promotion

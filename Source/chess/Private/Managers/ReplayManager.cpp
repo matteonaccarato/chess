@@ -111,7 +111,7 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 					Tile->GetId().ToLower() +
 					(PawnPromotionFlag ? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
 					((GameMode->CheckFlag != EPawnColor::NONE && GameMode->MatchStatus == EMatchResult::NONE) ? TEXT("+") : TEXT("")) +
-					(GameMode->MatchStatus != EMatchResult::NONE ? TEXT("#") : TEXT(""));
+					(GameMode->MatchStatus == EMatchResult::WHITE || GameMode->MatchStatus == EMatchResult::BLACK ? TEXT("#") : TEXT(""));
 			}
 		}
 	}

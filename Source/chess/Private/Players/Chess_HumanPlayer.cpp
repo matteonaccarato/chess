@@ -80,14 +80,6 @@ void AChess_HumanPlayer::OnLose()
 	}
 }
 
-void AChess_HumanPlayer::OnDraw()
-{
-	if (GameInstance)
-	{
-		GameInstance->SetTurnMessage(TEXT("DRAW"));
-	}
-}
-
 /*
  * Function: OnClick
  * ----------------------------
