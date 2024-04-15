@@ -21,6 +21,7 @@ class CHESS_API ABasePawn : public AActor
 	GENERATED_BODY()
 	
 public:	
+
 	/*
 	 * Construct the piece assigning its moving properties 
 	 *	(type, max number of steps and movement direction)
