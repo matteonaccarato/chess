@@ -9,7 +9,7 @@
 #include "../Chess_GameMode.h"
 #include "../GameField.h"
 #include "../ChessEnums.h"
-
+class AChess_GameMode;
 struct FPieceSaving;
 
 /**

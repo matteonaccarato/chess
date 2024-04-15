@@ -17,7 +17,7 @@
 
 #include "HAL/PlatformFileManager.h"
 #include "CoreMinimal.h"
-#include "BasePawn.h"
+// #include "BasePawn.h"
 #include "ChessEnums.h"
 #include "Managers/ReplayManager.h"
 #include "GameFramework/GameModeBase.h"

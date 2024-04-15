@@ -7,11 +7,13 @@
 #include "Tile.h"
 #include "CoreMinimal.h"
 #include "ChessEnums.h"
+#include "GameField.h"
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
 // class ATile;
 class AChess_GameMode;
+class AGameField;
 
 UCLASS()
 class CHESS_API ABasePawn : public AActor
@@ -44,6 +46,15 @@ public:
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
+
+	/*
+	*/
+	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction) const;
+
+	/*
+	*/
+	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false);
+
 
 	// !simulate is used to actually move actor in the scene
 	void Move(ATile* OldTile, ATile* NewTile, bool Simulate = false);

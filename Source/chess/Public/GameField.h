@@ -6,11 +6,12 @@
 #include "CoreMinimal.h"
 #include "ChessEnums.h"
 #include "Tile.h"
-#include "BasePawn.h"
+// #include "BasePawn.h"
 #include "Players/Chess_PlayerInterface.h"
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
 
+class ABasePawn;
 struct FPieceSaving;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReset);
@@ -211,14 +212,7 @@ public:
 
 	int8 DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const;
 	
-	/*
-	*/
-	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction, const EPawnColor PieceColor) const;
-
-	/*
-	*/
-	bool CheckDirection(const EDirection Direction, ABasePawn* Pawn, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false) const;
-
+	
 
 
 

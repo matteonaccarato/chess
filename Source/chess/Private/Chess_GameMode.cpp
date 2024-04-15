@@ -494,7 +494,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				// TODO => fare stesso check di prima controllando la direzione  
 				for (int8 i = 1; i <= MaxSteps; i++)
 				{
-					std::pair<int8, int8> Offsets = GField->GetXYOffset(i, PawnDirection, Pawn->GetColor());
+					std::pair<int8, int8> Offsets = Pawn->GetXYOffset(i, PawnDirection);
 					XOffset = Offsets.first;
 					YOffset = Offsets.second;
 
@@ -532,7 +532,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 				// short castling and long castling
 				for (ECardinalDirection Direction : { ECardinalDirection::EAST, ECardinalDirection::WEST })
 				{
-					std::pair<int8, int8> Offsets = GField->GetXYOffset(2, Direction, Pawn->GetColor());
+					std::pair<int8, int8> Offsets = Pawn->GetXYOffset(2, Direction);
 					XOffset = Offsets.first;
 					YOffset = Offsets.second;
 					// Evaluate if this move is valid or not
@@ -876,23 +876,23 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 			{
 			case EPawnType::PAWN:
 				if (EatFlag || ShowAttackable)
-					IsValid = GField->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
+					IsValid = Pawn->CheckDirection(GField, EDirection::DIAGONAL, NewGridPosition, CurrGridPosition, TestFlag);
 				else
-					IsValid = GField->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition, TestFlag);
+					IsValid = Pawn->CheckDirection(GField, EDirection::FORWARD, NewGridPosition, CurrGridPosition, TestFlag);
 				break;
 
 			case EPawnType::ROOK:
-				IsValid = GField->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
-				IsValid = IsValid || GField->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);
-				IsValid = IsValid || GField->CheckDirection(EDirection::HORIZONTAL, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = Pawn->CheckDirection(GField, EDirection::FORWARD, NewGridPosition, CurrGridPosition);
+				IsValid = IsValid || Pawn->CheckDirection(GField, EDirection::BACKWARD, NewGridPosition, CurrGridPosition);
+				IsValid = IsValid || Pawn->CheckDirection(GField, EDirection::HORIZONTAL, NewGridPosition, CurrGridPosition);
 				break;
 
 			case EPawnType::KNIGHT:
-				IsValid = GField->CheckDirection(EDirection::KNIGHT, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = Pawn->CheckDirection(GField, EDirection::KNIGHT, NewGridPosition, CurrGridPosition);
 				break;
 
 			case EPawnType::BISHOP:
-				IsValid = GField->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
+				IsValid = Pawn->CheckDirection(GField, EDirection::DIAGONAL, NewGridPosition, CurrGridPosition);
 				break;
 
 			case EPawnType::QUEEN: // so it works like an OR for Queen and King
@@ -940,10 +940,10 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 				}
 				else if (!(Pawn->GetType() == EPawnType::KING && AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 1 : 0]))
 				{
-					IsValid = GField->CheckDirection(EDirection::FORWARD, Pawn, NewGridPosition, CurrGridPosition);
-					IsValid = IsValid || GField->CheckDirection(EDirection::BACKWARD, Pawn, NewGridPosition, CurrGridPosition);
-					IsValid = IsValid || GField->CheckDirection(EDirection::HORIZONTAL, Pawn, NewGridPosition, CurrGridPosition);
-					IsValid = IsValid || GField->CheckDirection(EDirection::DIAGONAL, Pawn, NewGridPosition, CurrGridPosition);
+					IsValid = Pawn->CheckDirection(GField, EDirection::FORWARD, NewGridPosition, CurrGridPosition);
+					IsValid = IsValid || Pawn->CheckDirection(GField, EDirection::BACKWARD, NewGridPosition, CurrGridPosition);
+					IsValid = IsValid || Pawn->CheckDirection(GField, EDirection::HORIZONTAL, NewGridPosition, CurrGridPosition);
+					IsValid = IsValid || Pawn->CheckDirection(GField, EDirection::DIAGONAL, NewGridPosition, CurrGridPosition);
 				}
 				break;
 			}
