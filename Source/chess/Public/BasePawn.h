@@ -21,7 +21,10 @@ class CHESS_API ABasePawn : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+	/*
+	 * Construct the piece assigning its moving properties 
+	 *	(type, max number of steps and movement direction)
+	 */
 	ABasePawn();
 
 	FString GetId() const;
@@ -36,7 +39,6 @@ public:
 
 	void SetColor(EPawnColor PawnColor);
 	EPawnColor GetColor() const;
-
 	
 	void SetType(EPawnType PawnType);
 	EPawnType GetType() const;
@@ -67,15 +69,15 @@ protected:
 	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString TileId; */
 
-	// TODO => FString ID per log
-
+	// TODO => ??
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Id;
 
+	// Uniquely identifier of the piece in the chess board
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int PieceNum = -1;
 
-	// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
+	// Color (e.g. Black = -1, White = 1)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnColor Color;
 

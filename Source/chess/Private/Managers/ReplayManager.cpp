@@ -9,13 +9,13 @@ ReplayManager::~ReplayManager() {}
 /*
  * Function: AddToReplay
  * ----------------------------
- *   Adds the last move to the replay box.
-*		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
-*		(PreviousGridPosition: FVector2D)
-*
-*	 Pawn				const ABasePawn*		The pawn which has been moved
-*	 EatFlag			const bool = false		If another piece has been captured
-*	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
+ *   Add the last move to the replay scrollbox.
+ *	  The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
+ *	  (PreviousGridPosition: FVector2D)
+ *
+ *	 Pawn				const ABasePawn*		The pawn which has been moved
+ *	 EatFlag			const bool = false		If another piece has been captured
+ *	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
  */
 void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
@@ -58,7 +58,7 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
 /*
  * Function: ComputeMoveName const
  * ----------------------------
- *   Generates the algebraic notation of the last move.
+ *   Generate the algebraic notation of the last move.
  *		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
  *			(PreviousGridPosition: FVector2D)
  *
@@ -85,6 +85,7 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 		}
 		else
 		{
+			// Handling of more than one piece can move on the tile
 			for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
 			{
 				if (Pawn->GetType() == Piece->GetType()
@@ -92,18 +93,15 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 					&& Pawn->GetPieceNum() != Piece->GetPieceNum())
 				{
 					if (GameMode->PreviousGridPosition[1] == Piece->GetGridPosition()[1])
-					{
 						StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
-					}
 					else
-					{
 						StartTileStr += PreviousTile->GetLetterId().ToLower();
-					}
 				}
 			}
 
 			if (Pawn && !Tile->GetId().IsEmpty())
 			{
+				// Create move name strings (algebraic notation, e.g. Rb8#)
 				MoveStr = ((IsPawn || PawnPromotionFlag) ? TEXT("") : Pawn->GetId()) +
 					StartTileStr +
 					(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +

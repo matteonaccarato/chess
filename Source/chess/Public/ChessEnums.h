@@ -7,23 +7,28 @@
 UENUM()
 enum class EPawnType : uint8
 {
-	NONE, // 0
-	ROOK, // 1
+	NONE,	// 0
+	ROOK,	// 1
 	KNIGHT, // 2
 	BISHOP, // 3
-	QUEEN, // 4
-	KING, // 5
-	PAWN, // 6
+	QUEEN,	// 4
+	KING,	// 5
+	PAWN,	// 6
 };
 
-// Color (Black = -1, Whitee = 1) per cambiare direzione se vincolata, tipo pedoni
-UENUM()
+/* 
+ * Piece color (e.g. Black = -1, White = 1).
+ *  Useful to identify the color and computing the movement direction easily:
+ *   - White pieces move from the bottom to the top (+1 along the vertical axis),
+ *	 - Black ones move from the top to the bottom (-1 along the vertical axis)
+ */
+ UENUM()
 enum class EPawnColor : int8
 {
-	NONE = 0,
-	WHITE = 1,
-	BLACK = -1,
-	BOTH = 2
+	NONE = 0,	// No color assigned
+	WHITE = 1,	// White color
+	BLACK = -1,	// Black color
+	BOTH = 2	// Both color to take into account both pieces of both the colors
 };
 
 UENUM()
@@ -38,6 +43,7 @@ enum class EMatchResult : int8
 	INSUFFICIENT_MATERIAL	// impossibility to checkmate (e.g. king vs king, ...)
 };
 
+// TODO => ripetizione di quello sotto ?
 UENUM()
 enum class ECardinalDirection : uint8
 {
@@ -49,16 +55,18 @@ enum class ECardinalDirection : uint8
 	SOUTHWEST,
 	WEST,
 	NORTHWEST,
-	KNIGHT_TR, // top-right
-	KNIGHT_TL, // top-left
-	KNIGHT_RT, // right-top
-	KNIGHT_RB, // right-bottom
-	KNIGHT_BR, // bottom-right
-	KNIGHT_BL, // bottom-left
-	KNIGHT_LB, // left-bottom
-	KNIGHT_LT // left-top
+	KNIGHT_TR,	// top-right
+	KNIGHT_TL,	// top-left
+	KNIGHT_RT,	// right-top
+	KNIGHT_RB,	// right-bottom
+	KNIGHT_BR,	// bottom-right
+	KNIGHT_BL,	// bottom-left
+	KNIGHT_LB,	// left-bottom
+	KNIGHT_LT	// left-top
 };
 
+
+// TODO => ripetizione di quello sopra ?
 UENUM()
 enum class EDirection : uint8
 {

@@ -14,8 +14,6 @@
 class ABasePawn;
 struct FPieceSaving;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReset);
-
 UCLASS()
 class CHESS_API AGameField : public AActor
 {
@@ -41,12 +39,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
-
-	// BlueprintAssignable usable with multicast delegates only.
-	// Exposes the property for assigning in Blueprints.
-	// Declare a variable of type FOnReset (delegate)
-	UPROPERTY(BlueprintAssignable)
-	FOnReset OnResetEvent;
 
 	// Size of field
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -194,8 +186,15 @@ public:
 
 	virtual void BeginPlay() override;
 
+
+	/*
+	 * Reset the game board (graphically and in data structures)
+	 */
 	UFUNCTION(BlueprintCallable)
 	void ResetField(bool bRestartGame);
+
+	/*
+	*/
 	void GenerateField();
 
 	FVector2D GetPosition(const FHitResult& Hit);
@@ -206,10 +205,28 @@ public:
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
+	
 	/*
-	*/
+	 * Specify if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
+	 *
+	 * X	const int8	Coordinate X
+	 * Y	const int8	Coordinate Y
+	 *
+	 * return	bool	true  -> no pieces along the movement
+	 *					false -> there is a piece along the movement
+	 */
 	bool IsValidTile(const int8 X, const int8 Y) const;
 
+
+	/*
+	 * Calculate the distance between two pieces given as arguments.
+	 * sqrt((x-x')^2 + (y-y')^2)
+	 *
+	 * Piece1	const ABasePawn*	1st piece (x,y)
+	 * Piece2	const ABasePawn*	2nd piece (x',y')
+	 *
+	 * return	int8	Distance between the two pieces given as arguments
+	 */
 	int8 DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const;
 	
 	
@@ -228,7 +245,15 @@ public:
 
 
 	/*
-	*/
+	 * Spawn the pawn specified through parameters
+	 *
+	 * PawnType	EPawnType		: type of the pawn to spawn
+	 * PawnColor	EPawnColor	: color of the pawn to spawn
+	 * X			int8		: x position of the pawn to spawn
+	 * Y			int8		: y position of the pawn to spawn
+	 *
+	 *   return: Pointer to the recently spawned pawn
+	 */
 	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED);
 
 	/*
