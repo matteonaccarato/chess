@@ -88,8 +88,8 @@ enum class ELine : uint8
 UENUM()
 enum class EPawnStatus : int8
 {
-	ALIVE,	// 0
-	DEAD	// 1
+	ALIVE, // 0
+	DEAD // 1
 };
 
 /**

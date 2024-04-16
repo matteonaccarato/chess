@@ -767,7 +767,7 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 			if (PawnToEat && PawnToEat->GetType() == EPawnType::ROOK)
 			{
 				FCastlingInfo& CastlingInfo = PawnToEat->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
-				CastlingInfo.RooksMoved[PawnToEat->GetPieceNum() % 7 == 0 ? 0 : 1] = true;
+				CastlingInfo.RooksMoved[PawnToEat->GetPieceNum() % 7 == 0 ? 1 : 0] = true;
 			}
 		}
 
