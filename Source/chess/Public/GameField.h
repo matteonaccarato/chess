@@ -14,13 +14,20 @@
 class ABasePawn;
 struct FPieceSaving;
 
+UENUM()
+enum class ETileMaterialType : uint8
+{
+	STANDARD,
+	ACTIVE		// when showing possible moves
+};
+
+
 UCLASS()
 class CHESS_API AGameField : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-
 
 	// TILES
 	UPROPERTY(Transient)
@@ -29,13 +36,45 @@ public:
 	UPROPERTY(Transient)
 	TMap<FVector2D, ATile*> TileMap;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ATile> TileClass; 
 
-	// PAWNS
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TMap<ETileMaterialType, UMaterialInterface*> MaterialsLight;	// standard | active (when showing possible moves)
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TMap<ETileMaterialType, UMaterialInterface*> MaterialsDark;		// standard | active (when showing possible moves)
+
+
+	// PIECES
+	UPROPERTY(EditDefaultsOnly)
+	TMap<EPawnType, TSubclassOf<ABasePawn>> ChessPieces;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+	TMap<EPawnType, UMaterialInterface*> ChessPiecesWhiteMaterials;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+	TMap<EPawnType, UMaterialInterface*> ChessPiecesBlackMaterials;
+
 	UPROPERTY(Transient)
 	TArray<ABasePawn*> PawnArray;
 	
 	UPROPERTY(Transient)
 	TMap<FVector2D, ABasePawn*> PawnMap;
+
+
+	// Letters / Numbers
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> LetterNumberClass;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TArray<UMaterialInterface*> Letters;
+
+	UPROPERTY(EditAnywhere, Category = "Materials")
+	TArray<UMaterialInterface*> Numbers;
+
+
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
@@ -46,133 +85,10 @@ public:
 
 	// Number of rows where pawns have to be placed
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 Pawns_Rows;
-
-	// Size of winning line
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 WinSize;
-
-	// Tile Materials
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialLight;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialLightRed;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialDark;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialDarkRed;
-
-	// TODO => fare unica tile (Set material in seguito)
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ATile> B_TileClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ATile> W_TileClass;
-
-	// Tile Letters/Numbers Materials
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	TArray<UMaterialInterface*> Letters;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	TArray<UMaterialInterface*> Numbers;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterA;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterB;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterC;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterD;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterE;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterF;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterG;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* LetterH;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number1;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number2;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number3;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number4;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number5;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number6;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number7;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* Number8;
-
-	// Pawns Classes
-	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<ABasePawn>> ChessPieces;
-
-	// Blacks
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_BishopClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_KingClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_KnightClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_PawnClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_QueenClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> B_RookClass;
-
-	// Whites
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_BishopClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_KingClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_KnightClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_PawnClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_QueenClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABasePawn> W_RookClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AActor> LetterNumberClass;
+	int32 Pawns_Rows; 
 
 	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CellPadding;
 
@@ -232,15 +148,27 @@ public:
 	
 
 
-
 	/*
-	*/
+	 *  Load the board specified as argument
+	 *
+	 * Line					ELine				Line along the movement is performed (HORIZONTAL | VERTICAL | DIAGONAL)
+	 * CurrGridPosition		const FVector2D		Current grid position (e.g. [3,2])
+	 * DeltaX				const int8			Movement delta X
+	 * DeltaY				const int8			Movement delta Y
+	 *
+	 * return				bool				true  -> no pieces along the movement
+	 *											false -> there is a piece along the movement
+	 */
 	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
 
 
 
 
-
+	/*
+	 * Load the board specified as argument
+	 *
+	 * Board	const TArray<FPieceSaving>&		Board to load
+	 */
 	void LoadBoard(const TArray<FPieceSaving>& Board);
 
 
@@ -252,12 +180,17 @@ public:
 	 * X			int8		: x position of the pawn to spawn
 	 * Y			int8		: y position of the pawn to spawn
 	 *
-	 *   return: Pointer to the recently spawned pawn
+	 * return		ABasePawn*	: Pointer to the recently spawned pawn
 	 */
 	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED);
 
+
 	/*
-	*/
+	 * Despawn pawn which is on the tile specified
+	 *
+	 * X	int8	: x position of the pawn to despawn
+	 * Y	int8	: y position of the pawn to despawn
+	 */
 	void DespawnPawn(int8 X, int8 Y, bool Simulate = false);
 
 	

@@ -12,8 +12,6 @@ AGameField::AGameField()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
-	WinSize = 3;
-
 	// Size of the field (8x8)
 	Size = 8; 
 	TileSize = 120;
@@ -133,7 +131,7 @@ void AGameField::ResetField(bool bRestartGame)
 void AGameField::GenerateField()
 {
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ATile> TileClass;
+	// TSubclassOf<ATile> TileClass;
 	TSubclassOf<ABasePawn> BasePawnClass;
 
 	UWorld* World = GetWorld();
@@ -141,19 +139,19 @@ void AGameField::GenerateField()
 	int8 PieceIdx = 0;
 	/* TSubclassOf<AActor> Letters[] = {LetterA};
 	TSubclassOf<AActor> Numbers[] = { LetterA }; */
-	UMaterialInterface* p_Letters[] = { LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH };
-	UMaterialInterface* p_Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 };
+	/* UMaterialInterface* p_Letters[] = {LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH};
+	UMaterialInterface* p_Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 }; */
 
 	for (int32 x = 0; x < Size; x++)
 	{
 		for (int32 y = 0; y < Size; y++)
 		{
-			TileClass = flag ? W_TileClass : B_TileClass;
+			// TileClass = flag ? W_TileClass : B_TileClass;
 
 			FVector Location = AGameField::GetRelativeLocationByXYPosition(x, y);
 			ATile* TileObj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
 						
-			if (TileObj != nullptr)
+			if (TileObj)
 			{
 				// [A-H][1-8]
 				const int32 IdChar = 65 + y;
@@ -163,6 +161,9 @@ void AGameField::GenerateField()
 				TileObj->SetLetterId(FString::Printf(TEXT("%c"), IdChar));
 				TileObj->SetNumberId(IdNum);
 
+				UMaterialInterface* Material = ((x + y) % 2) ? MaterialsLight[ETileMaterialType::STANDARD] : MaterialsDark[ETileMaterialType::STANDARD];
+				TileObj->GetStaticMeshComponent()->SetMaterial(0, Material);
+
 				// Bottom (Letters)
 				if (x == 0 && World)
 				{
@@ -170,9 +171,9 @@ void AGameField::GenerateField()
 					if (Letter)
 					{
 						Letter->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
-						UStaticMeshComponent* MeshComponent = Letter->FindComponentByClass<UStaticMeshComponent>();
-						if (MeshComponent)
-							MeshComponent->SetMaterial(0, p_Letters[y]);
+						UStaticMeshComponent* LetterMeshComponent = Letter->FindComponentByClass<UStaticMeshComponent>();
+						if (LetterMeshComponent)
+							LetterMeshComponent->SetMaterial(0, Letters[y]);
 					}
 				}
 				
@@ -183,9 +184,9 @@ void AGameField::GenerateField()
 					if (Number)
 					{
 						Number->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
-						UStaticMeshComponent* MeshComponent = Number->FindComponentByClass<UStaticMeshComponent>();
-						if (MeshComponent)
-							MeshComponent->SetMaterial(0, p_Numbers[x]);
+						UStaticMeshComponent* NumberMeshComponent = Number->FindComponentByClass<UStaticMeshComponent>();
+						if (NumberMeshComponent)
+							NumberMeshComponent->SetMaterial(0, Numbers[x]);
 					}
 				}
 
@@ -240,7 +241,7 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
  * Function: DistancePieces
  * ----------------------------
  *   Calculate the distance between two pieces given as arguments.
- *	 sqrt((x-x')^2 + (y-y')^2)
+ *	 floor of sqrt((x-x')^2 + (y-y')^2)
  *
  *	 Piece1	const ABasePawn*	1st piece (x,y)
  *	 Piece2 const ABasePawn*	2nd piece (x',y')
@@ -271,7 +272,7 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 		// Graphically restore tiles used to show possible moves 
 		for (const auto& move : GameMode->ShownPossibleMoves)
 		{
-			UMaterialInterface* Material = ((move.first + move.second) % 2) ? MaterialLight : MaterialDark;
+			UMaterialInterface* Material = ((move.first + move.second) % 2) ? MaterialsLight[ETileMaterialType::STANDARD] : MaterialsDark[ETileMaterialType::STANDARD];
 			TileArray[move.first * Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 		}
 
@@ -336,9 +337,9 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
  * DeltaX				const int8			Movement delta X 
  * DeltaY				const int8			Movement delta Y
  * 
- * return	bool	true  -> no pieces along the movement
- *					false -> there is a piece along the movement
-*/
+ * return				bool				true  -> no pieces along the movement
+ *											false -> there is a piece along the movement
+ */
 bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const
 {
 	switch (Line)
@@ -403,12 +404,10 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
  *   X			int8		: x position of the pawn to spawn
  *	 Y			int8		: y position of the pawn to spawn
  *
- *   return: Pointer to the recently spawned pawn
+ *   return		ABasePawn*	: Pointer to the recently spawned pawn
  */
 ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner)
 {
-	// TODO => necessario fare if (PawnType && PawnColor && X && Y) essendo parametri obbligatori ??
-
 	TSubclassOf<ABasePawn> BasePawnClass;
 	ABasePawn* BasePawnObj = nullptr;
 
@@ -419,33 +418,9 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
 		FTileStatus TileStatus = { nullptr, 0, {0, 0}, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED };
 
-		TSubclassOf<ABasePawn> W_PawnsClasses[] = { W_RookClass, W_KnightClass, W_BishopClass, W_QueenClass, W_KingClass, W_PawnClass };
-		TSubclassOf<ABasePawn> B_PawnsClasses[] = { B_RookClass, B_KnightClass, B_BishopClass, B_QueenClass, B_KingClass, B_PawnClass };
-
-		// Set the pawn type in the tile status 
-		switch (PawnType)
-		{
-		case EPawnType::ROOK: TileStatus.PawnType = EPawnType::ROOK; break;
-		case EPawnType::KNIGHT: TileStatus.PawnType = EPawnType::KNIGHT; break;
-		case EPawnType::BISHOP: TileStatus.PawnType = EPawnType::BISHOP; break;
-		case EPawnType::QUEEN: TileStatus.PawnType = EPawnType::QUEEN; break;
-		case EPawnType::KING: TileStatus.PawnType = EPawnType::KING; break;
-		case EPawnType::PAWN: TileStatus.PawnType = EPawnType::PAWN; break;
-		}
-
-		// Choose correct class (White or Black)
-		switch (PawnColor)
-		{
-		case EPawnColor::WHITE:
-			TileStatus.PawnColor = EPawnColor::WHITE;
-			BasePawnClass = W_PawnsClasses[static_cast<int>(PawnType) - 1];
-			break;
-		case EPawnColor::BLACK:
-			TileStatus.PawnColor = EPawnColor::BLACK;
-			BasePawnClass = B_PawnsClasses[static_cast<int>(PawnType) - 1];
-			break;
-		}
-
+		TileStatus.PawnType = PawnType;
+		TileStatus.PawnColor = PawnColor;
+		
 		// Calculate spawn location
 		FVector Origin; FVector BoxExtent;
 		TileObj->GetActorBounds(false, Origin, BoxExtent);
@@ -456,8 +431,9 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 			Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
 		);
 
+		BasePawnClass = ChessPieces[PawnType];
 		BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
-		if (BasePawnObj != nullptr)
+		if (BasePawnObj)
 		{
 			BasePawnObj->SetGridPosition(X, Y);
 			// TODO: 0.8 da mettere come attributo
@@ -467,6 +443,9 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 			BasePawnObj->SetType(TileStatus.PawnType);
 			BasePawnObj->SetColor(TileStatus.PawnColor);
 			BasePawnObj->SetStatus(EPawnStatus::ALIVE);
+
+			TMap<EPawnType, UMaterialInterface*>& ChessPiecesMaterials = PawnColor == EPawnColor::WHITE ? ChessPiecesWhiteMaterials : ChessPiecesBlackMaterials;
+			BasePawnObj->GetStaticMeshComponent()->SetMaterial(0, ChessPiecesMaterials[PawnType]);
 
 			PawnArray.Add(BasePawnObj);
 			PawnMap.Add(FVector2D(X, Y), BasePawnObj);
@@ -499,8 +478,8 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
  * ----------------------------
  *   Despawn pawn which is on the tile specified
  *
- *   X			int8		: x position of the pawn to despawn
- *	 Y			int8		: y position of the pawn to despawn
+ *   X		int8	: x position of the pawn to despawn
+ *	 Y		int8	: y position of the pawn to despawn
  */
 void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 {

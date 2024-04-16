@@ -17,8 +17,11 @@ struct FTileStatus
 	GENERATED_BODY()
 
 	ABasePawn* Piece;
-	bool EmptyFlag; // 1 => Empty, 0 => Occupied
-	int8 AttackableFrom[2] = { 0, 0}; // 0-cell => from WHITE, 1-cell => from BLACK
+	bool EmptyFlag;		// 1 => Empty, 0 => Occupied
+	int8 AttackableFrom[2] = { 
+		0,	// from WHITE
+		0	// from BLACK
+	};
 	TArray<ABasePawn*> WhoCanGo;
 	EPawnColor PawnColor;
 	EPawnType PawnType;
@@ -67,21 +70,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialLight;
-
-	UPROPERTY(EditAnywhere, Category="Materials")
-	UMaterialInterface* MaterialDark;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInterface* MaterialGreen;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterial* Material;
-
-	UPROPERTY(EditAnywhere, Category = "Materials")
-	UMaterialInstance* MaterialInstance;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString LetterId;

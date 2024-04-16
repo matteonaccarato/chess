@@ -10,7 +10,15 @@ ABasePawn::ABasePawn()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// TODO: forse da settare su true per movimento dinamico (come cono)
+	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+	SetRootComponent(Scene);
+	StaticMeshComponent->SetupAttachment(Scene);
+}
 
+UStaticMeshComponent* ABasePawn::GetStaticMeshComponent() const
+{
+	return StaticMeshComponent;
 }
 
 FString ABasePawn::GetId() const
@@ -88,7 +96,7 @@ FVector2D ABasePawn::GetGridPosition() const
 bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag)
 {
 	EPawnColor DirectionFlag = GetColor();
-	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]); // * static_cast<double>(DirectionFlag);
+	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
 	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
 	int8 MaxSteps = (GetType() == EPawnType::PAWN) ? 1 : GetMaxNumberSteps();
 
@@ -269,7 +277,6 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 			GetType(),
 			PlayerOwner 
 		});
-		//NewTile->SetPawn(this);
 
 		SetGridPosition(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 		if (!Simulate)

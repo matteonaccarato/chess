@@ -28,6 +28,8 @@ public:
 	 */
 	ABasePawn();
 
+	UStaticMeshComponent* GetStaticMeshComponent() const;
+
 	FString GetId() const;
 
 	int GetPieceNum() const;
@@ -69,6 +71,12 @@ protected:
 	// TODO uproperty a cosa serve, va messo a tutti?
 	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString TileId; */
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USceneComponent* Scene;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMeshComponent;
 
 	// TODO => ??
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

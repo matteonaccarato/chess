@@ -107,7 +107,7 @@ void AChess_HumanPlayer::OnClick()
 			// Clean shown possible moves of the selected piece
 			for (const auto& move : GameMode->ShownPossibleMoves)
 			{
-				UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialLight : GameMode->GField->MaterialDark;
+				UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialsLight[ETileMaterialType::STANDARD] : GameMode->GField->MaterialsDark[ETileMaterialType::STANDARD];
 				GameMode->GField->GetTileArray()[move.first * GameMode->GField->Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 			}
 			
@@ -264,7 +264,7 @@ void AChess_HumanPlayer::OnClick()
 						GameMode->ShownPossibleMoves = GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()];
 						for (const auto& move : GameMode->ShownPossibleMoves)
 						{
-							UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialLightRed : GameMode->GField->MaterialDarkRed;
+							UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialsLight[ETileMaterialType::ACTIVE] : GameMode->GField->MaterialsDark[ETileMaterialType::ACTIVE];
 							GameMode->GField->TileArray[move.first * GameMode->GField->Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 						}
 						// Notify white chess piece has been seleceted

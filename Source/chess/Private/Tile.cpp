@@ -9,14 +9,9 @@ ATile::ATile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	// template function which creates a component
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-	MaterialLight = CreateDefaultSubobject<UMaterialInterface>("MaterialLight");
-	MaterialDark = CreateDefaultSubobject<UMaterialInterface>("MaterialDark");
-	// TODO => material green ?
-	MaterialGreen = CreateDefaultSubobject<UMaterialInterface>("MaterialGreen");
-
+	
 	SetRootComponent(Scene);
 	StaticMeshComponent->SetupAttachment(Scene);
 
@@ -26,7 +21,6 @@ ATile::ATile()
 	Status = { nullptr, 1, {0, 0}, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED};
 	PlayerOwner = -1;
 	TileGridPosition = FVector2D(0, 0);
-
 }
 
 UStaticMeshComponent* ATile::GetStaticMeshComponent() const
