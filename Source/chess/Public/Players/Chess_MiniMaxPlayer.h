@@ -35,6 +35,6 @@ public:
 
 	int32 EvaluateBoard(TArray<ATile*> Board) const;
 	// are moves left (se ci sono mosse rimanenti => guardo PossibleMoves.Num()
-	std::pair<std::pair<int8, std::pair<int8, int8>>, int32> MiniMax(TArray<ATile*> Board, int8 Depth, int32 alpha, int32 beta, bool IsMax);
-	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*> Board);
+	std::pair<std::pair<int8, std::pair<int8, int8>>, int32> MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool IsMax);
+	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*>& Board, TArray<int8>& PlayerPieces);
 };

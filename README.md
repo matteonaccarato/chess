@@ -11,7 +11,7 @@ The smart one is the result of specific algorithms such as MiniMax and Alpha-bet
 
 ## STACK
 - C++
-- Unreal Engine
+- Unreal Engine 5.2
 
 <hr>
 

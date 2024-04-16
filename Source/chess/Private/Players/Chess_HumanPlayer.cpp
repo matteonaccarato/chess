@@ -54,7 +54,7 @@ void AChess_HumanPlayer::OnTurn()
 	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, TEXT("My Turn"));
 	if (GameInstance)
 	{
-		GameInstance->SetTurnMessage(TEXT("Human"));
+		GameInstance->SetTurnMessage(TEXT("YOU"));
 	}
 }
 
@@ -63,7 +63,7 @@ void AChess_HumanPlayer::OnWin()
 	// TODO
 	if (GameInstance)
 	{
-		GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+		GameInstance->SetTurnMessage(TEXT("You WON!"));
 
 		PlayerNumber ?
 			GameInstance->IncrementScorePlayer_2() :
@@ -76,7 +76,7 @@ void AChess_HumanPlayer::OnLose()
 	// TODO
 	if (GameInstance)
 	{
-		GameInstance->SetTurnMessage(TEXT("Human Loses!"));
+		GameInstance->SetTurnMessage(TEXT("You LOST!"));
 	}
 }
 
