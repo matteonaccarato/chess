@@ -129,7 +129,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* CaptureSound;
 	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* CheckSound;
 	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverCheckmateSound;
-	// UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverSound;
 	UPROPERTY(EditDefaultsOnly, Category = "Components") class USoundBase* GameOverDrawSound;
 
 
