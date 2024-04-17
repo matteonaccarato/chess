@@ -214,8 +214,8 @@ void AChess_HumanPlayer::OnClick()
 							{
 								switch (Piece->GetColor())
 								{
-								case EPawnColor::WHITE: GameMode->WhitePiecesCanMove.Add(Piece->GetPieceNum()); break;
-								case EPawnColor::BLACK: GameMode->BlackPiecesCanMove.Add(Piece->GetPieceNum()); break;
+								case EPawnColor::WHITE: GameMode->WhitePiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+								case EPawnColor::BLACK: GameMode->BlackPiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
 								}
 							}
 						} 

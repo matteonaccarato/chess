@@ -137,17 +137,11 @@ void AGameField::GenerateField()
 	UWorld* World = GetWorld();
 	bool flag = false;
 	int8 PieceIdx = 0;
-	/* TSubclassOf<AActor> Letters[] = {LetterA};
-	TSubclassOf<AActor> Numbers[] = { LetterA }; */
-	/* UMaterialInterface* p_Letters[] = {LetterA, LetterB, LetterC, LetterD, LetterE, LetterF, LetterG, LetterH};
-	UMaterialInterface* p_Numbers[] = { Number1, Number2, Number3, Number4, Number5, Number6, Number7, Number8 }; */
 
 	for (int32 x = 0; x < Size; x++)
 	{
 		for (int32 y = 0; y < Size; y++)
 		{
-			// TileClass = flag ? W_TileClass : B_TileClass;
-
 			FVector Location = AGameField::GetRelativeLocationByXYPosition(x, y);
 			ATile* TileObj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
 						
@@ -466,6 +460,13 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 				GameMode->KingWhitePieceNum
 				: GameMode->KingBlackPieceNum;
 			KingPieceNum = BasePawnObj->GetPieceNum();
+		}
+		else if (BasePawnObj->GetType() == EPawnType::ROOK && Y == Size - 1)
+		{
+			int8& RookRightPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+				GameMode->RookWhiteRightPieceNum
+				: GameMode->RookBlackRightPieceNum;
+			RookRightPieceNum = BasePawnObj->GetPieceNum();
 		}
 	}
 

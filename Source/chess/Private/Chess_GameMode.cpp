@@ -324,7 +324,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 	}
 }
 
-EMatchResult AChess_GameMode::ComputeMatchResult(TArray<int8>& WhitePieces, TArray<int8>& BlackPieces)
+EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& WhitePieces, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& BlackPieces)
 {
 	EMatchResult Result = EMatchResult::NONE;
 
@@ -415,8 +415,8 @@ void AChess_GameMode::InitTurn()
 		{
 			switch (Piece->GetColor())
 			{
-			case EPawnColor::WHITE: WhitePiecesCanMove.Add(Piece->GetPieceNum()); break;
-			case EPawnColor::BLACK: BlackPiecesCanMove.Add(Piece->GetPieceNum()); break;
+			case EPawnColor::WHITE: WhitePiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+			case EPawnColor::BLACK: BlackPiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
 			}
 		}
 	}
@@ -486,7 +486,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 		//  -  OR the piece is a knight (the rule above doesn't work for it, it has 1 as max number of steps)
 		// TODO => valutare di mettere max number of steps del cavallo come quella reale per raggiungere il re (posso togliere la terza condizione) 
 		if (!ShowAttackable
-			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? 4 : 28]) <= Pawn->GetMaxNumberSteps())
+			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? KingWhitePieceNum : KingBlackPieceNum]) <= Pawn->GetMaxNumberSteps())
 			|| Pawn->GetType() == EPawnType::KNIGHT)
 		{
 			for (const auto& PawnDirection : PawnDirections)
@@ -767,7 +767,7 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 			if (PawnToEat && PawnToEat->GetType() == EPawnType::ROOK)
 			{
 				FCastlingInfo& CastlingInfo = PawnToEat->GetColor() == EPawnColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
-				CastlingInfo.RooksMoved[PawnToEat->GetPieceNum() % 7 == 0 ? 0 : 1] = true;
+				CastlingInfo.RooksMoved[PawnToEat->GetPieceNum() == RookWhiteRightPieceNum || PawnToEat->GetPieceNum() == RookBlackRightPieceNum ? 1 : 0] = true;
 			}
 		}
 
@@ -1202,7 +1202,7 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 		FString BtnName = TxtBlock->GetText().ToString();
 		FString NumMoveStr;
 		BtnName.Split(TEXT("."), &NumMoveStr, NULL);
-		int8 NumMove = FCString::Atoi(*NumMoveStr);
+		int NumMove = FCString::Atoi(*NumMoveStr);
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("Replay mossa %d"), NumMove));
 
 		if ((NumMove + 1) != MoveCounter)

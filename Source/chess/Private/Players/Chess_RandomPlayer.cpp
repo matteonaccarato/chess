@@ -61,7 +61,7 @@ void AChess_RandomPlayer::OnTurn()
 
 
 
-						TArray<int8>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
+						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
 
 
 
@@ -74,7 +74,7 @@ void AChess_RandomPlayer::OnTurn()
 						{
 							// Select randomically the index of the pawn to move
 							int8 RandPawnIdx = FMath::Rand() % PlayerPiecesCanMove.Num();
-							int8 RandPieceNum = PlayerPiecesCanMove[RandPawnIdx];
+							int8 RandPieceNum = PlayerPiecesCanMove[RandPawnIdx].first;
 							TArray<std::pair<int8, int8>> AttackableTiles = GameMode->TurnPossibleMoves[RandPieceNum];
 							// Select randomically the index of the tile to move to
 							int8 RandNewTile = FMath::Rand() % AttackableTiles.Num();

@@ -18,6 +18,8 @@ public:
 	// Sets default values for this pawn's properties
 	AChess_MiniMaxPlayer();
 
+	static constexpr int INFINITE = 10000;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,6 +37,6 @@ public:
 
 	int32 EvaluateBoard(TArray<ATile*> Board) const;
 	// are moves left (se ci sono mosse rimanenti => guardo PossibleMoves.Num()
-	std::pair<std::pair<int8, std::pair<int8, int8>>, int32> MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool IsMax);
-	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*>& Board, TArray<int8>& PlayerPieces);
+	int32 MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool IsMax);
+	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces);
 };

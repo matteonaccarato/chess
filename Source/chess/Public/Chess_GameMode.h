@@ -67,14 +67,14 @@ public:
 
 	bool IsGameOver;
 	bool bIsHumanPlaying = false;
-	int8 ReplayInProgress; // shows the number of turn currently replaying
+	int ReplayInProgress; // shows the number of turn currently replaying
 	TArray<IChess_PlayerInterface*> Players;
 	int32 CurrentPlayer;
 	TArray<std::pair<int8, int8>> ShownPossibleMoves;
 
 	TArray<TArray<std::pair<int8, int8>>> TurnPossibleMoves;
-	TArray<int8> WhitePiecesCanMove;
-	TArray<int8> BlackPiecesCanMove;
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> WhitePiecesCanMove;
+	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> BlackPiecesCanMove;
 	
 	FCastlingInfo CastlingInfoWhite;
 	FCastlingInfo CastlingInfoBlack; 
@@ -87,6 +87,8 @@ public:
 
 	int8 KingWhitePieceNum = -1;
 	int8 KingBlackPieceNum = -1;
+	int8 RookWhiteRightPieceNum = -1;
+	int8 RookBlackRightPieceNum = -1;
 
 	// Notifies check situation || NONE || WHITE || BLACK || BOTH
 	EPawnColor CheckFlag; 
@@ -175,7 +177,7 @@ public:
 	*/
 	EPawnColor IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1);
 
-	EMatchResult ComputeMatchResult(TArray<int8>& WhitePieces, TArray<int8>& BlackPieces);
+	EMatchResult ComputeMatchResult(TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& WhitePieces, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& BlackPieces);
 
 	/*
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
