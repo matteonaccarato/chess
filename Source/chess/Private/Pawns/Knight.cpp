@@ -5,8 +5,9 @@
 
 AKnight::AKnight()
 {
+	Id = TEXT("N");
 	Type = EPawnType::KNIGHT;
-	MaxNumberSteps = 1; // TODO magic number 
+	MaxNumberSteps = KNIGHT_MAX_NUMBER_STEPS; 
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TL);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TR);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_RT);
@@ -15,5 +16,4 @@ AKnight::AKnight()
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_BL);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_LB);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_LT);
-	Id = TEXT("N");
 }

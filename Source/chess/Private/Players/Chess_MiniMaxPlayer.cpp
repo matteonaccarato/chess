@@ -42,11 +42,11 @@ void AChess_MiniMaxPlayer::OnTurn()
 
 	if (GameMode)
 	{
-		FTimerHandle TimerHandle;
 		// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
-		// RandTimer [0.5, 1.0] seconds
-		// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
-		int8 RandTimer = GameMode->bIsHumanPlaying ? FMath::Rand() % 2 + 3 : 1;
+		FTimerHandle TimerHandle;
+		int8 RandTimer = GameMode->bIsHumanPlaying ? 
+			FMath::Rand() % TIMER_MODULO + TIMER_BASE_OFFSET :
+			TIMER_NONE;
 
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 			{
@@ -55,8 +55,9 @@ void AChess_MiniMaxPlayer::OnTurn()
 					AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 					if (GameMode && GameMode->ReplayInProgress == 0)
 					{
-
-						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
+						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? 
+							GameMode->WhitePiecesCanMove : 
+							GameMode->BlackPiecesCanMove;
 
 
 						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI Has %d pawns."), PlayerPiecesCanMove.Num()));
@@ -64,7 +65,6 @@ void AChess_MiniMaxPlayer::OnTurn()
 						// If there are black pieces eligible to move
 						if (PlayerPiecesCanMove.Num() > 0)
 						{
-
 							// piece and move X Y
 							std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray, PlayerPiecesCanMove);
 
@@ -102,11 +102,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 						else
 						{
 							// TODO => rimuovere
-							// No pieces can make eligible moves => BLACK is checkmated
 							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, TEXT("BRO | smth strange happened. u should not be here!"));
-
-							/* GameMode->MatchStatus = EPawnColor::BLACK;
-							GameMode->EndTurn(-1); */
 						}
 					}
 					else
@@ -137,7 +133,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 		{
 			for (const auto& Move : PieceMove.second)
 			{
-
+				// Backup
 				TArray<FTileStatus> TilesStatusBackup;
 				TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
 				GameMode->BackupTiles(TilesStatusBackup);
@@ -148,12 +144,8 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
 				int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
 
-				// GameMode->GField->PawnArray[PieceMove.first]->Move(Move.first, Move.second, true);
+				// Make move & compute minimax
 				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
-
-				// compute evaluation function for this move ( TODO => restituire solo newX newY)
-				// { { piece_num, { newX, newY } }, move_value }
-				// TODO => 10000s are magic numbers (INFINITEs)
 				int32 MoveValue = MiniMax(Board, 2, -AChess_MiniMaxPlayer::INFINITE, AChess_MiniMaxPlayer::INFINITE, Color != EPawnColor::BLACK);
 
 				// undo the move
@@ -165,7 +157,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 				GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
-				// evaluate val
+				// Compare evaluation
 				if (MoveValue > BestVal || (MoveValue == BestVal && FMath::Rand() % PlayerPieces.Num() == 1))
 				{
 					BestMove.first = PieceMove.first;
@@ -414,12 +406,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			}
 		}
 
-		Score = 8 * (AttackableKings[0] - AttackableKings[1])
-			+ 9 * (QueenCounts[1] - QueenCounts[0])
-			+ 5 * (RookCounts[1] - RookCounts[0])
-			+ 3 * (BishopCounts[1] - BishopCounts[0])
-			+ 3 * (KnightsCounts[1] - KnightsCounts[0])
-			+ 1 * (PawnsCounts[1] - PawnsCounts[0]);
+		Score = AChess_MiniMaxPlayer::QUEEN_VALUE * (QueenCounts[1] - QueenCounts[0])
+			+ AChess_MiniMaxPlayer::ATTACKABLE_KING_VALUE * (AttackableKings[0] - AttackableKings[1])
+			+ AChess_MiniMaxPlayer::ROOK_VALUE * (RookCounts[1] - RookCounts[0])
+			+ AChess_MiniMaxPlayer::BISHOP_VALUE * (BishopCounts[1] - BishopCounts[0])
+			+ AChess_MiniMaxPlayer::KNIGHT_VALUE * (KnightsCounts[1] - KnightsCounts[0])
+			+ AChess_MiniMaxPlayer::PAWN_VALUE * (PawnsCounts[1] - PawnsCounts[0]);
 
 		/* Score = // MatchResultValue
 			9 * (QueenCounts[1] - QueenCounts[0])
@@ -446,8 +438,8 @@ void AChess_MiniMaxPlayer::OnWin()
 	if (GameMode && GameInstance)
 	{
 		FString Msg = TEXT("AI ");
-		if (GameMode->Players.Num() == 3) // ai vs ai
-			Msg += FString::FromInt(PlayerNumber);
+		if (GameMode->Players.Num() == AChess_GameMode::MIN_NUMBER_SPAWN_PLAYERS) // AI vs AI (Human as spectator)
+			Msg += FString::FromInt(PlayerNumber + 1) + " ";
 		
 		Msg += "WON";
 		GameInstance->SetTurnMessage(Msg);
@@ -460,6 +452,5 @@ void AChess_MiniMaxPlayer::OnWin()
 
 void AChess_MiniMaxPlayer::OnLose()
 {
-	// TODO
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }

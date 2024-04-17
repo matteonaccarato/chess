@@ -268,7 +268,7 @@ void AChess_HumanPlayer::OnClick()
 							GameMode->GField->TileArray[move.first * GameMode->GField->Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 						}
 						// Notify white chess piece has been seleceted
-						SelectedPawnFlag = 1;
+						SelectedPawnFlag = true;
 					}
 				}
 				else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
@@ -280,7 +280,7 @@ void AChess_HumanPlayer::OnClick()
 			}
 
 			// Chess piece was already selected
-			if (SelectedPawnFlag == 1)
+			if (SelectedPawnFlag)
 			{
 				// Get new tile instance (through PawnToEat OR actor clicked)
 				ATile* NewTile = Cast<ATile>(Hit.GetActor());
@@ -301,7 +301,7 @@ void AChess_HumanPlayer::OnClick()
 					{
 						bool EatFlag = GameMode->MakeMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-						SelectedPawnFlag = 0;
+						SelectedPawnFlag = false;
 						
 						// Pawn promotion handling
 						int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;

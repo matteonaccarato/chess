@@ -63,6 +63,25 @@ class CHESS_API AChess_GameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+
+	/* CONST EXPRs */
+	static constexpr int8 SHORT_CASTLING_OFFSET = -2;
+	static constexpr int8 LONG_CASTLING_OFFSET	= 3;
+
+	static constexpr int8 MIN_NUMBER_SPAWN_PLAYERS = 2;
+	static constexpr float CAMERA_POS_Z = 1250.0;
+
+	static constexpr char* STATISTICS_DIRECTORY_NAME = "GameData";
+	static constexpr char* FILENAME_HUMAN_RANDOM = "/human_random.csv";
+	static constexpr char* FILENAME_HUMAN_MINIMAX = "/human_minimax.csv";
+	static constexpr char* FILENAME_RANDOM_RANDOM = "/random_random.csv";
+	static constexpr char* FILENAME_RANDOM_MINIMAX = "/random_minimax.csv";
+	static constexpr char* FILENAME_MINIMAX_MINIMAX = "/minimax_minimax.csv";
+
+
+
+
+	/* ATTRIBUTES */
 	UChess_GameInstance* GameInstance;
 
 	bool IsGameOver;
@@ -151,6 +170,8 @@ public:
 
 
 
+
+	/* METHODS */
 	AChess_GameMode();
 	virtual void BeginPlay() override;
 
@@ -206,10 +227,13 @@ private:
 	EPawnColor CheckKingsUnderAttack() const;
 	void InitTurn();
 
+
 	/* DRAW */
 	bool SameConfigurationBoard(const int8 Times) const;
 	bool SeventyFive_MoveRule() const;
 	bool ImpossibilityToCheckmate() const;
 
+
+	/* SAVE STATISTICS ON FILE */
 	void SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FString& OutInfoMessage) const;
 };

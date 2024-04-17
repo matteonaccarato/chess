@@ -21,7 +21,15 @@ class CHESS_API ABasePawn : public AActor
 	GENERATED_BODY()
 	
 public:	
+	static constexpr int8 KING_MAX_NUMBER_STEPS		= 1;
+	static constexpr int8 QUEEN_MAX_NUMBER_STEPS	= AGameField::GAMEBOARD_SIZE;
+	static constexpr int8 ROOK_MAX_NUMBER_STEPS		= AGameField::GAMEBOARD_SIZE;
+	static constexpr int8 BISHOP_MAX_NUMBER_STEPS	= AGameField::GAMEBOARD_SIZE;
+	static constexpr int8 KNIGHT_MAX_NUMBER_STEPS	= 1;
+	static constexpr int8 PAWN_MAX_NUMBER_STEPS		= 2;
 
+
+	/* METHODS */
 	/*
 	 * Construct the piece assigning its moving properties 
 	 *	(type, max number of steps and movement direction)
@@ -37,8 +45,8 @@ public:
 
 	TArray<ECardinalDirection> GetCardinalDirections() const;
 
-	void SetMaxNumberSteps(int32 NumberSteps);
-	int32 GetMaxNumberSteps() const;
+	void SetMaxNumberSteps(int8 NumberSteps);
+	int8 GetMaxNumberSteps() const;
 
 	void SetColor(EPawnColor PawnColor);
 	EPawnColor GetColor() const;
@@ -69,9 +77,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	// TODO uproperty a cosa serve, va messo a tutti?
-	/* UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FString TileId; */
+	
 
+	/* ATTRIBUTES */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USceneComponent* Scene;
 
@@ -84,15 +92,14 @@ protected:
 
 	// Uniquely identifier of the piece in the chess board
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int PieceNum = -1;
+	int8 PieceNum = -1;
 
 	// Color (e.g. Black = -1, White = 1)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnColor Color;
 
-	// TODO int8 ?
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 MaxNumberSteps;
+	int8 MaxNumberSteps;
 
 	// Type (e.g. ROOK)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

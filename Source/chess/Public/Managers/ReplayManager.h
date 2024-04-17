@@ -18,6 +18,10 @@ struct FPieceSaving;
 class CHESS_API ReplayManager
 {
 public:
+	static constexpr char* SCROLLBOX_WHITE_NAME = "scr_Replay_white";
+	static constexpr char* SCROLLBOX_BLACK_NAME = "scr_Replay_black";
+	static constexpr char* WIDGET_BUTTON_NAME	= "txtBlock";
+
 	ReplayManager();
 	~ReplayManager();
 

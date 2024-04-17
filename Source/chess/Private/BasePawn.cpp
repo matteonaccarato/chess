@@ -9,7 +9,7 @@ ABasePawn::ABasePawn()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	// TODO: forse da settare su true per movimento dinamico (come cono)
+	// TODO : forse da settare su true per movimento dinamico (come cono)
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	SetRootComponent(Scene);
@@ -36,12 +36,12 @@ void ABasePawn::SetPieceNum(int Num)
 	PieceNum = Num;
 }
 
-void ABasePawn::SetMaxNumberSteps(int32 NumberSteps)
+void ABasePawn::SetMaxNumberSteps(int8 NumberSteps)
 {
 	MaxNumberSteps = NumberSteps;
 }
 
-int32 ABasePawn::GetMaxNumberSteps() const
+int8 ABasePawn::GetMaxNumberSteps() const
 {
 	return MaxNumberSteps;
 }
@@ -150,7 +150,6 @@ bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Dir
 
 	return false;
 }
-
 
 
 

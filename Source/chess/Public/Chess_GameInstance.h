@@ -9,8 +9,8 @@
 UENUM()
 enum class EMatchMode : uint8
 {
-	HUMAN_CPU_RANDOM, 
-	HUMAN_CPU_MINIMAX,
+	HUMAN_RANDOM, 
+	HUMAN_MINIMAX,
 	RANDOM_RANDOM,
 	RANDOM_MINIMAX,
 	MINIMAX_MINIMAX
@@ -25,6 +25,8 @@ class CHESS_API UChess_GameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
+
+	/* ATTRIBUTES */
 	UPROPERTY(EditAnywhere)
 	FString TextPlayer_1 = "Player 1";
 
@@ -50,6 +52,7 @@ public:
 	EMatchMode MatchMode;
 
 
+	/* METHODS */
 	/* PLAYER 1 */
 	UFUNCTION(BlueprintCallable)
 	FString GetPlayerText_1() const;

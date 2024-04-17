@@ -29,14 +29,15 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
 		// Update Replay widget content
 		UWorld* World = GameMode->GetWorld();
 		UScrollBox* ScrollBox = Pawn->GetColor() == EPawnColor::WHITE ?
-			Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")))
-			: Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
+			Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(SCROLLBOX_WHITE_NAME)) :
+			Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(SCROLLBOX_BLACK_NAME));
+
 		if (World && ScrollBox && GameMode->ButtonWidgetRef)
 		{
 			UUserWidget* WidgetBtn = CreateWidget(World, GameMode->ButtonWidgetRef);
 			if (WidgetBtn)
 			{
-				UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(TEXT("txtBlock")));
+				UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(WIDGET_BUTTON_NAME));
 				if (BtnText)
 				{
 					BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), GameMode->MoveCounter, *MoveStr)));
@@ -113,5 +114,6 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 			}
 		}
 	}
+
 	return MoveStr;
 }

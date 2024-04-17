@@ -42,7 +42,7 @@ void AChess_RandomPlayer::OnTurn()
 		// e.g. RandTimer = 23 => Means a timer of 2.3 seconds
 		// RandTimer [1.0, 3.0] seconds
 		// TODO: sono magic numberss, fare file .ini (o .json) per valori di configurazione (li legge una classe padre, valori statici)
-		int8 RandTimer = GameMode->bIsHumanPlaying ? FMath::Rand() % 21 + 10 : 1;
+		int8 RandTimer = GameMode->bIsHumanPlaying ? FMath::Rand() % TIMER_MODULO + TIMER_BASE_OFFSET : TIMER_NONE;
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
 			{
 				if (IsMyTurn)
@@ -61,7 +61,9 @@ void AChess_RandomPlayer::OnTurn()
 
 
 
-						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ? GameMode->WhitePiecesCanMove : GameMode->BlackPiecesCanMove;
+						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ?
+							GameMode->WhitePiecesCanMove : 
+							GameMode->BlackPiecesCanMove;
 
 
 
@@ -100,7 +102,7 @@ void AChess_RandomPlayer::OnTurn()
 									switch (RandSpawnPawn)
 									{
 									case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-									case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK); break;
+									case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK);  break;
 									case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
 									case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
 									}
@@ -117,11 +119,7 @@ void AChess_RandomPlayer::OnTurn()
 						else
 						{
 							// TODO => rimuovere
-							// No pieces can make eligible moves => BLACK is checkmated
 							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, TEXT("BRO | smth strange happened. u should not be here!"));
-
-							/* GameMode->MatchStatus = EPawnColor::BLACK;
-							GameMode->EndTurn(-1); */
 						}
 					}
 					else
@@ -136,13 +134,12 @@ void AChess_RandomPlayer::OnTurn()
 
 void AChess_RandomPlayer::OnWin()
 {
-	// TODO
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode && GameInstance)
 	{
 		FString Msg = TEXT("AI ");
 		if (GameMode->Players.Num() == 3) // ai vs ai
-			Msg += FString::FromInt(PlayerNumber);
+			Msg += FString::FromInt(PlayerNumber + 1) + " ";
 
 		Msg += "WON";
 		GameInstance->SetTurnMessage(Msg);
@@ -155,6 +152,5 @@ void AChess_RandomPlayer::OnWin()
 
 void AChess_RandomPlayer::OnLose()
 {
-	// TODO
 	// GameInstance->SetTurnMessage(TEXT("AI Loses"));
 }

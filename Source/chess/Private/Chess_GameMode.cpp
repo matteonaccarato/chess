@@ -15,19 +15,19 @@ AChess_GameMode::AChess_GameMode()
 	PlayerControllerClass = AChess_PlayerController::StaticClass();
 	DefaultPawnClass = AChess_HumanPlayer::StaticClass();
 	PawnPromotionType = EPawnType::NONE;
-	LastGridPosition = FVector2D(-1, -1);
+	LastGridPosition = FVector2D(ChessEnums::NOT_ASSIGNED, ChessEnums::NOT_ASSIGNED);
 	LastPawnMoveHappened = 0;
 	LastCaptureHappened = 0;
 	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
-	GameStartSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Start Sound"));
-	MoveSound = CreateDefaultSubobject<USoundBase>(TEXT("Move Sound"));
-	CastlingSound = CreateDefaultSubobject<USoundBase>(TEXT("Castling Sound"));
-	CaptureSound = CreateDefaultSubobject<USoundBase>(TEXT("Capture Sound"));
-	CheckSound = CreateDefaultSubobject<USoundBase>(TEXT("Check Sound"));
-	GameOverCheckmateSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Over Checkmate Sound"));
-	// GameOverSound
-	GameOverDrawSound = CreateDefaultSubobject<USoundBase>(TEXT("Game Over Draw Sound"));
+	/* SOUNDS */
+	GameStartSound			= CreateDefaultSubobject<USoundBase>(TEXT("Game Start Sound"));
+	MoveSound				= CreateDefaultSubobject<USoundBase>(TEXT("Move Sound"));
+	CastlingSound			= CreateDefaultSubobject<USoundBase>(TEXT("Castling Sound"));
+	CaptureSound			= CreateDefaultSubobject<USoundBase>(TEXT("Capture Sound"));
+	CheckSound				= CreateDefaultSubobject<USoundBase>(TEXT("Check Sound"));
+	GameOverCheckmateSound	= CreateDefaultSubobject<USoundBase>(TEXT("Game Over Checkmate Sound"));
+	GameOverDrawSound		= CreateDefaultSubobject<USoundBase>(TEXT("Game Over Draw Sound"));
 }
 
 void AChess_GameMode::BeginPlay()
@@ -35,12 +35,12 @@ void AChess_GameMode::BeginPlay()
 	Super::BeginPlay();
 
 	// Init variables
-	IsGameOver = false;
-	bIsHumanPlaying = false;
-	ReplayInProgress = 0;
-	MoveCounter = 0;
-	CheckFlag = EPawnColor::NONE;
-	MatchStatus = EMatchResult::NONE;
+	IsGameOver			= false;
+	bIsHumanPlaying		= false;
+	ReplayInProgress	= 0;
+	MoveCounter			= 0;
+	CheckFlag			= EPawnColor::NONE;
+	MatchStatus			= EMatchResult::NONE;
 
 	// Spawn GameField
 	if (GameFieldClass && GameInstance)
@@ -50,23 +50,25 @@ void AChess_GameMode::BeginPlay()
 		// Get and Set Human Player (Camera) Location
 		AChess_HumanPlayer* HumanPlayer = Cast<AChess_HumanPlayer>(*TActorIterator<AChess_HumanPlayer>(GetWorld()));
 		float CameraPosX = ((GField->TileSize * (GField->Size + ((GField->Size - 1) * GField->NormalizedCellPadding) - (GField->Size - 1))) / 2) - (GField->TileSize / 2);
-		FVector CameraPos(CameraPosX, CameraPosX, 1250.0f); // TODO: 1000 da mettere come attributo
+		FVector CameraPos(CameraPosX, CameraPosX, CAMERA_POS_Z); 
 		HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 	
+
+		/* PLAYER CREATION */
 		// Human player at INDEX 0
 		// It is always in the game (it is linked with the camera). 
 		// If it does not play, it woks like a spectator
-
 		IChess_PlayerInterface* AI_1 = nullptr;
 		IChess_PlayerInterface* AI_2 = nullptr;
 		FString TextPlayer_1 = TEXT("");
 		FString TextPlayer_2 = TEXT("");
+
 		switch (GameInstance->GetMatchMode())
 		{
-		case EMatchMode::HUMAN_CPU_RANDOM:
+		case EMatchMode::HUMAN_RANDOM:
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			TextPlayer_2 = TEXT("AI | RANDOM");
-		case EMatchMode::HUMAN_CPU_MINIMAX:
+		case EMatchMode::HUMAN_MINIMAX:
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			TextPlayer_1 = TEXT("YOU");
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : TEXT("AI | MINIMAX");
@@ -77,6 +79,7 @@ void AChess_GameMode::BeginPlay()
 			Players.Add(HumanPlayer);	// white
 			Players.Add(AI_1);			// black
 			break;
+
 		case EMatchMode::RANDOM_RANDOM:
 			TextPlayer_2 = TEXT("AI | RANDOM (2)");
 			AI_2 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
@@ -134,7 +137,7 @@ void AChess_GameMode::BeginPlay()
 void AChess_GameMode::ChoosePlayerAndStartGame()
 {
 	CurrentPlayer = 0; // its value will change from 0 to 1 and viceversa during the game 
-	for (int32 i = 0; i < Players.Num(); i++)
+	for (int8 i = 0; i < Players.Num(); i++)
 	{
 		if (Players[i]->bIsActivePlayer)
 		{
@@ -162,20 +165,6 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
 	Players[CurrentPlayer]->IsMyTurn = true;
 	Players[CurrentPlayer]->OnTurn();
-
-
-
-	// TODO => test
-	// bool bSuccess = false; FString OutInfoMessage = TEXT("");
-	// FString FilePath = FPaths::ProjectDir() + TEXT("GameData/data.csv");
-	/* switch (GameInstance->GetMatchMode())
-	{
-	case EMatchMode::HUMAN_CPU_RANDOM: FilePath += "/human_random.csv"; break;
-	case EMatchMode::HUMAN_CPU_MINIMAX: FilePath += "/human_minimax.csv"; break;
-	case EMatchMode::RANDOM_MINIMAX: FilePath += "/random_minimax.csv"; break;
-	case EMatchMode::MINIMAX_MINIMAX: FilePath += "/minimax_minimax.csv"; break;
-	} */
-	// SaveGameOnFile(FilePath, bSuccess, OutInfoMessage);
 }
 
 /*
@@ -197,15 +186,21 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("END - %d"), MatchStatus));
 		GetWorldTimerManager().ClearTimer(StopwatchTimerHandle);
 
+		// 0 => white player
+		// 1 => black player
+		int8 WinningPlayer = -1; 
+
 		// End game events
 		switch (MatchStatus)
 		{
 		case EMatchResult::WHITE:
+			WinningPlayer = 1;
 		case EMatchResult::BLACK:
+			WinningPlayer = WinningPlayer != -1 ? WinningPlayer : 0;
 			UGameplayStatics::PlaySound2D(GetWorld(), GameOverCheckmateSound, 1, 1, 0, NULL, false, true);
-			Players[CurrentPlayer]->OnWin();
+			Players[WinningPlayer]->OnWin();
 			for (int32 i = 0; i < Players.Num(); i++)
-				if (Players[i]->bIsActivePlayer && i != CurrentPlayer)
+				if (Players[i]->bIsActivePlayer && i != WinningPlayer)
 					Players[i]->OnLose();
 			break;
 		default:
@@ -220,16 +215,15 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		{
 			GameInstance->IncrementGamesCounter();
 			
-			// SAVE_ON_FILE
-			// TODO => nomi file in .ini
-			FString FilePath = FPaths::ProjectDir() + TEXT("GameData");
+			// Save statistics on file
+			FString FilePath = FPaths::ProjectDir() + STATISTICS_DIRECTORY_NAME;
 			switch (GameInstance->GetMatchMode())
 			{
-			case EMatchMode::HUMAN_CPU_RANDOM: FilePath += "/human_random.csv"; break;
-			case EMatchMode::HUMAN_CPU_MINIMAX: FilePath += "/human_minimax.csv"; break;
-			case EMatchMode::RANDOM_RANDOM: FilePath += "/random_random.csv"; break;
-			case EMatchMode::RANDOM_MINIMAX: FilePath += "/random_minimax.csv"; break;
-			case EMatchMode::MINIMAX_MINIMAX: FilePath += "/minimax_minimax.csv"; break;
+			case EMatchMode::HUMAN_RANDOM:		FilePath += FILENAME_HUMAN_RANDOM;		break;
+			case EMatchMode::HUMAN_MINIMAX:		FilePath += FILENAME_HUMAN_MINIMAX;		break;
+			case EMatchMode::RANDOM_RANDOM:		FilePath += FILENAME_RANDOM_RANDOM;		break;
+			case EMatchMode::RANDOM_MINIMAX:	FilePath += FILENAME_RANDOM_MINIMAX;	break;
+			case EMatchMode::MINIMAX_MINIMAX:	FilePath += FILENAME_MINIMAX_MINIMAX;	break;
 			}
 
 			bool bSuccess = false; FString OutInfoMessage = TEXT("");
@@ -257,9 +251,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		// Clean opponent's attackable tiles, they will be overwritten the next turn,
 		// so the previous state is useless
 		for (auto& InnerTArray : Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles)
-		{
 			InnerTArray.Empty();
-		} 
 		Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
 
 		
@@ -294,7 +286,6 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		GameSaving.Add(BoardSaving);
 
 
-
 		// Operation to init data strcture
 		InitTurn();
 
@@ -316,7 +307,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 
 		ReplayManager::AddToReplay(this, LastPiece, LastEatFlag, PiecePromotionFlag);
 
-
+		// New turn
 		if (MatchStatus != EMatchResult::NONE)
 			EndTurn(-1);
 		else
@@ -331,15 +322,9 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
 	ABasePawn* WhiteKing = GField->PawnArray[KingWhitePieceNum];
 	ABasePawn* BlackKing = GField->PawnArray[KingBlackPieceNum];
 	if (WhitePieces.Num() == 0)
-		if (GField->TileArray[WhiteKing->GetGridPosition()[0] * GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
-			Result = EMatchResult::WHITE;
-		else
-			Result = EMatchResult::STALEMATE;
+		Result = CheckFlag == EPawnColor::WHITE ? EMatchResult::WHITE : EMatchResult::STALEMATE;
 	else if (BlackPieces.Num() == 0)
-		if (GField->TileArray[BlackKing->GetGridPosition()[0] * GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom)
-			Result = EMatchResult::BLACK;
-		else
-			Result = EMatchResult::STALEMATE;
+		Result = CheckFlag == EPawnColor::BLACK ? EMatchResult::BLACK : EMatchResult::STALEMATE;
 	else if (SameConfigurationBoard(5))
 		Result = EMatchResult::FIVEFOLD_REPETITION;
 	else if (SeventyFive_MoveRule())
@@ -402,15 +387,10 @@ void AChess_GameMode::InitTurn()
 	BlackPiecesCanMove.Empty();
 
 	// TODO => compute possible moves of current player 
-	// (tarray di tarray per mosse possibli, accedo con pieceNum
-	// bool BlackCanMove = false;
-	// bool WhiteCanMove = false;
 	for (const auto& Piece : GField->PawnArray)
 	{
-		//EPawnColor PreviousCheckFlag = CheckFlag;
 		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, true);
 		TurnPossibleMoves.Add(Tmp);
-		//CheckFlag = PreviousCheckFlag;
 		if (Tmp.Num() > 0)
 		{
 			switch (Piece->GetColor())
@@ -445,8 +425,8 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 		PawnPromotionWidget->RemoveFromParent();
 
 	// TODO => vedere se si può alleggerire (posso rimuovere, viene fatto quando l'ai inizia il turno)
-	IsCheck();
-	// AddToReplay(PawnTemp, LastEatFlag, true);
+	// IsCheck();
+
 	LastPiece = PawnTemp;
 	LastEatFlag = LastEatFlag;
 	EndTurn(CurrentPlayer, true);
@@ -596,14 +576,12 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			FTileStatus Backup_NewTileStatus = NewTile->GetTileStatus();
 
 			ABasePawn* PawnToEat = NewTile->GetPawn();
-			EPawnStatus Backup_PawnToEatStatus;
 			FVector2D Backup_PawnToEatGridPosition;
 			if (PawnToEat)
 			{
-				Backup_PawnToEatStatus = PawnToEat->GetStatus();
 				Backup_PawnToEatGridPosition = PawnToEat->GetGridPosition();
 				PawnToEat->SetStatus(EPawnStatus::DEAD);
-				PawnToEat->SetGridPosition(-1, -1);
+				PawnToEat->SetGridPosition(ChessEnums::NOT_ASSIGNED, ChessEnums::NOT_ASSIGNED);
 			}
 
 			// Backup tile status
@@ -641,7 +619,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 
 			if (PawnToEat)
 			{
-				PawnToEat->SetStatus(Backup_PawnToEatStatus);
+				PawnToEat->SetStatus(EPawnStatus::ALIVE);
 				PawnToEat->SetGridPosition(Backup_PawnToEatGridPosition[0], Backup_PawnToEatGridPosition[1]);
 			}
 
@@ -783,12 +761,12 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 		{
 			// Move the rook
 			bool ShortCastling = (NewY - OldY) > 0;
-			int8 RookX = Piece->GetColor() == EPawnColor::WHITE ? 0 : 7;
-			int8 OldRookY = ShortCastling ? 7 : 0;
+			int8 RookX = Piece->GetColor() == EPawnColor::WHITE ? 0 : GField->Size - 1;
+			int8 OldRookY = ShortCastling ? GField->Size - 1 : 0;
 			ATile* OldRookTile = GField->TileArray[RookX * GField->Size + OldRookY];
 			ABasePawn* RookToMove = OldRookTile->GetPawn();
 
-			int8 NewRookY = OldRookY + (ShortCastling ? -2 : 3);
+			int8 NewRookY = OldRookY + (ShortCastling ? SHORT_CASTLING_OFFSET : LONG_CASTLING_OFFSET);
 			if (GField->IsValidTile(RookX, NewRookY))
 			{
 				ATile* NewRookTile = GField->TileArray[RookX * GField->Size + NewRookY];
@@ -1330,11 +1308,11 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 		MatchResult_Player2 + "," +
 		FString::FromInt(MoveCounter - 1) + "," +
 		FString::FromInt(Duration) + "," +
-		FString::Printf(TEXT("%.2f,"), Wins_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f,"), Losses_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f,"), 1 - Wins_games_ratio_player1 - Draws_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f,"), 1 - Losses_games_ratio_player1 - Draws_games_ratio_player1) +
-		FString::Printf(TEXT("%.2f"), Draws_games_ratio_player1);
+		FString::Printf(TEXT("%.2f,"), FMath::Abs(Wins_games_ratio_player1)) +
+		FString::Printf(TEXT("%.2f,"), FMath::Abs(Losses_games_ratio_player1)) +
+		FString::Printf(TEXT("%.2f,"), FMath::Abs(1 - Wins_games_ratio_player1 - Draws_games_ratio_player1)) +
+		FString::Printf(TEXT("%.2f,"), FMath::Abs(1 - Losses_games_ratio_player1 - Draws_games_ratio_player1)) +
+		FString::Printf(TEXT("%.2f"), FMath::Abs(Draws_games_ratio_player1));
 	FString Str = (GamesCount == 1 ? HeaderCSV : TEXT("")) + GameToSaveCSV + TEXT("\n");
 	if (!FFileHelper::SaveStringToFile(Str, 
 		*FilePath, 
@@ -1349,12 +1327,6 @@ void AChess_GameMode::SaveGameOnFile(FString& FilePath, bool& bOutSuccess, FStri
 
 	bOutSuccess = true;
 	OutInfoMessage = FString::Printf(TEXT("Write String to File succeeded - '%s'"), *FilePath);
-
-		
-	
-
-
-
 }
 
 

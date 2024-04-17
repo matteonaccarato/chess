@@ -12,18 +12,17 @@ AGameField::AGameField()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
-	// Size of the field (8x8)
-	Size = 8; 
-	TileSize = 120;
-	CellPadding = 0;
-	Pawns_Rows = 2;
+	Size = GAMEBOARD_SIZE;
+	TileSize = GAMEBOARD_SIZE;
+	TilePadding = TILE_PADDING;
+	Pawns_Rows = PAWN_ROWS;
 	// NormalizedCellPadding = FMath::RoundToDouble(((TileSize + CellPadding) / TileSize) * 100) / 100;
 }
 
 void AGameField::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-	NormalizedCellPadding = FMath::RoundToDouble(((TileSize + CellPadding) / TileSize) * 100) / 100;
+	NormalizedCellPadding = FMath::RoundToDouble(((TileSize + TilePadding) / TileSize) * 100) / 100;
 }
 
 // Called when the game starts or when spawned
@@ -164,7 +163,7 @@ void AGameField::GenerateField()
 					AActor* Letter = GetWorld()->SpawnActor<AActor>(LetterNumberClass, Location + FVector(-120, 0, 0), FRotator(0, 90, 0));
 					if (Letter)
 					{
-						Letter->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
+						Letter->SetActorScale3D(FVector(TileScale * LETTERS_NUMS_SCALE, TileScale * LETTERS_NUMS_SCALE, 1));
 						UStaticMeshComponent* LetterMeshComponent = Letter->FindComponentByClass<UStaticMeshComponent>();
 						if (LetterMeshComponent)
 							LetterMeshComponent->SetMaterial(0, Letters[y]);
@@ -177,19 +176,18 @@ void AGameField::GenerateField()
 					AActor* Number = GetWorld()->SpawnActor<AActor>(LetterNumberClass, Location + FVector(0, -120, 0), FRotator(0, 90, 0));
 					if (Number)
 					{
-						Number->SetActorScale3D(FVector(TileScale*0.7, TileScale*0.7, 1));
+						Number->SetActorScale3D(FVector(TileScale * LETTERS_NUMS_SCALE, TileScale * LETTERS_NUMS_SCALE, 1));
 						UStaticMeshComponent* NumberMeshComponent = Number->FindComponentByClass<UStaticMeshComponent>();
 						if (NumberMeshComponent)
 							NumberMeshComponent->SetMaterial(0, Numbers[x]);
 					}
 				}
 
-				TileObj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
+				TileObj->SetActorScale3D(FVector(TileScale, TileScale, TILES_Z));
 				TileObj->SetGridPosition(x, y);
 				TileArray.Add(TileObj);
 				TileMap.Add(FVector2D(x, y), TileObj);
 
-				EPawnType PawnTypesOnRow[] = { EPawnType::ROOK, EPawnType::KNIGHT, EPawnType::BISHOP, EPawnType::QUEEN, EPawnType::KING, EPawnType::BISHOP, EPawnType::KNIGHT, EPawnType::ROOK };
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
 					if (x == 0)
@@ -410,7 +408,15 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 	{
 		ATile* TileObj = GetTileArray()[X * Size + Y];
 		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
-		FTileStatus TileStatus = { nullptr, 0, {0, 0}, TileObj->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED };
+		FTileStatus TileStatus = { 
+			nullptr, 
+			0, 
+			{ 0, 0 }, 
+			TileObj->GetTileStatus().WhoCanGo,
+			EPawnColor::NONE, 
+			EPawnType::NONE, 
+			ChessEnums::NOT_ASSIGNED 
+		};
 
 		TileStatus.PawnType = PawnType;
 		TileStatus.PawnColor = PawnColor;
@@ -430,15 +436,16 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		if (BasePawnObj)
 		{
 			BasePawnObj->SetGridPosition(X, Y);
-			// TODO: 0.8 da mettere come attributo
 			const float TileScale = TileSize / 100;
-			BasePawnObj->SetActorScale3D(FVector(TileScale * 0.8, TileScale * 0.8, 0.03));			
+			BasePawnObj->SetActorScale3D(FVector(TileScale * CHESS_PIECES_SCALE, TileScale * CHESS_PIECES_SCALE, CHESS_PIECES_Z));
 			BasePawnObj->SetPieceNum(PawnArray.Num());
 			BasePawnObj->SetType(TileStatus.PawnType);
 			BasePawnObj->SetColor(TileStatus.PawnColor);
 			BasePawnObj->SetStatus(EPawnStatus::ALIVE);
 
-			TMap<EPawnType, UMaterialInterface*>& ChessPiecesMaterials = PawnColor == EPawnColor::WHITE ? ChessPiecesWhiteMaterials : ChessPiecesBlackMaterials;
+			TMap<EPawnType, UMaterialInterface*>& ChessPiecesMaterials = PawnColor == EPawnColor::WHITE ? 
+				ChessPiecesWhiteMaterials : 
+				ChessPiecesBlackMaterials;
 			BasePawnObj->GetStaticMeshComponent()->SetMaterial(0, ChessPiecesMaterials[PawnType]);
 
 			PawnArray.Add(BasePawnObj);
@@ -457,15 +464,15 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		if (BasePawnObj->GetType() == EPawnType::KING)
 		{
 			int8& KingPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
-				GameMode->KingWhitePieceNum
-				: GameMode->KingBlackPieceNum;
+				GameMode->KingWhitePieceNum :
+				GameMode->KingBlackPieceNum;
 			KingPieceNum = BasePawnObj->GetPieceNum();
 		}
 		else if (BasePawnObj->GetType() == EPawnType::ROOK && Y == Size - 1)
 		{
 			int8& RookRightPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
-				GameMode->RookWhiteRightPieceNum
-				: GameMode->RookBlackRightPieceNum;
+				GameMode->RookWhiteRightPieceNum :
+				GameMode->RookBlackRightPieceNum;
 			RookRightPieceNum = BasePawnObj->GetPieceNum();
 		}
 	}
@@ -491,8 +498,14 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 		if (Tile)
 		{
 			// Reset old tile status
-			// Tile->SetPawn(nullptr);
-			Tile->SetTileStatus({ nullptr, 1, {0, 0}, Tile->GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE});
+			Tile->SetTileStatus({ 
+				nullptr, 
+				1, 
+				{ 0, 0 }, 
+				Tile->GetTileStatus().WhoCanGo, 
+				EPawnColor::NONE, 
+				EPawnType::NONE
+			});
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		}
 

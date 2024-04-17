@@ -32,6 +32,8 @@ class CHESS_API IChess_PlayerInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	static constexpr int8 TIMER_NONE = 1;
+
 	int32 PlayerNumber;
 	EPawnColor Color;
 	TArray<TArray<std::pair<int8, int8>>> AttackableTiles;

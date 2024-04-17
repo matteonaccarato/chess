@@ -29,6 +29,30 @@ class CHESS_API AGameField : public AActor
 	
 public:	
 
+	/* CONST EXPRs */
+	static constexpr int8 GAMEBOARD_SIZE		= 8;
+	static constexpr int8 TILE_SIZE				= 120;
+	static constexpr int8 TILE_PADDING			= 0;
+	static constexpr int8 PAWN_ROWS				= 2;
+
+	static constexpr float LETTERS_NUMS_SCALE	= 0.7;
+	static constexpr float CHESS_PIECES_SCALE	= 0.8;
+	static constexpr float CHESS_PIECES_Z		= 0.03;
+	static constexpr float TILES_Z				= 0.2;
+
+	static constexpr EPawnType PawnTypesOnRow[] = {
+		EPawnType::ROOK,
+		EPawnType::KNIGHT,
+		EPawnType::BISHOP,
+		EPawnType::QUEEN,
+		EPawnType::KING,
+		EPawnType::BISHOP,
+		EPawnType::KNIGHT,
+		EPawnType::ROOK
+	};
+
+
+
 	// TILES
 	UPROPERTY(Transient)
 	TArray<ATile*> TileArray;
@@ -90,7 +114,7 @@ public:
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float CellPadding;
+	float TilePadding; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TileSize;
@@ -201,5 +225,4 @@ public:
 // public:	
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
-
 };

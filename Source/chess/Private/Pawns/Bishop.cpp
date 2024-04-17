@@ -7,7 +7,7 @@
 ABishop::ABishop()
 {
 	Type = EPawnType::BISHOP;
-	MaxNumberSteps = 8; // TODO magic number
+	MaxNumberSteps = BISHOP_MAX_NUMBER_STEPS;
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTHEAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);

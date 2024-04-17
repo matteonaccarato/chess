@@ -5,8 +5,9 @@
 
 AKing::AKing()
 {
+	Id = TEXT("K");
 	Type = EPawnType::KING;
-	MaxNumberSteps = 1; // TODO magic number
+	MaxNumberSteps = KING_MAX_NUMBER_STEPS;
 	CardinalDirections.Add(ECardinalDirection::NORTH);
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
 	CardinalDirections.Add(ECardinalDirection::EAST);
@@ -15,5 +16,4 @@ AKing::AKing()
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
 	CardinalDirections.Add(ECardinalDirection::WEST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
-	Id = TEXT("K");
 }

@@ -16,13 +16,14 @@ enum class EPawnType : uint8
 	PAWN,	// 6
 };
 
+
 /* 
  * Piece color (e.g. Black = -1, White = 1).
  *  Useful to identify the color and computing the movement direction easily:
  *   - White pieces move from the bottom to the top (+1 along the vertical axis),
  *	 - Black ones move from the top to the bottom (-1 along the vertical axis)
  */
- UENUM()
+UENUM()
 enum class EPawnColor : int8
 {
 	NONE = 0,	// No color assigned
@@ -30,6 +31,7 @@ enum class EPawnColor : int8
 	BLACK = -1,	// Black color
 	BOTH = 2	// Both color to take into account both pieces of both the colors
 };
+
 
 UENUM()
 enum class EMatchResult : int8
@@ -42,6 +44,7 @@ enum class EMatchResult : int8
 	SEVENTY_FIVE_MOVE_RULE,	// in the previous 75 moves by each side no pawns has move and no capture has been made
 	INSUFFICIENT_MATERIAL	// impossibility to checkmate (e.g. king vs king, ...)
 };
+
 
 // TODO => ripetizione di quello sotto ?
 UENUM()
@@ -66,7 +69,6 @@ enum class ECardinalDirection : uint8
 };
 
 
-// TODO => ripetizione di quello sopra ?
 UENUM()
 enum class EDirection : uint8
 {
@@ -77,6 +79,7 @@ enum class EDirection : uint8
 	KNIGHT
 };
 
+
 UENUM()
 enum class ELine : uint8
 {
@@ -85,6 +88,7 @@ enum class ELine : uint8
 	DIAGONAL
 };
 
+
 UENUM()
 enum class EPawnStatus : int8
 {
@@ -92,8 +96,9 @@ enum class EPawnStatus : int8
 	DEAD	// 1
 };
 
+
 /**
- * 
+ * Define useful chess-related ENUMERATIONs
  */
 class CHESS_API ChessEnums
 {

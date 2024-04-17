@@ -16,11 +16,20 @@ ATile::ATile()
 	StaticMeshComponent->SetupAttachment(Scene);
 
 	LetterId = TEXT("");
-	NumberId = -1;
+	NumberId = ChessEnums::NOT_ASSIGNED;
 
-	Status = { nullptr, 1, {0, 0}, TArray<ABasePawn*>(), EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED};
-	PlayerOwner = -1;
-	TileGridPosition = FVector2D(0, 0);
+	Status = { 
+		nullptr, 
+		1, 
+		{ 0, 0 }, 
+		TArray<ABasePawn*>(),
+		EPawnColor::NONE,
+		EPawnType::NONE, 
+		ChessEnums::NOT_ASSIGNED
+	};
+
+	PlayerOwner = ChessEnums::NOT_ASSIGNED;
+	TileGridPosition = FVector2D(ChessEnums::NOT_ASSIGNED, ChessEnums::NOT_ASSIGNED);
 }
 
 UStaticMeshComponent* ATile::GetStaticMeshComponent() const
@@ -97,7 +106,15 @@ FVector2D ATile::GetGridPosition() const
 void ATile::ClearInfo()
 {
 	SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
-	SetTileStatus({ nullptr, 1, {0, 0},  GetTileStatus().WhoCanGo, EPawnColor::NONE, EPawnType::NONE, ChessEnums::NOT_ASSIGNED});
+	SetTileStatus({ 
+		nullptr,
+		1, 
+		{ 0, 0 }, 
+		GetTileStatus().WhoCanGo, 
+		EPawnColor::NONE,
+		EPawnType::NONE, 
+		ChessEnums::NOT_ASSIGNED
+	});
 }
 
 // Called when the game starts or when spawned

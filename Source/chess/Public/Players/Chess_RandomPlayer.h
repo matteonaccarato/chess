@@ -16,16 +16,15 @@ class CHESS_API AChess_RandomPlayer : public APawn, public IChess_PlayerInterfac
 	GENERATED_BODY()
 
 public:
+	/* CONST EXPRs */
+	static constexpr int8 TIMER_MODULO		= 21;
+	static constexpr int8 TIMER_BASE_OFFSET = 10;
+
+
+	/* METHODs */
 	// Sets default values for this pawn's properties
 	AChess_RandomPlayer();
 
-	// UChess_GameInstance* GameInstance;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
 	// Called every frame
 	// virtual void Tick(float DeltaTime) override;
 
@@ -34,6 +33,17 @@ public:
 
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
+	virtual void OnLose() override;// Called every frame
+	// virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void OnTurn() override;
+	virtual void OnWin() override;
 	virtual void OnLose() override;
-	// virtual void OnDraw() override;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 };

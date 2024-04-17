@@ -5,8 +5,9 @@
 
 AQueen::AQueen()
 {
+	Id = TEXT("Q");
 	Type = EPawnType::QUEEN;
-	MaxNumberSteps = 8; // TODO magic number
+	MaxNumberSteps = QUEEN_MAX_NUMBER_STEPS;
 	CardinalDirections.Add(ECardinalDirection::NORTH);
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
 	CardinalDirections.Add(ECardinalDirection::EAST);
@@ -15,5 +16,4 @@ AQueen::AQueen()
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
 	CardinalDirections.Add(ECardinalDirection::WEST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
-	Id = TEXT("Q");
 }

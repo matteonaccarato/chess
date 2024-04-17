@@ -17,7 +17,7 @@ struct FTileStatus
 	GENERATED_BODY()
 
 	ABasePawn* Piece;
-	bool EmptyFlag;		// 1 => Empty, 0 => Occupied
+	bool EmptyFlag;	// 1 => EMPTY | 0 => OCCUPIED
 	int8 AttackableFrom[2] = { 
 		0,	// from WHITE
 		0	// from BLACK
