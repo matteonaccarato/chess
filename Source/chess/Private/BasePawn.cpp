@@ -36,12 +36,12 @@ void ABasePawn::SetPieceNum(int Num)
 	PieceNum = Num;
 }
 
-void ABasePawn::SetMaxNumberSteps(int8 NumberSteps)
+void ABasePawn::SetMaxNumberSteps(int NumberSteps)
 {
 	MaxNumberSteps = NumberSteps;
 }
 
-int8 ABasePawn::GetMaxNumberSteps() const
+int ABasePawn::GetMaxNumberSteps() const
 {
 	return MaxNumberSteps;
 }

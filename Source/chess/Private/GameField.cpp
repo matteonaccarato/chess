@@ -12,11 +12,10 @@ AGameField::AGameField()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
-	Size = GAMEBOARD_SIZE;
-	TileSize = GAMEBOARD_SIZE;
-	TilePadding = TILE_PADDING;
-	Pawns_Rows = PAWN_ROWS;
-	// NormalizedCellPadding = FMath::RoundToDouble(((TileSize + CellPadding) / TileSize) * 100) / 100;
+	Size		= GAMEBOARD_SIZE;
+	TileSize	= TILE_SIZE;
+	TilePadding	= TILE_PADDING;
+	Pawns_Rows	= PAWN_ROWS;
 }
 
 void AGameField::OnConstruction(const FTransform& Transform)

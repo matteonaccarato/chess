@@ -69,7 +69,7 @@ public:
 	static constexpr int8 LONG_CASTLING_OFFSET	= 3;
 
 	static constexpr int8 MIN_NUMBER_SPAWN_PLAYERS = 2;
-	static constexpr float CAMERA_POS_Z = 1250.0;
+	static constexpr float CAMERA_POS_Z = 1250.0f;
 
 	static constexpr char* STATISTICS_DIRECTORY_NAME = "GameData";
 	static constexpr char* FILENAME_HUMAN_RANDOM = "/human_random.csv";

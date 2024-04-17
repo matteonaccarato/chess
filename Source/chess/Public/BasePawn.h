@@ -22,9 +22,9 @@ class CHESS_API ABasePawn : public AActor
 	
 public:	
 	static constexpr int8 KING_MAX_NUMBER_STEPS		= 1;
-	static constexpr int8 QUEEN_MAX_NUMBER_STEPS	= AGameField::GAMEBOARD_SIZE;
-	static constexpr int8 ROOK_MAX_NUMBER_STEPS		= AGameField::GAMEBOARD_SIZE;
-	static constexpr int8 BISHOP_MAX_NUMBER_STEPS	= AGameField::GAMEBOARD_SIZE;
+	static constexpr int8 QUEEN_MAX_NUMBER_STEPS	= 8;
+	static constexpr int8 ROOK_MAX_NUMBER_STEPS		= 8;
+	static constexpr int8 BISHOP_MAX_NUMBER_STEPS	= 8;
 	static constexpr int8 KNIGHT_MAX_NUMBER_STEPS	= 1;
 	static constexpr int8 PAWN_MAX_NUMBER_STEPS		= 2;
 
@@ -45,8 +45,8 @@ public:
 
 	TArray<ECardinalDirection> GetCardinalDirections() const;
 
-	void SetMaxNumberSteps(int8 NumberSteps);
-	int8 GetMaxNumberSteps() const;
+	void SetMaxNumberSteps(int NumberSteps);
+	int GetMaxNumberSteps() const;
 
 	void SetColor(EPawnColor PawnColor);
 	EPawnColor GetColor() const;
@@ -92,14 +92,14 @@ protected:
 
 	// Uniquely identifier of the piece in the chess board
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int8 PieceNum = -1;
+	int PieceNum = -1;
 
 	// Color (e.g. Black = -1, White = 1)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPawnColor Color;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int8 MaxNumberSteps;
+	int MaxNumberSteps;
 
 	// Type (e.g. ROOK)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
