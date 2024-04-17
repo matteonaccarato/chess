@@ -515,7 +515,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 						if (UpdateWhoCanGoFlag)
 							TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
 
-						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus); // TODO => player owner as ENUM
+						GField->GetTileArray()[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus);
 					}
 					else {
 						// If the piece cannot do a move with n steps in a direction (due to the presence of another piece),
