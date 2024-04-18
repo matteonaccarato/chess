@@ -228,7 +228,7 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 }
 
 
-/*
+/* TODO => rifare commento
  * Function: DistancePieces
  * ----------------------------
  *   Calculate the distance between two pieces given as arguments.
@@ -239,14 +239,20 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
  * 
  *	 return		int8	Distance between the two pieces given as arguments
  */
-int8 AGameField::DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const
+/*bool AGameField::CanReachBlockOpponentKing(const ABasePawn* Piece, const ABasePawn* OpponentKing) const
 {
-	return FMath::Floor(
-		FMath::Sqrt(
-			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[0]) - Piece2->GetGridPosition()[0], 2) +
-			FMath::Pow(static_cast<double>(Piece1->GetGridPosition()[1]) - Piece2->GetGridPosition()[1], 2)
-		));
-}
+	can reach king = for cardinals => reachable_block = check_direction(king x, y)
+
+	scroll x,y king +-1
+	for vertical 
+		for horizontal
+			tile_to_attack_block(i,j)
+			for cardial_directions
+				reachable_block = reachable_block | check_direction
+				
+	return reachable_block
+	
+} */
 
 /*
  * Function: LoadBoard
@@ -385,7 +391,7 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
 }
 
 
-/*
+/* TODO => rifare commento
  * Function: SpawnPawn
  * ----------------------------
  *   Spawn the pawn specified through parameters
@@ -397,7 +403,7 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
  *
  *   return		ABasePawn*	: Pointer to the recently spawned pawn
  */
-ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner)
+ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
 {
 	TSubclassOf<ABasePawn> BasePawnClass;
 	ABasePawn* BasePawnObj = nullptr;
@@ -434,6 +440,8 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
 		if (BasePawnObj)
 		{
+			if (Simulate)
+				BasePawnObj->SetActorHiddenInGame(true);
 			BasePawnObj->SetGridPosition(X, Y);
 			const float TileScale = TileSize / 100;
 			BasePawnObj->SetActorScale3D(FVector(TileScale * CHESS_PIECES_SCALE, TileScale * CHESS_PIECES_SCALE, CHESS_PIECES_Z));

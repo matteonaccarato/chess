@@ -146,6 +146,14 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 
 				// Make move & compute minimax
 				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
+				// Pawn promotion
+				int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
+				if (Move.first == OpponentSide && GameMode->GField->PawnArray[PieceMove.first]->GetType() == EPawnType::PAWN)
+				{
+					GameMode->GField->DespawnPawn(Move.first, Move.second, true);
+					GameMode->GField->SpawnPawn(EPawnType::QUEEN, Color, Move.first, Move.second, PlayerNumber, true);
+				}
+
 				int32 MoveValue = MiniMax(Board, 2, -AChess_MiniMaxPlayer::INFINITE, AChess_MiniMaxPlayer::INFINITE, Color != EPawnColor::BLACK);
 
 				// undo the move
@@ -207,18 +215,24 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			}
 		}
 		
+		EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
+		if (Res != EMatchResult::NONE)
+		{
+			// TODO 
+			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("RILEVATO SITUAZIONE BBELLA/BRUTTA")));
 
+			int8  MaximizingPlayerSign = MaximizingPlayer ? 1 : -1;
+			EMatchResult GoodSituation = MaximizingPlayer ? EMatchResult::WHITE : EMatchResult::BLACK;
+			
+			// +1 => good situation (opponent is checkmated)
+			// -1 => bad situation	(current player checkmated or draw)
+			int8 Sign = Res == GoodSituation ? 1 : -1;
+			return AChess_MiniMaxPlayer::INFINITE * Sign * MaximizingPlayerSign;
+		}
 
 		if (MaximizingPlayer)
 		{
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
-			EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
-			if (Res == EMatchResult::WHITE)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("White Checkmate found")));
-				return AChess_MiniMaxPlayer::INFINITE;
-			}
-
 			int32 CurrentEval = -AChess_MiniMaxPlayer::INFINITE;
 
 			for (const auto& PieceMove : Blacks)
@@ -264,12 +278,12 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 		else
 		{
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
-			EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
+			/* EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
 			if (Res == EMatchResult::BLACK)
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("Black Checkmate found")));
 				return -AChess_MiniMaxPlayer::INFINITE;
-			}
+			} */
 
 			int32 CurrentEval = AChess_MiniMaxPlayer::INFINITE;
 
@@ -361,7 +375,23 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		/* EPawnColor PreviousCheck = GameMode->CheckFlag;
 		EPawnColor NewCheck = GameMode->IsCheck();
 		GameMode->CheckFlag = PreviousCheck; */
+		// TODO => da testare
+		/* bool IsWhite = true;
+		for (const auto& ColorMoves : { WhiteMoves, BlackMoves })
+		{
+			for (const auto& Move : ColorMoves)
+			{
+				int& Mobility = IsWhite ? WhiteMobility : BlackMobility;
+				Mobility += Move.second.Num();
+			}
+			IsWhite = false;
+		} */
+
+
+
 		GameMode->ComputeAttackableTiles();
+
+
 
 
 		// White, Black
@@ -377,19 +407,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
 			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
 		};
+		int BlockingKingsScores[2] = { 
+			ComputeBlockingKingScore(BlackKing), // score for white
+			ComputeBlockingKingScore(WhiteKing)  // score for black
+		};
 
-		// TODO => da testare
-		/* bool IsWhite = true;
-		for (const auto& ColorMoves : { WhiteMoves, BlackMoves })
-		{
-			for (const auto& Move : ColorMoves)
-			{
-				int& Mobility = IsWhite ? WhiteMobility : BlackMobility;
-				Mobility += Move.second.Num();
-			}
-			IsWhite = false;
-		} */
-
+		// Materials count
 		for (const auto& Piece : GameMode->GField->PawnArray)
 		{
 			if (Piece->GetStatus() == EPawnStatus::ALIVE)
@@ -408,6 +431,7 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 
 		Score = AChess_MiniMaxPlayer::QUEEN_VALUE * (QueenCounts[1] - QueenCounts[0])
 			+ AChess_MiniMaxPlayer::ATTACKABLE_KING_VALUE * (AttackableKings[0] - AttackableKings[1])
+			+ AChess_MiniMaxPlayer::BLOCKING_KING_VALUE * (BlockingKingsScores[1] - BlockingKingsScores[0])
 			+ AChess_MiniMaxPlayer::ROOK_VALUE * (RookCounts[1] - RookCounts[0])
 			+ AChess_MiniMaxPlayer::BISHOP_VALUE * (BishopCounts[1] - BishopCounts[0])
 			+ AChess_MiniMaxPlayer::KNIGHT_VALUE * (KnightsCounts[1] - KnightsCounts[0])
@@ -429,6 +453,45 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 		return 0;
 	}
+}
+
+/*
+ * "+" : represents the cell to check if they are attackable from opponent's pieces
+ *
+ *	+ + +
+ * 	+ K +
+ *	+ + +
+ */
+int32 AChess_MiniMaxPlayer::ComputeBlockingKingScore(const ABasePawn* KingToBlock) const
+{
+	int32 Score = 0;
+	int8 OpponentIdx = KingToBlock->GetColor() == EPawnColor::WHITE ? 1 : 0;
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode && KingToBlock)
+	{
+		int8 X = KingToBlock->GetGridPosition()[0];
+		int8 Y = KingToBlock->GetGridPosition()[1];
+
+		for (int8 VerticalOffset = -1; VerticalOffset <= 1; VerticalOffset++)
+		{
+			for (int8 HorizontalOffset = -1; HorizontalOffset <= 1; HorizontalOffset++)
+			{
+				// 2nd condition => to not count if king is directly attackable or not
+				if (GameMode->GField->IsValidTile(X + VerticalOffset, Y + HorizontalOffset)
+					&& (X + VerticalOffset != 0 || Y + HorizontalOffset != 0))
+				{
+					if (GameMode->GField->TileArray[(X + VerticalOffset) * GameMode->GField->Size + Y + HorizontalOffset]->GetTileStatus().AttackableFrom[OpponentIdx])
+					{
+						// TODO test
+						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("CONTO QUALCOSA DI MAGICO")));
+						Score++;
+					}
+				}
+			}
+		}
+	}
+
+	return Score;
 }
 
 

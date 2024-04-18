@@ -158,7 +158,7 @@ public:
 	bool IsValidTile(const int8 X, const int8 Y) const;
 
 
-	/*
+	/* TODO => rifare commento
 	 * Calculate the distance between two pieces given as arguments.
 	 * sqrt((x-x')^2 + (y-y')^2)
 	 *
@@ -167,7 +167,7 @@ public:
 	 *
 	 * return	int8	Distance between the two pieces given as arguments
 	 */
-	int8 DistancePieces(const ABasePawn* Piece1, const ABasePawn* Piece2) const;
+	// bool CanReachBlockOpponentKing(const ABasePawn* Piece, const ABasePawn* OpponentKing) const;
 	
 	
 
@@ -196,7 +196,7 @@ public:
 	void LoadBoard(const TArray<FPieceSaving>& Board);
 
 
-	/*
+	/* TODO => rifare commento
 	 * Spawn the pawn specified through parameters
 	 *
 	 * PawnType	EPawnType		: type of the pawn to spawn
@@ -206,7 +206,7 @@ public:
 	 *
 	 * return		ABasePawn*	: Pointer to the recently spawned pawn
 	 */
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED);
+	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
 
 
 	/*

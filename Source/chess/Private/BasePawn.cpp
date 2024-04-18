@@ -98,7 +98,7 @@ bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Dir
 	EPawnColor DirectionFlag = GetColor();
 	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
 	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
-	int8 MaxSteps = (GetType() == EPawnType::PAWN) ? 1 : GetMaxNumberSteps();
+	int8 PawnDiagonalMaxSteps = (GetType() == EPawnType::PAWN) ? 1 : GetMaxNumberSteps();
 
 	switch (Direction)
 	{
@@ -128,7 +128,7 @@ bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Dir
 			&& GameBoard->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY);
 
 	case EDirection::DIAGONAL:
-		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= MaxSteps)
+		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= PawnDiagonalMaxSteps)
 		{
 			if (!GameBoard->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;

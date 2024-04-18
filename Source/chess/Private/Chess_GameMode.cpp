@@ -72,12 +72,15 @@ void AChess_GameMode::BeginPlay()
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			TextPlayer_1 = TEXT("YOU");
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : TEXT("AI | MINIMAX");
-			HumanPlayer->bIsActivePlayer = true;
-			AI_1->bIsActivePlayer = true;
+			if (HumanPlayer && AI_1)
+			{
+				HumanPlayer->bIsActivePlayer = true;
+				AI_1->bIsActivePlayer = true;
 
-			bIsHumanPlaying = true;
-			Players.Add(HumanPlayer);	// white
-			Players.Add(AI_1);			// black
+				bIsHumanPlaying = true;
+				Players.Add(HumanPlayer);	// white
+				Players.Add(AI_1);			// black
+			}
 			break;
 
 		case EMatchMode::RANDOM_RANDOM:
@@ -94,13 +97,16 @@ void AChess_GameMode::BeginPlay()
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
-			AI_1->bIsActivePlayer = true;
-			AI_2->bIsActivePlayer = true;
-			HumanPlayer->bIsActivePlayer = false;
+			if (HumanPlayer && AI_1 && AI_2)
+			{
+				AI_1->bIsActivePlayer = true;
+				AI_2->bIsActivePlayer = true;
+				HumanPlayer->bIsActivePlayer = false;
 
-			Players.Add(AI_1);			// white
-			Players.Add(AI_2);			// black
-			Players.Add(HumanPlayer);	// spectator
+				Players.Add(AI_1);			// white
+				Players.Add(AI_2);			// black
+				Players.Add(HumanPlayer);	// spectator
+			}
 			break;
 		}
 		
@@ -465,10 +471,10 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 		//	-  OR the opponent king is reachable (distance between the piece and the opponent king is under the max number of steps the piece can make)
 		//  -  OR the piece is a knight (the rule above doesn't work for it, it has 1 as max number of steps)
 		// TODO => valutare di mettere max number of steps del cavallo come quella reale per raggiungere il re (posso togliere la terza condizione) 
-		if (!ShowAttackable
-			|| (GField->DistancePieces(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? KingWhitePieceNum : KingBlackPieceNum]) <= Pawn->GetMaxNumberSteps())
+		/* if (!ShowAttackable
+			|| (GField->CanReachBlockOpponentKing(Pawn, GField->PawnArray[Pawn->GetColor() == EPawnColor::BLACK ? KingWhitePieceNum : KingBlackPieceNum]))
 			|| Pawn->GetType() == EPawnType::KNIGHT)
-		{
+		{ */
 			for (const auto& PawnDirection : PawnDirections)
 			{
 				// TODO => fare stesso check di prima controllando la direzione  
@@ -523,7 +529,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 					}
 				}
 			}
-		}
+		// }
 	}
 
 	return PossibleMoves;
@@ -543,7 +549,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
  *
  *   return: Pointer to the recently spawned pawn
  */
-EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8 NewY)
+EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool CastlingFlag)
 {
 	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;	
 
@@ -561,7 +567,7 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 	{
 		// Evaluating the new situation by simulating the move of Piece on [NewX, NewY]
 		if (GField->IsValidTile(NewX, NewY)
-			&& IsValidMove(Pawn, NewX, NewY, true, false, false))
+			&& IsValidMove(Pawn, NewX, NewY, true, false, false, CastlingFlag))
 		{
 			// Backup old tile and new tile
 			FVector2D Backup_OldPosition = Pawn->GetGridPosition();
@@ -899,13 +905,15 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 					//	if so, castling is not allowed (king would passed from, through, to a check situation)
 					for (int8 i = 0; i <= FMath::Abs(DeltaY) && IsValid; i++)
 					{
-						if (GField->IsValidTile(NewGridPosition[0], CurrGridPosition[1] + i * FMath::Sign(DeltaY)))
+						if (CheckCheckFlag
+							&& GField->IsValidTile(NewGridPosition[0], CurrGridPosition[1] + i * FMath::Sign(DeltaY)))
 						{	
 							EPawnColor PreviousCheckFlag = CheckFlag;
 							EPawnColor NewCheckFlag = IsCheck(
 								Pawn, 
 								NewGridPosition[0], 
-								CurrGridPosition[1] + i * FMath::Sign(DeltaY)
+								CurrGridPosition[1] + i * FMath::Sign(DeltaY),
+								true
 							);
 							CheckFlag = PreviousCheckFlag;
 
@@ -929,7 +937,8 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
 
 		// If the move is valid and checking the new check state is required,
 		//	computing the new check situation
-		if (IsValid && CheckCheckFlag)
+		// Last condition necessary because if CastlingFlag is set to TRUE, check condition has already been evaluated
+		if (IsValid && CheckCheckFlag && !CastlingFlag)
 		{
 			// Check state after having moved the Piece in the new grid position
 			if (GField->IsValidTile(NewGridPosition[0], NewGridPosition[1]) && Pawn->GetStatus() == EPawnStatus::ALIVE)
@@ -1019,15 +1028,26 @@ void AChess_GameMode::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>
 void AChess_GameMode::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
 {
 	int8 i = 0;
+	int8 PiecesToRemoveCnt = GField->PawnArray.Num() - PiecesInfoBackup.Num();
 	for (auto& Piece : GField->PawnArray)
 	{
 		if (PiecesInfoBackup.IsValidIndex(i))
 		{
 			Piece->SetStatus(PiecesInfoBackup[i].first);
 			Piece->SetGridPosition(PiecesInfoBackup[i].second.X, PiecesInfoBackup[i].second.Y);
-			i++;
 		}
+		else break;
+		i++;
 	}
+
+	for (int8 idx = 0; idx < PiecesToRemoveCnt; idx++)
+	{
+		GField->PawnArray[GField->PawnArray.Num() - 1]->Destroy();
+		GField->PawnArray.RemoveAt(GField->PawnArray.Num() - 1);
+	}
+
+
+
 }
 
 /*
