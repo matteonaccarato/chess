@@ -193,6 +193,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 // [ [ piece_num, [to_x, to_y] ], eval ]
 int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool MaximizingPlayer)
 {
+	int32 CurrentEval = 0;
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
@@ -227,13 +228,17 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			// +1 => good situation (opponent is checkmated)
 			// -1 => bad situation	(current player checkmated or draw)
 			int8 Sign = Res == GoodSituation ? 1 : -1;
-			return AChess_MiniMaxPlayer::INFINITE * Sign * MaximizingPlayerSign;
+			// return (AChess_MiniMaxPlayer::INFINITE * Sign * MaximizingPlayerSign) / 2;
+			int32 BaseValue = (Res == EMatchResult::WHITE || Res == EMatchResult::BLACK) ?
+				AChess_MiniMaxPlayer::INFINITE :
+				AChess_MiniMaxPlayer::INFINITE / 2;
+			CurrentEval = (BaseValue * Sign * MaximizingPlayerSign);
 		}
 
 		if (MaximizingPlayer)
 		{
 			// [ piece_num , [ [x1,y1], [x2,y2], ... ], ... ]
-			int32 CurrentEval = -AChess_MiniMaxPlayer::INFINITE;
+			// CurrentEval = -AChess_MiniMaxPlayer::INFINITE;
 
 			for (const auto& PieceMove : Blacks)
 			{
@@ -285,7 +290,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 				return -AChess_MiniMaxPlayer::INFINITE;
 			} */
 
-			int32 CurrentEval = AChess_MiniMaxPlayer::INFINITE;
+			// CurrentEval = AChess_MiniMaxPlayer::INFINITE;
 
 			for (const auto& PieceMove : Whites)
 			{
