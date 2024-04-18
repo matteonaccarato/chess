@@ -193,7 +193,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 // [ [ piece_num, [to_x, to_y] ], eval ]
 int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool MaximizingPlayer)
 {
-	int32 CurrentEval = 0;
+	int32 CurrentEval = INFINITE * (MaximizingPlayer ? -1 : 1);
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
