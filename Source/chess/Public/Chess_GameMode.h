@@ -223,8 +223,8 @@ public:
 
 
 	static bool SearchWordByChar(TCHAR Chr, TArray<TCHAR>& WordToSearch, int& WordToSearch_Idx, bool& NotifyWordCompletion);
-private:
 	EPawnColor CheckKingsUnderAttack() const;
+private:
 	void InitTurn();
 
 

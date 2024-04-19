@@ -68,35 +68,42 @@ void AChess_MiniMaxPlayer::OnTurn()
 							// piece and move X Y
 							std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray, PlayerPiecesCanMove);
 
-							ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
-							int8 OldX = Pawn->GetGridPosition()[0];
-							int8 OldY = Pawn->GetGridPosition()[1];
-							int8 NewX = BestMove.second.first;
-							int8 NewY = BestMove.second.second;
-
-							// make the move
-							bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
-
-							// Pawn promotion handling
-							int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
-							if (NewX == OpponentSide && Pawn->GetType() == EPawnType::PAWN)
+							if (GameMode->GField->PawnArray.IsValidIndex(BestMove.first))
 							{
-								GameMode->SetPawnPromotionChoice(EPawnType::QUEEN);
-
-
-								/* int8 RandSpawnPawn = FMath::Rand() % 2;
-								switch (RandSpawnPawn)
+								ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
+								if (Pawn)
 								{
-								case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-								case 1: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
-								} */
-							}
-							else
-							{
-								// End Turn
-								GameMode->LastPiece = Pawn;
-								GameMode->LastEatFlag = EatFlag;
-								GameMode->EndTurn(PlayerNumber);
+									int8 OldX = Pawn->GetGridPosition()[0];
+									int8 OldY = Pawn->GetGridPosition()[1];
+									int8 NewX = BestMove.second.first;
+									int8 NewY = BestMove.second.second;
+
+									// make the move
+									bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
+
+									// Pawn promotion handling
+									int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
+									if (NewX == OpponentSide && Pawn->GetType() == EPawnType::PAWN)
+									{
+										GameMode->SetPawnPromotionChoice(EPawnType::QUEEN);
+
+
+										/* int8 RandSpawnPawn = FMath::Rand() % 2;
+										switch (RandSpawnPawn)
+										{
+										case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
+										case 1: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+										} */
+									}
+									else
+									{
+										// End Turn
+										GameMode->LastPiece = Pawn;
+										GameMode->LastEatFlag = EatFlag;
+										GameMode->EndTurn(PlayerNumber);
+									}
+								}
+
 							}
 						}
 						else
@@ -117,7 +124,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 
 std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces)
 {
-	int32 BestVal = -AChess_MiniMaxPlayer::INFINITE;
+	int32 BestVal = AChess_MiniMaxPlayer::INFINITE * (Color == EPawnColor::BLACK ? -1 : 1);
 	std::pair<int8, std::pair<int8, int8>> BestMove;
 	BestMove.first = -1; BestMove.second.first = -1; BestMove.second.second = -1;
 
@@ -134,6 +141,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 			for (const auto& Move : PieceMove.second)
 			{
 				// Backup
+				EPawnColor CheckFlagBackup = GameMode->CheckFlag;
 				TArray<FTileStatus> TilesStatusBackup;
 				TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
 				GameMode->BackupTiles(TilesStatusBackup);
@@ -157,6 +165,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				int32 MoveValue = MiniMax(Board, 2, -AChess_MiniMaxPlayer::INFINITE, AChess_MiniMaxPlayer::INFINITE, Color != EPawnColor::BLACK);
 
 				// undo the move
+				GameMode->CheckFlag = CheckFlagBackup;
 				GameMode->RestoreTiles(TilesStatusBackup);
 				GameMode->RestorePiecesInfo(PiecesInfoBackup);
 				GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
@@ -166,7 +175,12 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
 				// Compare evaluation
-				if (MoveValue > BestVal || (MoveValue == BestVal && FMath::Rand() % PlayerPieces.Num() == 1))
+				bool bIsBetterMove = Color == EPawnColor::BLACK ?
+					(MoveValue > BestVal) :
+					(MoveValue < BestVal);
+				if (bIsBetterMove 
+					|| PlayerPieces.Num() == 1
+					|| (MoveValue == BestVal && FMath::Rand() % PlayerPieces.Num() == 1))
 				{
 					BestMove.first = PieceMove.first;
 					BestMove.second.first = Move.first;
@@ -216,6 +230,8 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			}
 		}
 		
+		if (GameMode->MatchStatus == EMatchResult::NONE)
+			GameMode->CheckFlag = GameMode->CheckKingsUnderAttack();
 		EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
 		if (Res != EMatchResult::NONE)
 		{
