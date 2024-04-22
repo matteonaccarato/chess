@@ -4,8 +4,7 @@
 - Individual project for Design and Analysis of Algorithms course at the University of Genoa
 - Developing a chess game implementing two different CPU intelligences: Random and Smart. 
 The smart one is the result of specific algorithms such as MiniMax and Alpha-beta pruning
-
-A simple [python script](./GameData/chessdata.py) (using pandas and plotly) has also been implemented 
+- A simple [python script](./GameData/chessdata.py) (using pandas and plotly) has also been implemented 
 to show bot performance data against each other.
 
 ## LEARNING
@@ -29,7 +28,7 @@ to show bot performance data against each other.
 
 <hr>
 
-### (BOT) PERFORMANCES
+### (BOT) PERFORMANCES ([data](./GameData))
 #### 1) Random vs Random
 ![Random vs Random](./GameData/Plots/random_random.png)
 
