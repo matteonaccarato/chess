@@ -6,11 +6,11 @@
 
 ABishop::ABishop()
 {
+	Id = TEXT("B");
 	Type = EPawnType::BISHOP;
 	MaxNumberSteps = BISHOP_MAX_NUMBER_STEPS;
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTHEAST);
 	CardinalDirections.Add(ECardinalDirection::SOUTHWEST);
 	CardinalDirections.Add(ECardinalDirection::NORTHWEST);
-	Id = TEXT("B");
 }

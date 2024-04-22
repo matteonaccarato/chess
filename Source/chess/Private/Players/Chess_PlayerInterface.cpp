@@ -8,7 +8,5 @@
 void IChess_PlayerInterface::OnDraw()
 {
 	if (GameInstance)
-	{
-		GameInstance->SetTurnMessage(TEXT("DRAW"));
-	}
+		GameInstance->SetTurnMessage(UChess_GameInstance::DRAW);
 }

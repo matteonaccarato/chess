@@ -16,13 +16,13 @@ class CHESS_API AChess_MiniMaxPlayer : public APawn, public IChess_PlayerInterfa
 
 public:
 
-	/* CONST EXPRs */
-	static constexpr int  INFINITE			= 10000;
+	/* UTILS */
+	static constexpr int8 DEPTH			    = 2; // One (excluded from this count) is built in FindBestMove function
 	static constexpr int8 TIMER_MODULO		= 2;
-	static constexpr int8 TIMER_BASE_OFFSET	= 3;
+	static constexpr int8 TIMER_BASE_OFFSET	= 1;
 
-
-	/* PIECES VALUES */
+	/* EVALUATION | PIECES VALUES */
+	static constexpr int  INFINITE			    = 10000;
 	static constexpr int8 QUEEN_VALUE			= 9;
 	static constexpr int8 ATTACKABLE_KING_VALUE = 8;
 	static constexpr int8 ROOK_VALUE			= 5;

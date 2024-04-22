@@ -66,7 +66,7 @@ public:
 
 	/*
 	*/
-	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition, const bool TestFlag = false);
+	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition);
 
 
 	// !simulate is used to actually move actor in the scene

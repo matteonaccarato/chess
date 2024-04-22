@@ -31,12 +31,13 @@ void AGameField::BeginPlay()
 	GenerateField();
 }
 
+
 /*
  * Function: ResetField
  * ----------------------------
- *   Reset the game board (graphically and resetting data structures)
+ * Reset the game board (graphically and resetting data structures)
  *
- *	 bRestartGame	bool	Flag to notify is starting a new game is required or not
+ * @param bRestartGame	bool	Flag to notify if starting a new game is required or not after having reset the board
  */
 void AGameField::ResetField(bool bRestartGame)
 {
@@ -50,16 +51,16 @@ void AGameField::ResetField(bool bRestartGame)
 		for (int8 i = 0; i < GameMode->Players.Num(); i++)
 			GameMode->Players[i]->IsMyTurn = false;
 
-		// clear tile status
+		// Clear tile status
 		for (ATile* Obj : TileArray)
 			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
 		
-		// load initial board
+		// Load initial board
 		TArray<FPieceSaving> InitialBoard;
 		int n = PawnArray.Num();
 		for (int i = 0; i < n; i++)
 		{
-			// initial 32 chess pieces
+			// Initial 32 chess pieces
 			if (i < 32)
 			{
 				int8 x = (PawnArray[i]->GetColor() == EPawnColor::WHITE) ?
@@ -83,8 +84,8 @@ void AGameField::ResetField(bool bRestartGame)
 			}
 			else
 			{
-				// pieces added during the game
-				// destroy actor and reference to it
+				// Here are the pieces added during the game.
+				// Destroy actor and reference to it
 				if (PawnArray.IsValidIndex(i))
 				{
 					PawnArray[i]->SelfDestroy();
@@ -99,7 +100,7 @@ void AGameField::ResetField(bool bRestartGame)
 		LoadBoard(InitialBoard);
 
 
-		// clear replay
+		// Clear replay
 		if (GameMode->ReplayWidget)
 		{
 			UScrollBox* ScrollBoxWhite = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")));
@@ -108,8 +109,6 @@ void AGameField::ResetField(bool bRestartGame)
 			ScrollBoxBlack->ClearChildren();
 		}
 	
-		// OnResetEvent.Broadcast();
-
 		GameMode->CheckFlag = EPawnColor::NONE;
 		GameMode->MatchStatus = EMatchResult::NONE;
 		GameMode->IsGameOver = false;
@@ -121,17 +120,14 @@ void AGameField::ResetField(bool bRestartGame)
 }
 
 
+
 /*
  * Function: GenerateField
  * ----------------------------
- *   Generate the game board (graphically and initializing data structures)
+ * Generate the game board (graphically and initializing data structures)
  */
 void AGameField::GenerateField()
 {
-	UPROPERTY(EditDefaultsOnly)
-	// TSubclassOf<ATile> TileClass;
-	TSubclassOf<ABasePawn> BasePawnClass;
-
 	UWorld* World = GetWorld();
 	bool flag = false;
 	int8 PieceIdx = 0;
@@ -210,9 +206,9 @@ void AGameField::GenerateField()
 }
 
 
-FVector2D AGameField::GetPosition(const FHitResult& Hit) { return Cast<ATile>(Hit.GetActor())->GetGridPosition(); }
-TArray<ATile*>& AGameField::GetTileArray() { return TileArray; }
-TArray<ABasePawn*>& AGameField::GetPawnArray() { return PawnArray; }
+FVector2D AGameField::GetPosition(const FHitResult& Hit) { 
+	return Cast<ATile>(Hit.GetActor())->GetGridPosition(); 
+}
 
 FVector AGameField::GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const
 {
@@ -228,38 +224,12 @@ FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) c
 }
 
 
-/* TODO => rifare commento
- * Function: DistancePieces
- * ----------------------------
- *   Calculate the distance between two pieces given as arguments.
- *	 floor of sqrt((x-x')^2 + (y-y')^2)
- *
- *	 Piece1	const ABasePawn*	1st piece (x,y)
- *	 Piece2 const ABasePawn*	2nd piece (x',y')
- * 
- *	 return		int8	Distance between the two pieces given as arguments
- */
-/*bool AGameField::CanReachBlockOpponentKing(const ABasePawn* Piece, const ABasePawn* OpponentKing) const
-{
-	can reach king = for cardinals => reachable_block = check_direction(king x, y)
-
-	scroll x,y king +-1
-	for vertical 
-		for horizontal
-			tile_to_attack_block(i,j)
-			for cardial_directions
-				reachable_block = reachable_block | check_direction
-				
-	return reachable_block
-	
-} */
-
 /*
  * Function: LoadBoard
  * ----------------------------
- *  Load the board specified as argument
+ * Load the board specified as argument
  * 
- *  Board	const TArray<FPieceSaving>&		Board to load
+ * @param Board		const TArray<FPieceSaving>&		Board to load
  */
 void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 {
@@ -323,19 +293,18 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 }
 
 
-
 /*
  * Function: IsLineClear
  * ----------------------------
- *  Load the board specified as argument
+ * Check if the line from current grid position to a new position (delta_x, delta_y) is clear from other pieces or not
  * 
- * Line					ELine				Line along the movement is performed (HORIZONTAL | VERTICAL | DIAGONAL)
- * CurrGridPosition		const FVector2D		Current grid position (e.g. [3,2])
- * DeltaX				const int8			Movement delta X 
- * DeltaY				const int8			Movement delta Y
+ * @param Line					ELine				Line along the movement is performed (HORIZONTAL | VERTICAL | DIAGONAL)
+ * @param CurrGridPosition		const FVector2D		Current grid position (e.g. [3,2])
+ * @param DeltaX				const int8			Movement delta X 
+ * @param DeltaY				const int8			Movement delta Y
  * 
- * return				bool				true  -> no pieces along the movement
- *											false -> there is a piece along the movement
+ * @param return				bool				true  -> no pieces along the movement
+ *													false -> there is a piece along the movement
  */
 bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const
 {
@@ -376,13 +345,13 @@ bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const
 /*
  * Function: IsValidTile
  * ----------------------------
- *  Specify if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
+ * Specify if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
  *	
- *	X	const int8	Coordinate X
- *	Y	const int8	Coordinate Y
+ * @param X		const int8		Coordinate X
+ * @param Y		const int8		Coordinate Y
  *
- * return	bool	true  -> no pieces along the movement
- *					false -> there is a piece along the movement
+ * @return		bool			true  -> no pieces along the movement
+ *								false -> there is a piece along the movement
  */
 bool AGameField::IsValidTile(const int8 X, const int8 Y) const
 {
@@ -394,14 +363,16 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
 /* TODO => rifare commento
  * Function: SpawnPawn
  * ----------------------------
- *   Spawn the pawn specified through parameters
+ * Spawn the pawn specified through parameters
  *
- *	 PawnType	EPawnType	: type of the pawn to spawn
- *   PawnColor	EPawnColor	: color of the pawn to spawn
- *   X			int8		: x position of the pawn to spawn
- *	 Y			int8		: y position of the pawn to spawn
+ * @param PawnType		EPawnType	Type of the pawn to spawn
+ * @param PawnColor		EPawnColor	Color of the pawn to spawn
+ * @param X				int8		X position of the pawn to spawn
+ * @param Y				int8		Y position of the pawn to spawn
+ * @param PlayerOwner	int8		Player owner of the new piece
+ * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
  *
- *   return		ABasePawn*	: Pointer to the recently spawned pawn
+ * @return			ABasePawn*	Pointer to the recently spawned pawn
  */
 ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
 {
@@ -411,7 +382,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode && IsValidTile(X, Y))
 	{
-		ATile* TileObj = GetTileArray()[X * Size + Y];
+		ATile* TileObj = TileArray[X * Size + Y];
 		TileObj->SetPlayerOwner((PlayerOwner != -1) ? PlayerOwner : GameMode->CurrentPlayer);
 		FTileStatus TileStatus = { 
 			nullptr, 
@@ -475,12 +446,22 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 				GameMode->KingBlackPieceNum;
 			KingPieceNum = BasePawnObj->GetPieceNum();
 		}
-		else if (BasePawnObj->GetType() == EPawnType::ROOK && Y == Size - 1)
+		else if (BasePawnObj->GetType() == EPawnType::ROOK)
 		{
-			int8& RookRightPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
-				GameMode->RookWhiteRightPieceNum :
-				GameMode->RookBlackRightPieceNum;
-			RookRightPieceNum = BasePawnObj->GetPieceNum();
+			if (Y == 0)
+			{
+				int8& RookLeftPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+					GameMode->RookWhiteLeftPieceNum :
+					GameMode->RookBlackLeftPieceNum;
+				RookLeftPieceNum = BasePawnObj->GetPieceNum();
+			}
+			else
+			{
+				int8& RookRightPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+					GameMode->RookWhiteRightPieceNum :
+					GameMode->RookBlackRightPieceNum;
+				RookRightPieceNum = BasePawnObj->GetPieceNum();
+			}
 		}
 	}
 
@@ -491,16 +472,17 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 /*
  * Function: DespawnPawn
  * ----------------------------
- *   Despawn pawn which is on the tile specified
+ * Despawn piece which is on the tile specified
  *
- *   X		int8	: x position of the pawn to despawn
- *	 Y		int8	: y position of the pawn to despawn
+ * @param X			int8	X position of the piece to despawn
+ * @param Y			int8	Y position of the piece to despawn
+ * @param Simulate	bool	Flag if the spawn should be simulated or not (graphically hide the piece or not)
  */
 void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 {
 	if (IsValidTile(X, Y))
 	{
-		ATile* Tile = GetTileArray()[X * Size + Y];
+		ATile* Tile = TileArray[X * Size + Y];
 		ABasePawn* Pawn = Tile->GetPawn();
 		if (Tile)
 		{
@@ -529,6 +511,94 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
 			}
 		}
+	}
+}
+
+
+/*
+ * Function: BackupTiles
+ * ----------------------------
+ * Do a backup of the tiles status information in the data structured passed as parameter
+ *
+ * @param TilesStatus  TArray<FTileStatus>&		Ordered collection where to store tiles status information
+ */
+void AGameField::BackupTiles(TArray<FTileStatus>& TilesStatus) const
+{
+	for (auto& Tile : TileArray)
+	{
+		FTileStatus TileStatus = Tile->GetTileStatus();
+		TilesStatus.Add(TileStatus);
+	}
+}
+
+
+/*
+ * Function: RestoreTiles
+ * ----------------------------
+ * It restores the tiles status information through the data structured passed as parameter
+ *
+ * @paramn TilesStatusBackup  TArray<FTileStatus>&	Ordered collection where to get tiles status information to restore
+ */
+void AGameField::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
+{
+	int8 i = 0;
+	for (auto& Tile : TileArray)
+	{
+		if (TilesStatusBackup.IsValidIndex(i))
+		{
+			Tile->SetTileStatus(TilesStatusBackup[i]);
+			Tile->SetPlayerOwner(TilesStatusBackup[i].PlayerOwner);
+		}
+		i++;
+	}
+}
+
+
+/*
+ * Function: BackupPiecesInfo
+ * ----------------------------
+ * It does a backup of pieces information in the data structured passed as parameter
+ *
+ * @param PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
+ *																	1st element: piece status (ALIVE / DEAD)
+ *																	2nd element: grid position
+ */
+void AGameField::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const
+{
+	for (const auto& Piece : PawnArray)
+	{
+		PiecesInfo.Add(std::make_pair(Piece->GetStatus(), Piece->GetGridPosition()));
+	}
+}
+
+/*
+ * Function: RestorePiecesInfo
+ * ----------------------------
+ * It restores pieces information in the data structured through the TArray passed as parameter
+ *
+ * @param PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+ *																			1st element: piece status (ALIVE / DEAD)
+ *																			2nd element: grid position
+ */
+void AGameField::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
+{
+	int8 i = 0;
+	int8 PiecesToRemoveCnt = PawnArray.Num() - PiecesInfoBackup.Num();
+	for (auto& Piece : PawnArray)
+	{
+		if (PiecesInfoBackup.IsValidIndex(i))
+		{
+			Piece->SetStatus(PiecesInfoBackup[i].first);
+			Piece->SetGridPosition(PiecesInfoBackup[i].second.X, PiecesInfoBackup[i].second.Y);
+		}
+		else break;
+		i++;
+	}
+
+	for (int8 idx = 0; idx < PiecesToRemoveCnt; idx++)
+	{
+		PawnArray[PawnArray.Num() - 1]->Destroy();
+		PawnArray.RemoveAt(PawnArray.Num() - 1);
 	}
 }
 

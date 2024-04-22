@@ -9,13 +9,13 @@ ReplayManager::~ReplayManager() {}
 /*
  * Function: AddToReplay
  * ----------------------------
- *   Add the last move to the replay scrollbox.
- *	  The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
- *	  (PreviousGridPosition: FVector2D)
+ * Add the last move to the replay scrollbox.
+ * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
  *
- *	 Pawn				const ABasePawn*		The pawn which has been moved
- *	 EatFlag			const bool = false		If another piece has been captured
- *	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
+ * @param GameMode			const AChess_GameMode*	Gamemode to refer to
+ * @param Pawn				const ABasePawn*		The pawn which has been moved
+ * @param EatFlag			const bool = false		If another piece has been captured
+ * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
  */
 void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
@@ -23,7 +23,7 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
 	{
 		FString MoveStr = ComputeMoveName(GameMode, Pawn, EatFlag, PawnPromotionFlag);
 
-		// Update RecordMoves
+		// Update record moves history
 		GameMode->RecordMoves.Add(MoveStr);
 
 		// Update Replay widget content
@@ -39,9 +39,7 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
 			{
 				UTextBlock* BtnText = Cast<UTextBlock>(WidgetBtn->GetWidgetFromName(WIDGET_BUTTON_NAME));
 				if (BtnText)
-				{
 					BtnText->SetText(FText::FromString(FString::Printf(TEXT("%d. %s"), GameMode->MoveCounter, *MoveStr)));
-				}
 
 				FWidgetTransform Transform;
 				Transform.Angle = 180;
@@ -57,15 +55,17 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
 }
 
 /*
- * Function: ComputeMoveName const
+ * Function: ComputeMoveName
  * ----------------------------
- *   Generate the algebraic notation of the last move.
- *		The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
- *			(PreviousGridPosition: FVector2D)
+ * Generate the algebraic notation of the last move.
+ * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
  *
- *   Pawn				const ABasePawn*		The pawn which has been moved
- *	 EatFlag			const bool = false		If another piece has been captured
- *	 PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
+ * @param GameMode			AChess_GameMode*		GameMode to refer to
+ * @param Pawn				const ABasePawn*		The pawn which has been moved
+ * @param EatFlag			const bool = false		If another piece has been captured
+ * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
+ * 
+ * @return					FString					Move name
  */
 FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
@@ -73,8 +73,8 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 	if (GameMode)
 	{
 		FVector2D GridPosition = Pawn->GetGridPosition();
-		ATile* Tile = GameMode->GField->GetTileArray()[GridPosition[0] * GameMode->GField->Size + GridPosition[1]];
-		ATile* PreviousTile = GameMode->GField->GetTileArray()[GameMode->PreviousGridPosition[0] * GameMode->GField->Size + GameMode->PreviousGridPosition[1]];
+		ATile* Tile = GameMode->GField->TileArray[GridPosition[0] * GameMode->GField->Size + GridPosition[1]];
+		ATile* PreviousTile = GameMode->GField->TileArray[GameMode->PreviousGridPosition[0] * GameMode->GField->Size + GameMode->PreviousGridPosition[1]];
 		bool IsPawn = Pawn->GetType() == EPawnType::PAWN;
 
 		FString StartTileStr = TEXT("");
@@ -82,7 +82,7 @@ FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePaw
 		if (Pawn && Pawn->GetType() == EPawnType::KING && FMath::Abs(DeltaY) > 1 && !Tile->GetId().IsEmpty())
 		{
 			// Castling handling
-			MoveStr = FMath::Sign(DeltaY) > 0 ? "0-0" : "0-0-0";
+			MoveStr = FMath::Sign(DeltaY) > 0 ? SHORT_CASTLING : LONG_CASTLING;
 		}
 		else
 		{

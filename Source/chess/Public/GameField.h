@@ -139,9 +139,6 @@ public:
 
 	FVector2D GetPosition(const FHitResult& Hit);
 
-	TArray<ATile*>& GetTileArray();
-	TArray<ABasePawn*>& GetPawnArray();
-
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
@@ -216,6 +213,13 @@ public:
 	 * Y	int8	: y position of the pawn to despawn
 	 */
 	void DespawnPawn(int8 X, int8 Y, bool Simulate = false);
+
+
+	void BackupTiles(TArray<FTileStatus>& TilesStatus) const;
+	void RestoreTiles(TArray<FTileStatus>& TilesStatusBackup);
+
+	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const;
+	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
 
 	
 //protected:

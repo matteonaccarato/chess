@@ -104,10 +104,14 @@ public:
 	TArray<TArray<FPieceSaving>> GameSaving;
 	TArray<FPieceSaving> CurrentBoard;
 
+	/* Useful piece numbers to store */
 	int8 KingWhitePieceNum = -1;
 	int8 KingBlackPieceNum = -1;
+	int8 RookWhiteLeftPieceNum = -1;
 	int8 RookWhiteRightPieceNum = -1;
+	int8 RookBlackLeftPieceNum = -1;
 	int8 RookBlackRightPieceNum = -1;
+
 
 	// Notifies check situation || NONE || WHITE || BLACK || BOTH
 	EPawnColor CheckFlag; 
@@ -196,30 +200,43 @@ public:
 
 	/*
 	*/
-	EPawnColor IsCheck(ABasePawn* Pawn = nullptr, const int8 NeX = -1, const int8 NewY = -1, const bool CastlingFlag = false);
+	EPawnColor IsCheck(
+		ABasePawn* Pawn			= nullptr, 
+		const int8 NeX			= -1, 
+		const int8 NewY			= -1, 
+		const bool CastlingFlag = false);
 
-	EMatchResult ComputeMatchResult(TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& WhitePieces, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& BlackPieces);
+	EMatchResult ComputeMatchResult(
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& WhitePieces,
+		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& BlackPieces
+	);
 
 	/*
 	* ShowAttackable: bool => just when i wanna compute attackable tiles (it uses pawns only in diagonal)
 	*/
-	TArray<std::pair<int8, int8>> ShowPossibleMoves(ABasePawn* Pawn, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool UpdateWhoCanGoFlag = false);
+	TArray<std::pair<int8, int8>> ShowPossibleMoves(
+		ABasePawn* Pawn, 
+		const bool ConsiderOnlyAttackableTiles = false,
+		const bool CheckCheckFlag			   = true, 
+		const bool UpdateWhoCanGoFlag		   = false
+	);
+
 	void ComputeAttackableTiles();
 
 	/*
 	*/
-	bool IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool TestFlag = false, const bool ShowAttackable = false, const bool CheckCheckFlag = true, const bool CastlingFlag = false);
+	bool IsValidMove(
+		ABasePawn* Pawn, 
+		const int8 NewX, 
+		const int8 NewY, 
+		const bool ConsiderOnlyAttackableTiles = false,
+		const bool CheckCheckFlag = true, 
+		const bool CastlingFlag = false
+	);
 
 	bool MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate = false);
-	TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> ComputeAllPossibleMoves(EPawnColor Color, const bool ShowAttackable = false, const bool CheckCheck = true, const bool UpdateTurnMoves = true);
 
-
-
-	void BackupTiles(TArray<FTileStatus>& TilesStatus) const;
-	void RestoreTiles(TArray<FTileStatus>& TilesStatusBackup);
-
-	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const;
-	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
+	
 
 
 	static bool SearchWordByChar(TCHAR Chr, TArray<TCHAR>& WordToSearch, int& WordToSearch_Idx, bool& NotifyWordCompletion);

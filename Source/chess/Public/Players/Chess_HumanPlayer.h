@@ -39,20 +39,21 @@ public:
 	virtual void OnWin() override;
 	virtual void OnLose() override;
 
-	// called on left mouse click (binding done)
+	/*
+	 * Handling clicks made by the user (bound with left mouse click).
+	 * Select the piece to move first, then selecting the new position is required (new tile or the piece to capture)
+	 */
 	UFUNCTION()
 	void OnClick();
-
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// bool IsMyTurn = false;
+	// Auxiliary variable used to store the chosen piece to move
 	ABasePawn* PawnTemp;
 
 	// 0 => Select Pawn to move is needed
 	// 1 => Pawn selected, Choose Tile to move on
-	// TODO: valutare se sostituibile con IsMyTurn
 	bool SelectedPawnFlag = false;
 };

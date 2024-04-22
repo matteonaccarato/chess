@@ -25,6 +25,30 @@ class CHESS_API UChess_GameInstance : public UGameInstance
 	GENERATED_BODY()
 	
 public:
+	/* UI MESSAGES */
+	static constexpr char* DRAW = "DRAW";
+	/* HUMAN */
+	static constexpr char* HUMAN		= "YOU";
+	static constexpr char* HUMAN_TURN   = "YOU";
+	static constexpr char* HUMAN_WIN    = "You WON!";
+	static constexpr char* HUMAN_DEFEAT = "You LOST!";
+	/* RANDOM */
+	static constexpr char* RANDOM        = "AI | Random";
+	static constexpr char* RANDOM_1      = "AI | Random (1)";
+	static constexpr char* RANDOM_2      = "AI | Random (2)";
+	static constexpr char* RANDOM_TURN   = "AI (Random)";
+	static constexpr char* RANDOM_WIN_1  = "AI ";
+	static constexpr char* RANDOM_WIN_2  = " WON";
+	static constexpr char* RANDOM_DEFEAT = "AI (Random) LOST!";
+	/* MINIMAX */
+	static constexpr char* MINIMAX		  = "AI | MiniMax";
+	static constexpr char* MINIMAX_1      = "AI | MiniMax (1)";
+	static constexpr char* MINIMAX_2	  = "AI | MiniMax (2)";
+	static constexpr char* MINIMAX_TURN   = "AI (MiniMax)";
+	static constexpr char* MINIMAX_WIN_1  = "AI ";
+	static constexpr char* MINIMAX_WIN_2  = " WON";
+	static constexpr char* MINIMAX_DEFEAT = "AI (MiniMax) LOST!";
+
 
 	/* ATTRIBUTES */
 	UPROPERTY(EditAnywhere)

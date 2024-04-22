@@ -21,7 +21,7 @@ enum class EPawnType : uint8
  * Piece color (e.g. Black = -1, White = 1).
  *  Useful to identify the color and computing the movement direction easily:
  *   - White pieces move from the bottom to the top (+1 along the vertical axis),
- *	 - Black ones move from the top to the bottom (-1 along the vertical axis)
+ *	 - Black ones move from the top to the bottom   (-1 along the vertical axis)
  */
 UENUM()
 enum class EPawnColor : int8
