@@ -99,8 +99,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// TODO uproperty a cosa serve, va messo a tutti?
 	
 
 	/* ATTRIBUTES */
@@ -110,7 +108,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* StaticMeshComponent;
 
-	// TODO => ??
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FString Id;
 

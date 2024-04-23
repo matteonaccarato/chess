@@ -72,7 +72,7 @@ public:
 	 * @return			int32			Best board evaluation
 	 */
 	int32 MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool IsMax) const;
-
+	
 
 	/*
 	 * Evaluate the current board situation through function f defined as follows:

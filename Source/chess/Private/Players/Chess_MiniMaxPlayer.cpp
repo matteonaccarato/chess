@@ -225,7 +225,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 		if (Depth == 0 || GameMode->IsGameOver)
 			return EvaluateBoard(Board);
 
-		// TODO => funzione a parte GetAllWhitesBlacksPossibleMoves() (ritorno Whites, Blacks
+		// Compute all possible moves
 		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> Whites;
 		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> Blacks;
 		for (const auto& Piece : GameMode->GField->PawnArray)
@@ -268,7 +268,6 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 				// Analyse each piece move <new_x, new_y>
 				for (const auto& Move : PieceMove.second)
 				{
-					// TODO => estrarre questo pezzo di codice comune a max e min (faccio ritornare solo valore)
 					// Data backup
 					EPawnColor CheckFlagBackup = GameMode->CheckFlag;
 					TArray<FTileStatus> TilesStatusBackup;

@@ -64,6 +64,9 @@ public:
 	int32 ScorePlayer_2 = 0;
 
 	UPROPERTY(EditAnywhere)
+	int32 DrawsCounter = 0;
+
+	UPROPERTY(EditAnywhere)
 	int32 GamesCounter = 0;
 
 	UPROPERTY(EditAnywhere)
@@ -99,11 +102,19 @@ public:
 	void IncrementScorePlayer_2();
 
 
+	/* DRAWS COUNTER */
+	UFUNCTION(BlueprintCallable)
+	int32 GetDrawsCounter() const;
+	void SetDrawsCounter(int32 Counter);
+	void IncrementDrawsCounter();
+
+
 	/* GAMES COUNTER */
 	UFUNCTION(BlueprintCallable)
 	int32 GetGamesCounter() const;
 	void SetGamesCounter(int32 Counter);
 	void IncrementGamesCounter();
+
 
 	/* STOPWATCH */
 	UFUNCTION(BlueprintCallable)

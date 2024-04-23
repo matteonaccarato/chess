@@ -113,6 +113,7 @@ void AChess_GameMode::BeginPlay()
 		GameInstance->SetPlayerText_1(TextPlayer_1);
 		GameInstance->SetPlayerText_2(TextPlayer_2);
 		GameInstance->SetGamesCounter(0);
+		GameInstance->SetDrawsCounter(0);
 		GameInstance->SetScorePlayer_1(0);
 		GameInstance->SetScorePlayer_2(0);
 		GameInstance->Minutes = 0;
@@ -170,9 +171,12 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 		1.0f, 
 		true);
 	
-	Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
-	Players[CurrentPlayer]->IsMyTurn = true;
-	Players[CurrentPlayer]->OnTurn();
+	if (Players.Num() > 0 && Players[FMath::Abs(CurrentPlayer - 1)] && Players[CurrentPlayer])
+	{
+		Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
+		Players[CurrentPlayer]->IsMyTurn = true;
+		Players[CurrentPlayer]->OnTurn();
+	}
 }
 
 
@@ -235,7 +239,6 @@ void AChess_GameMode::InitTurn()
 	WhitePiecesCanMove.Empty();
 	BlackPiecesCanMove.Empty();
 
-	// TODO => compute possible moves of current player 
 	for (const auto& Piece : GField->PawnArray)
 	{
 		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, true);
@@ -297,6 +300,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 			for (int32 i = 0; i < Players.Num(); i++)
 				if (Players[i]->bIsActivePlayer)
 					Players[i]->OnDraw();
+			if (GameInstance)
+				GameInstance->IncrementDrawsCounter();
 			break;
 		}
 
@@ -653,7 +658,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
 						TileStatus.AttackableFrom[(static_cast<int>(Pawn->GetColor()) == 1) ? 0 : 1] += 1;
 					}
 					if (UpdateWhoCanGoFlag)
-						TileStatus.WhoCanGo.Add(Pawn); // TODO => NOT WORKING, used to compute correct move name
+						TileStatus.WhoCanGo.Add(Pawn); 
 
 					GField->TileArray[(X + XOffset) * GField->Size + Y + YOffset]->SetTileStatus(TileStatus);
 				}

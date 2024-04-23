@@ -17,6 +17,11 @@ int32 UChess_GameInstance::GetScorePlayer_2() const { return ScorePlayer_2; }
 void UChess_GameInstance::SetScorePlayer_2(int32 Score) { ScorePlayer_2 = Score; }
 void UChess_GameInstance::IncrementScorePlayer_2() { ScorePlayer_2++; }
 
+/* DRAWS COUNTER */
+int32 UChess_GameInstance::GetDrawsCounter() const { return DrawsCounter; }
+void UChess_GameInstance::SetDrawsCounter(int32 Counter) { DrawsCounter = Counter; }
+void UChess_GameInstance::IncrementDrawsCounter() { DrawsCounter++; }
+
 /* GAMES COUNTER */
 void UChess_GameInstance::IncrementGamesCounter() { GamesCounter++; }
 int32 UChess_GameInstance::GetGamesCounter() const { return GamesCounter; }

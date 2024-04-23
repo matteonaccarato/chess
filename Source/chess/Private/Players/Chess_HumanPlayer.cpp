@@ -185,7 +185,7 @@ void AChess_HumanPlayer::OnClick()
 						// Compute check situation
 						GameMode->IsCheck();
 						
-						// TODO => Mettere in funzione a parte ma occhio che non funzionava
+						// Compute all possible moves
 						for (const auto& Piece : GameMode->GField->PawnArray)
 						{
 							TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(Piece, false, true, true);

@@ -53,9 +53,6 @@ struct FCastlingInfo
 };
 
 
-/**
- * TODO => mettere attributi come protected
- */
 UCLASS()
 class CHESS_API AChess_GameMode : public AGameModeBase
 {
