@@ -119,7 +119,7 @@ void AChess_MiniMaxPlayer::OnTurn()
  * @return				std::pair<int8, std::pair<int8, int8>>						The best move to make where the structure is 
  *																					<piece_number, <new_x, new_y>>
  */
-std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces)
+std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces) const
 {
 	// Return value <piece_number, <new_x, new_y>>
 	std::pair<int8, std::pair<int8, int8>> BestMove;
@@ -214,7 +214,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
  * 
  * @return			int32			Best board evaluation
  */
-int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool MaximizingPlayer)
+int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alpha, int32 beta, bool MaximizingPlayer) const
 {
 	// Initialise evaluation
 	int32 CurrentEval = INFINITE * (MaximizingPlayer ? -1 : 1);

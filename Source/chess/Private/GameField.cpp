@@ -32,91 +32,21 @@ void AGameField::BeginPlay()
 }
 
 
-/*
- * Function: ResetField
- * ----------------------------
- * Reset the game board (graphically and resetting data structures)
- *
- * @param bRestartGame	bool	Flag to notify if starting a new game is required or not after having reset the board
- */
-void AGameField::ResetField(bool bRestartGame)
+FVector2D AGameField::GetPosition(const FHitResult& Hit) {
+	return Cast<ATile>(Hit.GetActor())->GetGridPosition();
+}
+
+FVector AGameField::GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const
 {
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		GameMode->GameInstance->Minutes = 0;
-		GameMode->GameInstance->Seconds = 0;
-		GetWorldTimerManager().ClearTimer(GameMode->StopwatchTimerHandle);
+	return TileSize * NormalizedCellPadding * FVector(InX, InY, 0);
+}
 
-		for (int8 i = 0; i < GameMode->Players.Num(); i++)
-			GameMode->Players[i]->IsMyTurn = false;
+FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) const
+{
+	const double x = Location[0] / (TileSize * NormalizedCellPadding);
+	const double y = Location[1] / (TileSize * NormalizedCellPadding);
 
-		// Clear tile status
-		for (ATile* Obj : TileArray)
-			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
-		
-		// Load initial board
-		TArray<FPieceSaving> InitialBoard;
-		int n = PawnArray.Num();
-		for (int i = 0; i < n; i++)
-		{
-			// Initial 32 chess pieces
-			if (i < 32)
-			{
-				int8 x = (PawnArray[i]->GetColor() == EPawnColor::WHITE) ?
-					PawnArray[i]->GetPieceNum() / 8
-					: PawnArray[i]->GetPieceNum() / 8 + 4;
-				int8 y = PawnArray[i]->GetPieceNum() % 8;
-				PawnArray[i]->SetGridPosition(x, y);
-				PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
-
-				PawnArray[i]->Move(TileArray[x * Size + y], TileArray[x * Size + y]);
-				if (PawnArray[i]->GetType() == EPawnType::PAWN)
-				{
-					PawnArray[i]->SetMaxNumberSteps(2); // restore two steps of first move on pawn
-				}
-
-				InitialBoard.Add({
-					x,
-					y,
-					EPawnStatus::ALIVE
-				});
-			}
-			else
-			{
-				// Here are the pieces added during the game.
-				// Destroy actor and reference to it
-				if (PawnArray.IsValidIndex(i))
-				{
-					PawnArray[i]->SelfDestroy();
-					PawnArray.RemoveAt(i);
-				}
-			}
-		}
-		GameMode->GameSaving.Empty();
-		GameMode->CastlingInfoWhite = { false, { false, false } };
-		GameMode->CastlingInfoBlack = { false, { false, false } };
-
-		LoadBoard(InitialBoard);
-
-
-		// Clear replay
-		if (GameMode->ReplayWidget)
-		{
-			UScrollBox* ScrollBoxWhite = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")));
-			ScrollBoxWhite->ClearChildren();
-			UScrollBox* ScrollBoxBlack = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
-			ScrollBoxBlack->ClearChildren();
-		}
-	
-		GameMode->CheckFlag = EPawnColor::NONE;
-		GameMode->MatchStatus = EMatchResult::NONE;
-		GameMode->IsGameOver = false;
-		GameMode->MoveCounter = 0;
-		GameMode->ReplayInProgress = 0;
-		if (bRestartGame)
-			GameMode->ChoosePlayerAndStartGame();
-	}
+	return FVector2D(x, y);
 }
 
 
@@ -206,21 +136,91 @@ void AGameField::GenerateField()
 }
 
 
-FVector2D AGameField::GetPosition(const FHitResult& Hit) { 
-	return Cast<ATile>(Hit.GetActor())->GetGridPosition(); 
-}
-
-FVector AGameField::GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const
+/*
+ * Function: ResetField
+ * ----------------------------
+ * Reset the game board (graphically and resetting data structures)
+ *
+ * @param bRestartGame	bool	Flag to notify if starting a new game is required or not after having reset the board
+ */
+void AGameField::ResetField(bool bRestartGame)
 {
-	return TileSize * NormalizedCellPadding * FVector(InX, InY, 0);
-}
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->GameInstance->Minutes = 0;
+		GameMode->GameInstance->Seconds = 0;
+		GetWorldTimerManager().ClearTimer(GameMode->StopwatchTimerHandle);
 
-FVector2D AGameField::GetXYPositionByRelativeLocation(const FVector& Location) const
-{
-	const double x = Location[0] / (TileSize * NormalizedCellPadding);
-	const double y = Location[1] / (TileSize * NormalizedCellPadding);
+		for (int8 i = 0; i < GameMode->Players.Num(); i++)
+			GameMode->Players[i]->IsMyTurn = false;
 
-	return FVector2D(x, y);
+		// Clear tile status
+		for (ATile* Obj : TileArray)
+			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
+		
+		// Load initial board
+		TArray<FPieceSaving> InitialBoard;
+		int n = PawnArray.Num();
+		for (int i = 0; i < n; i++)
+		{
+			// Initial 32 chess pieces
+			if (i < 32)
+			{
+				int8 x = (PawnArray[i]->GetColor() == EPawnColor::WHITE) ?
+					PawnArray[i]->GetPieceNum() / 8
+					: PawnArray[i]->GetPieceNum() / 8 + 4;
+				int8 y = PawnArray[i]->GetPieceNum() % 8;
+				PawnArray[i]->SetGridPosition(x, y);
+				PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
+
+				PawnArray[i]->Move(TileArray[x * Size + y], TileArray[x * Size + y]);
+				if (PawnArray[i]->GetType() == EPawnType::PAWN)
+				{
+					PawnArray[i]->SetMaxNumberSteps(2); // restore two steps of first move on pawn
+				}
+
+				InitialBoard.Add({
+					x,
+					y,
+					EPawnStatus::ALIVE
+				});
+			}
+			else
+			{
+				// Here are the pieces added during the game.
+				// Destroy actor and reference to it
+				if (PawnArray.IsValidIndex(i))
+				{
+					PawnArray[i]->SelfDestroy();
+					PawnArray.RemoveAt(i);
+				}
+			}
+		}
+		GameMode->GameSaving.Empty();
+		GameMode->CastlingInfoWhite = { false, { false, false } };
+		GameMode->CastlingInfoBlack = { false, { false, false } };
+
+		LoadBoard(InitialBoard);
+
+
+		// Clear replay
+		if (GameMode->ReplayWidget)
+		{
+			UScrollBox* ScrollBoxWhite = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_white")));
+			ScrollBoxWhite->ClearChildren();
+			UScrollBox* ScrollBoxBlack = Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(TEXT("scr_Replay_black")));
+			ScrollBoxBlack->ClearChildren();
+		}
+	
+		GameMode->CheckFlag = EPawnColor::NONE;
+		GameMode->MatchStatus = EMatchResult::NONE;
+		GameMode->IsGameOver = false;
+		GameMode->MoveCounter = 0;
+		GameMode->ReplayInProgress = 0;
+		if (bRestartGame)
+			GameMode->ChoosePlayerAndStartGame();
+	}
 }
 
 
@@ -294,6 +294,24 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 
 
 /*
+ * Function: IsValidTile
+ * ----------------------------
+ * Determine if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
+ *	
+ * @param X		const int8		Coordinate X
+ * @param Y		const int8		Coordinate Y
+ *
+ * @return		bool			true  -> no pieces along the movement
+ *								false -> there is a piece along the movement
+ */
+bool AGameField::IsValidTile(const int8 X, const int8 Y) const
+{
+	return X >= 0 && X < Size
+		&& Y >= 0 && Y < Size;
+}
+
+
+/*
  * Function: IsLineClear
  * ----------------------------
  * Check if the line from current grid position to a new position (delta_x, delta_y) is clear from other pieces or not
@@ -343,24 +361,6 @@ bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const
 
 
 /*
- * Function: IsValidTile
- * ----------------------------
- * Specify if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
- *	
- * @param X		const int8		Coordinate X
- * @param Y		const int8		Coordinate Y
- *
- * @return		bool			true  -> no pieces along the movement
- *								false -> there is a piece along the movement
- */
-bool AGameField::IsValidTile(const int8 X, const int8 Y) const
-{
-	return X >= 0 && X < Size
-		&& Y >= 0 && Y < Size;
-}
-
-
-/* TODO => rifare commento
  * Function: SpawnPawn
  * ----------------------------
  * Spawn the pawn specified through parameters
@@ -372,7 +372,7 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
  * @param PlayerOwner	int8		Player owner of the new piece
  * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
  *
- * @return			ABasePawn*	Pointer to the recently spawned pawn
+ * @return				ABasePawn*	Pointer to the spawned pawn
  */
 ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
 {
@@ -535,7 +535,7 @@ void AGameField::BackupTiles(TArray<FTileStatus>& TilesStatus) const
 /*
  * Function: RestoreTiles
  * ----------------------------
- * It restores the tiles status information through the data structured passed as parameter
+ * Restore the tiles status information through the data structured passed as parameter
  *
  * @paramn TilesStatusBackup  TArray<FTileStatus>&	Ordered collection where to get tiles status information to restore
  */
@@ -557,7 +557,7 @@ void AGameField::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
 /*
  * Function: BackupPiecesInfo
  * ----------------------------
- * It does a backup of pieces information in the data structured passed as parameter
+ * Do a backup of pieces information in the data structured passed as parameter
  *
  * @param PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
  *																	1st element: piece status (ALIVE / DEAD)
@@ -574,7 +574,7 @@ void AGameField::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& Pie
 /*
  * Function: RestorePiecesInfo
  * ----------------------------
- * It restores pieces information in the data structured through the TArray passed as parameter
+ * Restore pieces information in the data structured through the TArray passed as parameter
  *
  * @param PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
  *																			1st element: piece status (ALIVE / DEAD)

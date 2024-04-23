@@ -9,88 +9,34 @@ ABasePawn::ABasePawn()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	// TODO : forse da settare su true per movimento dinamico (come cono)
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	SetRootComponent(Scene);
 	StaticMeshComponent->SetupAttachment(Scene);
 }
 
-UStaticMeshComponent* ABasePawn::GetStaticMeshComponent() const
-{
-	return StaticMeshComponent;
-}
+UStaticMeshComponent* ABasePawn::GetStaticMeshComponent() const { return StaticMeshComponent; }
+FString ABasePawn::GetId() const { return Id; }
 
-FString ABasePawn::GetId() const
-{
-	return Id;
-}
+int ABasePawn::GetPieceNum() const { return PieceNum; }
+void ABasePawn::SetPieceNum(int Num) { PieceNum = Num; }
 
-int ABasePawn::GetPieceNum() const
-{
-	return PieceNum;
-}
+void ABasePawn::SetMaxNumberSteps(int NumberSteps) { MaxNumberSteps = NumberSteps; }
+int ABasePawn::GetMaxNumberSteps() const { return MaxNumberSteps; }
 
-void ABasePawn::SetPieceNum(int Num)
-{
-	PieceNum = Num;
-}
+void ABasePawn::SetColor(EPawnColor PawnColor) { Color = PawnColor; }
+EPawnColor ABasePawn::GetColor() const { return Color; }
 
-void ABasePawn::SetMaxNumberSteps(int NumberSteps)
-{
-	MaxNumberSteps = NumberSteps;
-}
+TArray<ECardinalDirection> ABasePawn::GetCardinalDirections() const { return CardinalDirections; }
 
-int ABasePawn::GetMaxNumberSteps() const
-{
-	return MaxNumberSteps;
-}
+void ABasePawn::SetType(EPawnType PawnType) { Type = PawnType; }
+EPawnType ABasePawn::GetType() const { return Type; }
 
-void ABasePawn::SetColor(EPawnColor PawnColor)
-{
-	Color = PawnColor;
-}
+void ABasePawn::SetStatus(EPawnStatus PawnStatus) { Status = PawnStatus; }
+EPawnStatus ABasePawn::GetStatus() const { return Status; }
 
-
-EPawnColor ABasePawn::GetColor() const
-{
-	return Color;
-}
-
-TArray<ECardinalDirection> ABasePawn::GetCardinalDirections() const
-{
-	return CardinalDirections;
-}
-
-void ABasePawn::SetType(EPawnType PawnType)
-{
-	Type = PawnType;
-}
-
-EPawnType ABasePawn::GetType() const
-{
-	return Type;
-}
-
-void ABasePawn::SetStatus(EPawnStatus PawnStatus)
-{
-	Status = PawnStatus;
-}
-
-EPawnStatus ABasePawn::GetStatus() const
-{
-	return Status;
-}
-
-void ABasePawn::SetGridPosition(const double InX, const double InY)
-{
-	TileGridPosition.Set(InX, InY);
-}
-
-FVector2D ABasePawn::GetGridPosition() const
-{
-	return TileGridPosition;
-}
+void ABasePawn::SetGridPosition(const double InX, const double InY) { TileGridPosition.Set(InX, InY); }
+FVector2D ABasePawn::GetGridPosition() const { return TileGridPosition; }
 
 
 // TODO => Testflag da rimuovere, aggiornamento del pedone già fatto in make move o da altre parti (da controllare)

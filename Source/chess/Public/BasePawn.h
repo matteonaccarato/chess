@@ -2,8 +2,6 @@
 
 #pragma once
 
-// #include "vector"
-// #include "Chess_GameMode.h"
 #include "Tile.h"
 #include "CoreMinimal.h"
 #include "ChessEnums.h"
@@ -11,7 +9,6 @@
 #include "GameFramework/Actor.h"
 #include "BasePawn.generated.h"
 
-// class ATile;
 class AChess_GameMode;
 class AGameField;
 
@@ -21,6 +18,8 @@ class CHESS_API ABasePawn : public AActor
 	GENERATED_BODY()
 	
 public:	
+
+	/* CONST EXPRs */
 	static constexpr int8 KING_MAX_NUMBER_STEPS		= 1;
 	static constexpr int8 QUEEN_MAX_NUMBER_STEPS	= 8;
 	static constexpr int8 ROOK_MAX_NUMBER_STEPS		= 8;

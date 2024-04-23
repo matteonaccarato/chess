@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "ChessEnums.h"
-// #include "BasePawn.h"
-// #include "GameField.h"
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 

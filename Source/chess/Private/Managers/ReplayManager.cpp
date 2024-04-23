@@ -67,7 +67,7 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePawn* Pawn
  * 
  * @return					FString					Move name
  */
-FString ReplayManager::ComputeMoveName(AChess_GameMode* GameMode, const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
+FString ReplayManager::ComputeMoveName(const AChess_GameMode* GameMode, const ABasePawn* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
 {
 	FString MoveStr = TEXT("");
 	if (GameMode)

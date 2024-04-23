@@ -40,7 +40,7 @@ public:
 	virtual void OnLose() override;
 
 	/*
-	 * Handling clicks made by the user (bound with left mouse click).
+	 * Handle clicks made by the user (bound with left mouse click).
 	 * Select the piece to move first, then selecting the new position is required (new tile or the piece to capture)
 	 */
 	UFUNCTION()

@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-// #include "../BasePawn.h"
-#include "../Chess_GameMode.h"
-// #include "../GameField.h"
-#include "../Chess_GameInstance.h"
 
+#include "../Chess_GameMode.h"
+#include "../Chess_GameInstance.h"
 #include "Chess_PlayerInterface.generated.h"
 
 enum class EPawnColor : int8;

@@ -6,7 +6,6 @@
 #include "CoreMinimal.h"
 #include "ChessEnums.h"
 #include "Tile.h"
-// #include "BasePawn.h"
 #include "Players/Chess_PlayerInterface.h"
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
@@ -52,7 +51,7 @@ public:
 	};
 
 
-
+	/* ATTRIBUTES */
 	// TILES
 	UPROPERTY(Transient)
 	TArray<ATile*> TileArray;
@@ -98,8 +97,6 @@ public:
 	TArray<UMaterialInterface*> Numbers;
 
 
-
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NormalizedCellPadding;
 
@@ -111,114 +108,129 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Pawns_Rows; 
 
-	
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TilePadding; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TileSize;
 
+
+	/* METHODS */
 	// Sets default values for this actor's properties
 	AGameField();
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-
 	virtual void BeginPlay() override;
 
-
-	/*
-	 * Reset the game board (graphically and in data structures)
-	 */
-	UFUNCTION(BlueprintCallable)
-	void ResetField(bool bRestartGame);
-
-	/*
-	*/
-	void GenerateField();
-
 	FVector2D GetPosition(const FHitResult& Hit);
-
 	FVector GetRelativeLocationByXYPosition(const int32 InX, const int32 InY) const;
 	FVector2D GetXYPositionByRelativeLocation(const FVector& Location) const;
 
-	
+
 	/*
-	 * Specify if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
-	 *
-	 * X	const int8	Coordinate X
-	 * Y	const int8	Coordinate Y
-	 *
-	 * return	bool	true  -> no pieces along the movement
-	 *					false -> there is a piece along the movement
+	 * Generate the game board (graphically and initializing data structures)
 	 */
-	bool IsValidTile(const int8 X, const int8 Y) const;
-
-
-	/* TODO => rifare commento
-	 * Calculate the distance between two pieces given as arguments.
-	 * sqrt((x-x')^2 + (y-y')^2)
-	 *
-	 * Piece1	const ABasePawn*	1st piece (x,y)
-	 * Piece2	const ABasePawn*	2nd piece (x',y')
-	 *
-	 * return	int8	Distance between the two pieces given as arguments
-	 */
-	// bool CanReachBlockOpponentKing(const ABasePawn* Piece, const ABasePawn* OpponentKing) const;
-	
-	
+	void GenerateField();
 
 
 	/*
-	 *  Load the board specified as argument
+	 * Reset the game board (graphically and resetting data structures)
 	 *
-	 * Line					ELine				Line along the movement is performed (HORIZONTAL | VERTICAL | DIAGONAL)
-	 * CurrGridPosition		const FVector2D		Current grid position (e.g. [3,2])
-	 * DeltaX				const int8			Movement delta X
-	 * DeltaY				const int8			Movement delta Y
-	 *
-	 * return				bool				true  -> no pieces along the movement
-	 *											false -> there is a piece along the movement
+	 * @param bRestartGame	bool	Flag to notify if starting a new game is required or not after having reset the board
 	 */
-	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
-
-
+	UFUNCTION(BlueprintCallable)
+	void ResetField(bool bRestartGame);
 
 
 	/*
 	 * Load the board specified as argument
 	 *
-	 * Board	const TArray<FPieceSaving>&		Board to load
+	 * @param Board		const TArray<FPieceSaving>&		Board to load
 	 */
 	void LoadBoard(const TArray<FPieceSaving>& Board);
 
 
-	/* TODO => rifare commento
-	 * Spawn the pawn specified through parameters
+	/*
+	 * Determine if X and Y are related to a valid tile or not (>= 0 AND < Gameboard.size)
+	 *	
+	 * @param X		const int8		Coordinate X
+	 * @param Y		const int8		Coordinate Y
 	 *
-	 * PawnType	EPawnType		: type of the pawn to spawn
-	 * PawnColor	EPawnColor	: color of the pawn to spawn
-	 * X			int8		: x position of the pawn to spawn
-	 * Y			int8		: y position of the pawn to spawn
+	 * @return		bool			true  -> no pieces along the movement
+	 *								false -> there is a piece along the movement
+	 */
+	bool IsValidTile(const int8 X, const int8 Y) const;
+
+
+	/*
+	 * Check if the line from current grid position to a new position (delta_x, delta_y) is clear from other pieces or not
+	 * 
+	 * @param Line					ELine				Line along the movement is performed (HORIZONTAL | VERTICAL | DIAGONAL)
+	 * @param CurrGridPosition		const FVector2D		Current grid position (e.g. [3,2])
+	 * @param DeltaX				const int8			Movement delta X 
+	 * @param DeltaY				const int8			Movement delta Y
+	 * 
+	 * @param return				bool				true  -> no pieces along the movement
+	 *													false -> there is a piece along the movement
+	 */
+	bool IsLineClear(const ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const;
+
+
+	/* 
+     * Spawn the pawn specified through parameters
 	 *
-	 * return		ABasePawn*	: Pointer to the recently spawned pawn
+	 * @param PawnType		EPawnType	Type of the pawn to spawn
+	 * @param PawnColor		EPawnColor	Color of the pawn to spawn
+	 * @param X				int8		X position of the pawn to spawn
+	 * @param Y				int8		Y position of the pawn to spawn
+	 * @param PlayerOwner	int8		Player owner of the new piece
+	 * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
+	 *
+	 * @return				ABasePawn*	Pointer to the spawned pawn
 	 */
 	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
 
 
 	/*
-	 * Despawn pawn which is on the tile specified
+	 * Despawn piece which is on the tile specified
 	 *
-	 * X	int8	: x position of the pawn to despawn
-	 * Y	int8	: y position of the pawn to despawn
+	 * @param X			int8	X position of the piece to despawn
+	 * @param Y			int8	Y position of the piece to despawn
+	 * @param Simulate	bool	Flag if the spawn should be simulated or not (graphically hide the piece or not)
 	 */
 	void DespawnPawn(int8 X, int8 Y, bool Simulate = false);
 
 
+	/*
+	 * Do a backup of the tiles status information in the data structured passed as parameter
+	 *
+	 * @param TilesStatus  TArray<FTileStatus>&		Ordered collection where to store tiles status information
+	 */
 	void BackupTiles(TArray<FTileStatus>& TilesStatus) const;
+
+	/*
+	 * Restore the tiles status information through the data structured passed as parameter
+	 *
+	 * @paramn TilesStatusBackup  TArray<FTileStatus>&	Ordered collection where to get tiles status information to restore
+	 */
 	void RestoreTiles(TArray<FTileStatus>& TilesStatusBackup);
 
+	/*
+	 * Do a backup of pieces information in the data structured passed as parameter
+	 *
+	 * @param PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
+	 *																	1st element: piece status (ALIVE / DEAD)
+	 *																	2nd element: grid position
+	 */
 	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const;
+
+	/*
+	 * Restore pieces information in the data structured through the TArray passed as parameter
+	 *
+	 * @param PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+	 *																			1st element: piece status (ALIVE / DEAD)
+	 *																			2nd element: grid position
+	 */
 	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
 
 	

@@ -33,8 +33,7 @@ public:
 
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
-	virtual void OnLose() override;// Called every frame
-	// virtual void Tick(float DeltaTime) override;
+	virtual void OnLose() override;
 
 protected:
 	// Called when the game starts or when spawned
