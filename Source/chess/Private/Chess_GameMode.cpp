@@ -597,7 +597,7 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
 		Result = CheckFlag == EPawnColor::WHITE ? EMatchResult::WHITE : EMatchResult::STALEMATE;
 	else if (BlackPieces.Num() == 0)
 		Result = CheckFlag == EPawnColor::BLACK ? EMatchResult::BLACK : EMatchResult::STALEMATE;
-	else if (SameConfigurationBoard(5))
+	else if (SameConfigurationBoard(SAME_CONFIGURATION_BOARD_RULE))
 		Result = EMatchResult::FIVEFOLD_REPETITION;
 	else if (SeventyFive_MoveRule())
 		Result = EMatchResult::SEVENTY_FIVE_MOVE_RULE;

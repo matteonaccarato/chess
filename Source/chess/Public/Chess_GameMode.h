@@ -63,6 +63,7 @@ public:
 	/* CONST EXPRs */
 	static constexpr int8 SHORT_CASTLING_OFFSET = -2;
 	static constexpr int8 LONG_CASTLING_OFFSET	= 3;
+	static constexpr int8 SAME_CONFIGURATION_BOARD_RULE = 5;
 
 	static constexpr int8 MIN_NUMBER_SPAWN_PLAYERS = 2;
 	static constexpr float CAMERA_POS_Z = 1250.0f;
