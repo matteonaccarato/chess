@@ -17,7 +17,9 @@ UENUM()
 enum class ETileMaterialType : uint8
 {
 	STANDARD,
-	ACTIVE		// when showing possible moves
+	ACTIVE,		// when showing possible moves
+	CHECK,
+	CHECKMATE
 };
 
 
@@ -113,6 +115,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float TileSize;
+
+	FVector2D TileRestoreMaterialCoordinates;
 
 
 	/* METHODS */

@@ -16,6 +16,7 @@ AGameField::AGameField()
 	TileSize	= TILE_SIZE;
 	TilePadding	= TILE_PADDING;
 	Pawns_Rows	= PAWN_ROWS;
+	TileRestoreMaterialCoordinates = FVector2D(-1, -1);
 }
 
 void AGameField::OnConstruction(const FTransform& Transform)

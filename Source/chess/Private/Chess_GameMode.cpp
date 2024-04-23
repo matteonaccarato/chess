@@ -254,6 +254,17 @@ void AChess_GameMode::InitTurn()
 	}
 
 	CheckFlag = CheckKingsUnderAttack();
+
+	if (GField->TileRestoreMaterialCoordinates != FVector2D(-1, -1))
+	{
+		int8 x = GField->TileRestoreMaterialCoordinates[0];
+		int8 y = GField->TileRestoreMaterialCoordinates[1];
+		UMaterialInterface* Material = ((x + y) % 2) ?
+			GField->MaterialsLight[ETileMaterialType::STANDARD] :
+			GField->MaterialsDark[ETileMaterialType::STANDARD];
+		GField->TileArray[x * GField->Size + y]->GetStaticMeshComponent()->SetMaterial(0, Material);
+		GField->TileRestoreMaterialCoordinates = FVector2D(-1, -1);
+	}
 }
 
 
@@ -281,14 +292,28 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		// 0 => white player
 		// 1 => black player
 		int8 WinningPlayer = -1; 
-
+		int8 KingX = -1;
+		int8 KingY = -1;
+		UMaterialInterface* MaterialCheckmated = nullptr;
 		// End game events
 		switch (MatchStatus)
 		{
 		case EMatchResult::WHITE:
 			WinningPlayer = 1;
+			KingX = GField->PawnArray[KingWhitePieceNum]->GetGridPosition()[0];
+			KingY = GField->PawnArray[KingWhitePieceNum]->GetGridPosition()[1];
+			MaterialCheckmated = ((KingX + KingY) % 2) ?
+				GField->MaterialsLight[ETileMaterialType::CHECKMATE] :
+				GField->MaterialsDark[ETileMaterialType::CHECKMATE];
 		case EMatchResult::BLACK:
 			WinningPlayer = WinningPlayer != -1 ? WinningPlayer : 0;
+			KingX = KingX != -1 ? KingX : GField->PawnArray[KingBlackPieceNum]->GetGridPosition()[0];
+			KingY = KingY != -1 ? KingY : GField->PawnArray[KingBlackPieceNum]->GetGridPosition()[1];
+			MaterialCheckmated = MaterialCheckmated ? MaterialCheckmated :
+				((KingX + KingY) % 2) ?
+				GField->MaterialsLight[ETileMaterialType::CHECKMATE] :
+				GField->MaterialsDark[ETileMaterialType::CHECKMATE];
+
 			UGameplayStatics::PlaySound2D(GetWorld(), GameOverCheckmateSound, 1, 1, 0, NULL, false, true);
 			Players[WinningPlayer]->OnWin();
 			for (int32 i = 0; i < Players.Num(); i++)
@@ -298,12 +323,19 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		default:
 			UGameplayStatics::PlaySound2D(GetWorld(), GameOverDrawSound, 1, 1, 0, NULL, false, true);
 			for (int32 i = 0; i < Players.Num(); i++)
-				if (Players[i]->bIsActivePlayer)
+				if (Players[i]->bIsActivePlayer || Players.Num() == MIN_NUMBER_SPAWN_PLAYERS)
 					Players[i]->OnDraw();
 			if (GameInstance)
 				GameInstance->IncrementDrawsCounter();
 			break;
 		}
+
+		if (MaterialCheckmated)
+		{
+			GField->TileArray[KingX * GField->Size + KingY]->GetStaticMeshComponent()->SetMaterial(0, MaterialCheckmated);
+			GField->TileRestoreMaterialCoordinates = FVector2D(KingX, KingY);
+		}
+
 
 		if (GameInstance)
 		{
@@ -388,6 +420,15 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
 			UGameplayStatics::PlaySound2D(GetWorld(), CheckSound, 1, 1, 0, NULL, false, true);
+
+			const ABasePawn* KingUnderCheck = CheckFlag == EPawnColor::WHITE ? GField->PawnArray[KingWhitePieceNum] : GField->PawnArray[KingBlackPieceNum];
+			int8 x = KingUnderCheck->GetGridPosition()[0];
+			int8 y = KingUnderCheck->GetGridPosition()[1];
+			UMaterialInterface* Material = ((x + y) % 2) ? 
+				GField->MaterialsLight[ETileMaterialType::CHECK] : 
+				GField->MaterialsDark[ETileMaterialType::CHECK];
+			GField->TileArray[x*GField->Size + y]->GetStaticMeshComponent()->SetMaterial(0, Material);
+			GField->TileRestoreMaterialCoordinates = FVector2D(x, y);
 		}
 		
 
