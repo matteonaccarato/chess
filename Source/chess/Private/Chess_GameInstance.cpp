@@ -7,12 +7,14 @@
 FString UChess_GameInstance::GetPlayerText_1() const { return TextPlayer_1; }
 void UChess_GameInstance::SetPlayerText_1(FString Text) { TextPlayer_1 = Text; } 
 int32 UChess_GameInstance::GetScorePlayer_1() const { return ScorePlayer_1; }
+void UChess_GameInstance::SetScorePlayer_1(int32 Score) { ScorePlayer_1 = Score;  }
 void UChess_GameInstance::IncrementScorePlayer_1() { ScorePlayer_1++; }
 
 /* PLAYER 2 */
 FString UChess_GameInstance::GetPlayerText_2() const { return TextPlayer_2; }
 void UChess_GameInstance::SetPlayerText_2(FString Text) { TextPlayer_2 = Text; }
 int32 UChess_GameInstance::GetScorePlayer_2() const { return ScorePlayer_2; }
+void UChess_GameInstance::SetScorePlayer_2(int32 Score) { ScorePlayer_2 = Score; }
 void UChess_GameInstance::IncrementScorePlayer_2() { ScorePlayer_2++; }
 
 /* GAMES COUNTER */

@@ -46,7 +46,6 @@ enum class EMatchResult : int8
 };
 
 
-// TODO => ripetizione di quello sotto ?
 UENUM()
 enum class ECardinalDirection : uint8
 {

@@ -113,6 +113,8 @@ void AChess_GameMode::BeginPlay()
 		GameInstance->SetPlayerText_1(TextPlayer_1);
 		GameInstance->SetPlayerText_2(TextPlayer_2);
 		GameInstance->SetGamesCounter(0);
+		GameInstance->SetScorePlayer_1(0);
+		GameInstance->SetScorePlayer_2(0);
 		GameInstance->Minutes = 0;
 		GameInstance->Seconds = 0;
 		

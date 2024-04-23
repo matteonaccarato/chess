@@ -78,8 +78,6 @@ public:
 	static constexpr char* FILENAME_MINIMAX_MINIMAX	 = "/minimax_minimax.csv";
 
 
-
-
 	/* ATTRIBUTES */
 	UChess_GameInstance* GameInstance;
 
@@ -120,9 +118,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGameField> GameFieldClass;
-
-	/* UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 FieldSize; */
 
 	UPROPERTY(VisibleAnywhere)
 	AGameField* GField;

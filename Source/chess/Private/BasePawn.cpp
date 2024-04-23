@@ -39,69 +39,6 @@ void ABasePawn::SetGridPosition(const double InX, const double InY) { TileGridPo
 FVector2D ABasePawn::GetGridPosition() const { return TileGridPosition; }
 
 
-// TODO => Testflag da rimuovere, aggiornamento del pedone già fatto in make move o da altre parti (da controllare)
-/*
- * Function: CheckDirection
- * ----------------------------
- * Check if the movement along a specific direction is allowed or not: the line is clear and [X,Y] match the constraints of the selected direction.
- * It does not take into account the piece rules, but only the given parameters
- *
- * @param Board				const AGameField*		Board to refer to
- * @param Direction			const EDirection		Direction to do the check on
- * @param NewGridPosition	const FVector2D			X and Y of the new grid position
- * @param CurrGridPosition	const FVector2D			X and Y of the current grid position
- *
- * @return	bool	Whether the movement along the specified direction is allowed or not
- */
-bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition)
-{
-	EPawnColor DirectionFlag = Color;
-	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
-	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
-	int8 PawnDiagonalMaxSteps = (Type == EPawnType::PAWN) ? 1 : MaxNumberSteps;
-
-	switch (Direction)
-	{
-	case EDirection::FORWARD:
-		if (DeltaY == 0 && (DeltaX * static_cast<double>(DirectionFlag)) >= 0 && (DeltaX * static_cast<double>(DirectionFlag)) <= MaxNumberSteps)
-			return GameBoard->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
-		break;
-
-	case EDirection::BACKWARD:
-		return DeltaY == 0 
-			&& ((-DeltaX) * static_cast<double>(DirectionFlag)) >= 0 
-			&& ((-DeltaX) * static_cast<double>(DirectionFlag)) <= MaxNumberSteps 
-			&& GameBoard->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
-
-	case EDirection::HORIZONTAL:
-		return DeltaX == 0 
-			&& FMath::Abs(DeltaY) >= 0 
-			&& FMath::Abs(DeltaY) <= MaxNumberSteps
-			&& GameBoard->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY);
-
-	case EDirection::DIAGONAL:
-		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= PawnDiagonalMaxSteps)
-		{
-			if (!GameBoard->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
-				return false;
-
-			if (Type == EPawnType::PAWN)
-				if (DeltaX * static_cast<int>(Color) < 0)
-					return false;
-
-			return true;
-		}
-		break;
-
-	case EDirection::KNIGHT:
-		return (FMath::Abs(DeltaX) == 1 && FMath::Abs(DeltaY) == 2) || (FMath::Abs(DeltaX) == 2 && FMath::Abs(DeltaY) == 1);
-	}
-
-	return false;
-}
-
-
-
 /*
  * Function: GetXYOffset
  * ----------------------------
@@ -195,6 +132,66 @@ std::pair<int8, int8> ABasePawn::GetXYOffset(const int8 Steps, const ECardinalDi
 	return std::make_pair(XOffset, YOffset);
 }
 
+
+/*
+ * Function: CheckDirection
+ * ----------------------------
+ * Check if the movement along a specific direction is allowed or not: the line is clear and [X,Y] match the constraints of the selected direction.
+ * It does not take into account the piece rules, but only the given parameters
+ *
+ * @param Board				const AGameField*		Board to refer to
+ * @param Direction			const EDirection		Direction to do the check on
+ * @param NewGridPosition	const FVector2D			X and Y of the new grid position
+ * @param CurrGridPosition	const FVector2D			X and Y of the current grid position
+ *
+ * @return	bool	Whether the movement along the specified direction is allowed or not
+ */
+bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition)
+{
+	EPawnColor DirectionFlag = Color;
+	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
+	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
+	int8 PawnDiagonalMaxSteps = (Type == EPawnType::PAWN) ? 1 : MaxNumberSteps;
+
+	switch (Direction)
+	{
+	case EDirection::FORWARD:
+		if (DeltaY == 0 && (DeltaX * static_cast<double>(DirectionFlag)) >= 0 && (DeltaX * static_cast<double>(DirectionFlag)) <= MaxNumberSteps)
+			return GameBoard->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
+		break;
+
+	case EDirection::BACKWARD:
+		return DeltaY == 0 
+			&& ((-DeltaX) * static_cast<double>(DirectionFlag)) >= 0 
+			&& ((-DeltaX) * static_cast<double>(DirectionFlag)) <= MaxNumberSteps 
+			&& GameBoard->IsLineClear(ELine::VERTICAL, CurrGridPosition, DeltaX, DeltaY);
+
+	case EDirection::HORIZONTAL:
+		return DeltaX == 0 
+			&& FMath::Abs(DeltaY) >= 0 
+			&& FMath::Abs(DeltaY) <= MaxNumberSteps
+			&& GameBoard->IsLineClear(ELine::HORIZONTAL, CurrGridPosition, DeltaX, DeltaY);
+
+	case EDirection::DIAGONAL:
+		if (FMath::Abs(DeltaX) == FMath::Abs(DeltaY) && FMath::Abs(DeltaX) <= PawnDiagonalMaxSteps)
+		{
+			if (!GameBoard->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
+				return false;
+
+			if (Type == EPawnType::PAWN)
+				if (DeltaX * static_cast<int>(Color) < 0)
+					return false;
+
+			return true;
+		}
+		break;
+
+	case EDirection::KNIGHT:
+		return (FMath::Abs(DeltaX) == 1 && FMath::Abs(DeltaY) == 2) || (FMath::Abs(DeltaX) == 2 && FMath::Abs(DeltaY) == 1);
+	}
+
+	return false;
+}
 
 
 /*

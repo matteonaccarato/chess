@@ -84,12 +84,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetScorePlayer_1() const;
+	void SetScorePlayer_1(int32 Score);
 	void IncrementScorePlayer_1();
 
 
 	/* PLAYER 2 */
 	UFUNCTION(BlueprintCallable)
 	FString GetPlayerText_2() const;
+	void SetScorePlayer_2(int32 Score);
 	void SetPlayerText_2(FString Text);
 
 	UFUNCTION(BlueprintCallable)

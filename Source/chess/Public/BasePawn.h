@@ -59,16 +59,41 @@ public:
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
 
-	/*
-	*/
-	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction) const;
 
 	/*
-	*/
+	 * Compute the offsets (X,Y) based on the paramaters (steps, direction and color)
+	 *
+	 * @param Steps			const int8				Number of steps to perform
+	 * @param Direction		ECardinalDirection		Direction to follow during the move
+	 * @param PieceColor	EPawnColor				Color of the piece
+	 *
+	 * @return				std::pair<int8, int8>	Pair containing XOffset as first argument and YOffset as second one
+	 */
+	std::pair<int8, int8> GetXYOffset(const int8 Steps, const ECardinalDirection Direction) const;
+
+
+	/*
+	 * Check if the movement along a specific direction is allowed or not: the line is clear and [X,Y] match the constraints of the selected direction.
+	 * It does not take into account the piece rules, but only the given parameters
+	 *
+	 * @param Board				const AGameField*		Board to refer to
+	 * @param Direction			const EDirection		Direction to do the check on
+	 * @param NewGridPosition	const FVector2D			X and Y of the new grid position
+	 * @param CurrGridPosition	const FVector2D			X and Y of the current grid position
+	 *
+	 * @return	bool	Whether the movement along the specified direction is allowed or not
+	 */
 	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition);
 
 
-	// !simulate is used to actually move actor in the scene
+	/*
+	 * Make the move specified through paramters
+	 *
+	 * @param OldTile	ATile*			Tile where the piece starts from
+	 * @param NewTile	ATile*			Tile where the piece moves to
+	 * @param Simulate	bool = false	Determine if the move is just a simulation or not.
+	 *									If so, graphically moving the piece is not required
+	 */
 	void Move(ATile* OldTile, ATile* NewTile, bool Simulate = false);
 
 protected:

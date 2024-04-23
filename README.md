@@ -16,6 +16,17 @@ to show bot performance data against each other.
 - Unreal Engine 5.2
 - Python (Statistics data management)
 
+## HOW TO PLAY
+#### MOVE PIECES
+- When it is your turn, click on the piece you want to move. After that, possible moves of that piece are graphically shown
+- To confirm a move click on the tile you want to move on or the opponent's piece you want to capture
+#### REPLAY
+- History of the moves done in the game is shown on the right part of the screen (in proper buttons)
+- To view previous moves, you can just click on the button of the move you want to view. 
+The board configuration will be loaded as it was at that move.
+- REWIND: ONLY if you click on an opponent turn, you can active the rewind function by clicking one of your pieces.
+Then you can resume the game from this position
+
 <hr>
 
 ### SAMPLE GAME
