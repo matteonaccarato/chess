@@ -21,8 +21,8 @@ struct FTileStatus
 		0	// from BLACK
 	};
 	TArray<ABasePiece*> WhoCanGo;
-	EPawnColor PawnColor;
-	EPawnType PawnType;
+	EPieceColor PieceColor;
+	EPieceType PieceType;
 	int8 PlayerOwner;
 };
 
@@ -37,8 +37,8 @@ public:
 
 	UStaticMeshComponent* GetStaticMeshComponent() const;
 
-	void SetPawn(ABasePiece* Piece);
-	ABasePiece* GetPawn() const;
+	void SetPiece(ABasePiece* Piece);
+	ABasePiece* GetPiece() const;
 
 	FString GetId() const;
 

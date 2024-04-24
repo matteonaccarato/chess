@@ -13,22 +13,22 @@ ReplayManager::~ReplayManager() {}
  * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
  *
  * @param GameMode			const AChess_GameMode*	Gamemode to refer to
- * @param Pawn				const ABasePiece*		The pawn which has been moved
+ * @param Piece				const ABasePiece*		The piece which has been moved
  * @param EatFlag			const bool = false		If another piece has been captured
  * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
  */
-void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePiece* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
+void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePiece* Piece, const bool EatFlag, const bool PawnPromotionFlag)
 {
 	if (GameMode)
 	{
-		FString MoveStr = ComputeMoveName(GameMode, Pawn, EatFlag, PawnPromotionFlag);
+		FString MoveStr = ComputeMoveName(GameMode, Piece, EatFlag, PawnPromotionFlag);
 
 		// Update record moves history
 		GameMode->RecordMoves.Add(MoveStr);
 
 		// Update Replay widget content
 		UWorld* World = GameMode->GetWorld();
-		UScrollBox* ScrollBox = Pawn->GetColor() == EPawnColor::WHITE ?
+		UScrollBox* ScrollBox = Piece->GetColor() == EPieceColor::WHITE ?
 			Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(SCROLLBOX_WHITE_NAME)) :
 			Cast<UScrollBox>(GameMode->ReplayWidget->GetWidgetFromName(SCROLLBOX_BLACK_NAME));
 
@@ -61,25 +61,25 @@ void ReplayManager::AddToReplay(AChess_GameMode* GameMode, const ABasePiece* Paw
  * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
  *
  * @param GameMode			AChess_GameMode*		GameMode to refer to
- * @param Pawn				const ABasePiece*		The pawn which has been moved
+ * @param Piece				const ABasePiece*		The piece which has been moved
  * @param EatFlag			const bool = false		If another piece has been captured
  * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
  * 
  * @return					FString					Move name
  */
-FString ReplayManager::ComputeMoveName(const AChess_GameMode* GameMode, const ABasePiece* Pawn, const bool EatFlag, const bool PawnPromotionFlag)
+FString ReplayManager::ComputeMoveName(const AChess_GameMode* GameMode, const ABasePiece* Piece, const bool EatFlag, const bool PawnPromotionFlag)
 {
 	FString MoveStr = TEXT("");
 	if (GameMode)
 	{
-		FVector2D GridPosition = Pawn->GetGridPosition();
+		FVector2D GridPosition = Piece->GetGridPosition();
 		ATile* Tile = GameMode->GField->TileArray[GridPosition[0] * GameMode->GField->Size + GridPosition[1]];
 		ATile* PreviousTile = GameMode->GField->TileArray[GameMode->PreviousGridPosition[0] * GameMode->GField->Size + GameMode->PreviousGridPosition[1]];
-		bool IsPawn = Pawn->GetType() == EPawnType::PAWN;
+		bool IsPawn = Piece->GetType() == EPieceType::PAWN;
 
 		FString StartTileStr = TEXT("");
-		int8 DeltaY = Pawn->GetGridPosition()[1] - GameMode->PreviousGridPosition[1];
-		if (Pawn && Pawn->GetType() == EPawnType::KING && FMath::Abs(DeltaY) > 1 && !Tile->GetId().IsEmpty())
+		int8 DeltaY = Piece->GetGridPosition()[1] - GameMode->PreviousGridPosition[1];
+		if (Piece && Piece->GetType() == EPieceType::KING && FMath::Abs(DeltaY) > 1 && !Tile->GetId().IsEmpty())
 		{
 			// Castling handling
 			MoveStr = FMath::Sign(DeltaY) > 0 ? SHORT_CASTLING : LONG_CASTLING;
@@ -87,29 +87,29 @@ FString ReplayManager::ComputeMoveName(const AChess_GameMode* GameMode, const AB
 		else
 		{
 			// Handling of more than one piece can move on the tile
-			for (auto& Piece : Tile->GetTileStatus().WhoCanGo)
+			for (const auto& PieceTmp : Tile->GetTileStatus().WhoCanGo)
 			{
-				if (Pawn->GetType() == Piece->GetType()
-					&& Pawn->GetColor() == Piece->GetColor()
-					&& Pawn->GetPieceNum() != Piece->GetPieceNum())
+				if (Piece->GetType() == PieceTmp->GetType()
+					&& Piece->GetColor() == PieceTmp->GetColor()
+					&& Piece->GetPieceNum() != PieceTmp->GetPieceNum())
 				{
-					if (GameMode->PreviousGridPosition[1] == Piece->GetGridPosition()[1])
+					if (GameMode->PreviousGridPosition[1] == PieceTmp->GetGridPosition()[1])
 						StartTileStr += FString::FromInt(PreviousTile->GetNumberId());
 					else
 						StartTileStr += PreviousTile->GetLetterId().ToLower();
 				}
 			}
 
-			if (Pawn && !Tile->GetId().IsEmpty())
+			if (Piece && !Tile->GetId().IsEmpty())
 			{
 				// Create move name strings (algebraic notation, e.g. Rb8#)
-				MoveStr = ((IsPawn || PawnPromotionFlag) ? TEXT("") : Pawn->GetId()) +
+				MoveStr = ((IsPawn || PawnPromotionFlag) ? TEXT("") : Piece->GetId()) +
 					StartTileStr +
 					(((IsPawn || PawnPromotionFlag) && EatFlag && StartTileStr == TEXT("")) ? PreviousTile->GetLetterId().ToLower() : TEXT("")) +
 					(EatFlag ? TEXT("x") : TEXT("")) +
 					Tile->GetId().ToLower() +
-					(PawnPromotionFlag ? (TEXT("=") + Pawn->GetId()) : TEXT("")) +
-					((GameMode->CheckFlag != EPawnColor::NONE && GameMode->MatchStatus == EMatchResult::NONE) ? TEXT("+") : TEXT("")) +
+					(PawnPromotionFlag ? (TEXT("=") + Piece->GetId()) : TEXT("")) +
+					((GameMode->CheckFlag != EPieceColor::NONE && GameMode->MatchStatus == EMatchResult::NONE) ? TEXT("+") : TEXT("")) +
 					(GameMode->MatchStatus == EMatchResult::WHITE || GameMode->MatchStatus == EMatchResult::BLACK ? TEXT("#") : TEXT(""));
 			}
 		}

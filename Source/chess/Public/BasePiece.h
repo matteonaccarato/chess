@@ -47,14 +47,14 @@ public:
 	void SetMaxNumberSteps(int NumberSteps);
 	int GetMaxNumberSteps() const;
 
-	void SetColor(EPawnColor PawnColor);
-	EPawnColor GetColor() const;
+	void SetColor(EPieceColor PawnColor);
+	EPieceColor GetColor() const;
 	
-	void SetType(EPawnType PawnType);
-	EPawnType GetType() const;
+	void SetType(EPieceType PawnType);
+	EPieceType GetType() const;
 
-	void SetStatus(EPawnStatus PawnStatus);
-	EPawnStatus GetStatus() const;
+	void SetStatus(EPieceStatus PawnStatus);
+	EPieceStatus GetStatus() const;
 
 	void SetGridPosition(const double InX, const double InY);
 	FVector2D GetGridPosition() const;
@@ -65,7 +65,7 @@ public:
 	 *
 	 * @param Steps			const int8				Number of steps to perform
 	 * @param Direction		ECardinalDirection		Direction to follow during the move
-	 * @param PieceColor	EPawnColor				Color of the piece
+	 * @param PieceColor	EPieceColor				Color of the piece
 	 *
 	 * @return				std::pair<int8, int8>	Pair containing XOffset as first argument and YOffset as second one
 	 */
@@ -117,20 +117,20 @@ protected:
 
 	// Color (e.g. Black = -1, White = 1)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnColor Color;
+	EPieceColor Color;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int MaxNumberSteps;
 
 	// Type (e.g. ROOK)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnType Type;
+	EPieceType Type;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<ECardinalDirection> CardinalDirections;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	EPawnStatus Status;
+	EPieceStatus Status;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileGridPosition;

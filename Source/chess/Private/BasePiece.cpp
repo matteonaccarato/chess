@@ -24,16 +24,16 @@ void ABasePiece::SetPieceNum(int Num) { PieceNum = Num; }
 void ABasePiece::SetMaxNumberSteps(int NumberSteps) { MaxNumberSteps = NumberSteps; }
 int ABasePiece::GetMaxNumberSteps() const { return MaxNumberSteps; }
 
-void ABasePiece::SetColor(EPawnColor PawnColor) { Color = PawnColor; }
-EPawnColor ABasePiece::GetColor() const { return Color; }
+void ABasePiece::SetColor(EPieceColor PawnColor) { Color = PawnColor; }
+EPieceColor ABasePiece::GetColor() const { return Color; }
 
 TArray<ECardinalDirection> ABasePiece::GetCardinalDirections() const { return CardinalDirections; }
 
-void ABasePiece::SetType(EPawnType PawnType) { Type = PawnType; }
-EPawnType ABasePiece::GetType() const { return Type; }
+void ABasePiece::SetType(EPieceType PawnType) { Type = PawnType; }
+EPieceType ABasePiece::GetType() const { return Type; }
 
-void ABasePiece::SetStatus(EPawnStatus PawnStatus) { Status = PawnStatus; }
-EPawnStatus ABasePiece::GetStatus() const { return Status; }
+void ABasePiece::SetStatus(EPieceStatus PawnStatus) { Status = PawnStatus; }
+EPieceStatus ABasePiece::GetStatus() const { return Status; }
 
 void ABasePiece::SetGridPosition(const double InX, const double InY) { TileGridPosition.Set(InX, InY); }
 FVector2D ABasePiece::GetGridPosition() const { return TileGridPosition; }
@@ -46,7 +46,7 @@ FVector2D ABasePiece::GetGridPosition() const { return TileGridPosition; }
  *
  * @param Steps			const int8				Number of steps to perform
  * @param Direction		ECardinalDirection		Direction to follow during the move
- * @param PieceColor	EPawnColor				Color of the piece
+ * @param PieceColor	EPieceColor				Color of the piece
  *
  * @return				std::pair<int8, int8>	Pair containing XOffset as first argument and YOffset as second one
  */
@@ -148,10 +148,10 @@ std::pair<int8, int8> ABasePiece::GetXYOffset(const int8 Steps, const ECardinalD
  */
 bool ABasePiece::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition) const
 {
-	EPawnColor DirectionFlag = Color;
+	EPieceColor DirectionFlag = Color;
 	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
 	int8 DeltaY = NewGridPosition[1] - CurrGridPosition[1];
-	int8 PawnDiagonalMaxSteps = (Type == EPawnType::PAWN) ? 1 : MaxNumberSteps;
+	int8 PawnDiagonalMaxSteps = (Type == EPieceType::PAWN) ? 1 : MaxNumberSteps;
 
 	switch (Direction)
 	{
@@ -178,7 +178,7 @@ bool ABasePiece::CheckDirection(const AGameField* GameBoard, const EDirection Di
 			if (!GameBoard->IsLineClear(ELine::DIAGONAL, CurrGridPosition, DeltaX, DeltaY))
 				return false;
 
-			if (Type == EPawnType::PAWN)
+			if (Type == EPieceType::PAWN)
 				if (DeltaX * static_cast<int>(Color) < 0)
 					return false;
 
@@ -210,7 +210,7 @@ void ABasePiece::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 	{
 		OldTile->ClearInfo();
 
-		int8 PlayerOwner = GetColor() == EPawnColor::WHITE ? 0 : 1;
+		int8 PlayerOwner = GetColor() == EPieceColor::WHITE ? 0 : 1;
 		NewTile->SetPlayerOwner(PlayerOwner);
 		NewTile->SetTileStatus({ 
 			this, 

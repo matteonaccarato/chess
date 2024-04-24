@@ -28,8 +28,8 @@ class AActor;
 class AGameField;
 class ABasePiece;
 
-enum class EPawnType : uint8;
-enum class EPawnColor : int8;
+enum class EPieceType : uint8;
+enum class EPieceColor : int8;
 
 
 USTRUCT(BlueprintType)
@@ -48,7 +48,7 @@ struct FPieceSaving
 
 	int8 X;
 	int8 Y;
-	EPawnStatus Status;
+	EPieceStatus Status;
 };
 
 
@@ -111,7 +111,7 @@ public:
 
 
 	// Notifies check situation || NONE || WHITE || BLACK || BOTH
-	EPawnColor CheckFlag; 
+	EPieceColor CheckFlag; 
 
 	// Match result
 	EMatchResult MatchStatus; 
@@ -152,7 +152,7 @@ public:
 
 
 	// Type chosen for pawn promotion
-	EPawnType PawnPromotionType;
+	EPieceType PawnPromotionType;
 
 	// Used to remember which information about last move
 	ABasePiece* LastPiece;
@@ -185,14 +185,14 @@ public:
 	 * and verifying if a king is under attack, after this it is assigned to the gamemode attribute.
 	 * Otherwise, the new check situation obtained by simulating the move of Piece on [NewX, NewY] is evaluated
 	 *
-	 * @param Pawn	ABasePiece* = nullptr	Piece to move on new x and new y
+	 * @param Piece	ABasePiece* = nullptr	Piece to move on new x and new y
 	 * @param NewX	const int8 = -1			New X position of the piece to move
 	 * @param NewY	const int8 = -1			New Y position of the piece to move
 	 *
-	 * @return		EPawnColor				Check situation
+	 * @return		EPieceColor				Check situation
 	 */
-	EPawnColor IsCheck(
-		ABasePiece* Pawn			= nullptr, 
+	EPieceColor IsCheck(
+		ABasePiece* Piece = nullptr,
 		const int8 NeX			= -1, 
 		const int8 NewY			= -1, 
 		const bool CastlingFlag = false);
@@ -200,7 +200,7 @@ public:
 
 	/*
 	 * Compute all attackable tiles based on the current situation of data structure
-	 *		( GameMode->GField->TileArray, GameMode->GField->PawnArray ).
+	 *		( GameMode->GField->TileArray, GameMode->GField->PieceArray ).
 	 * Update the AttackableTileStatus attribute of each Tile where necessary
 	 */
 	void ComputeAttackableTiles();
@@ -209,9 +209,9 @@ public:
 	/*
 	 * Look if each king is on a tile which is attackable from an opponent piece
 	 *
-	 * @return	 EPawnColor		Color of the king under check (NONE, WHITE, BLACK, BOTH). BOTH means a NOT valid situation
+	 * @return	 EPieceColor		Color of the king under check (NONE, WHITE, BLACK, BOTH). BOTH means a NOT valid situation
 	 */
-	EPawnColor CheckKingsUnderAttack() const;
+	EPieceColor CheckKingsUnderAttack() const;
 
 
 	/*
@@ -233,7 +233,7 @@ public:
 	/*
 	 * Compute the eligible moves of the chess piece passed as parameter
 	 *
-	 * @param Pawn								ABasePiece*							Piece on which to calculate the eligible moves
+	 * @param Piece								ABasePiece*							Piece on which to calculate the eligible moves
 	 * @param ConsiderOnlyAttackableTiles		bool = false						Flag to determine if only the attackable tiles should be taken into account 
 	 *																				(possible tiles to move on and attackable tiles are different for pawns)
 	 * @param CheckCheckFlag					bool = false						Flag to determine if checking the new check situation should be evaluated
@@ -243,7 +243,7 @@ public:
 	 * @return									TArray<std::pair<int8, int8>>		TArray made of new possible X,Y of the chess piece
 	 */
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(
-		ABasePiece* Pawn, 
+		ABasePiece* Piece,
 		const bool ConsiderOnlyAttackableTiles = false,
 		const bool CheckCheckFlag			   = true, 
 		const bool UpdateWhoCanGoFlag		   = false
@@ -253,7 +253,7 @@ public:
 	/*
 	 * Compute if a move (specified through parameters) is valid or not (following the rule of chess game)
 	 *
-	 * @param Pawn							ABasePiece*			Piece to try to move on new x and new y 
+	 * @param Piece							ABasePiece*			Piece to try to move on new x and new y 
 	 * @param NewX							const int8			New x position of the piece
 	 * @param NewY							const int8			New y position of the piece
 	 * @param ConsiderOnlyAttackableTiles	const bool = false	Determine if only the attackable tiles should be taken into account 
@@ -264,7 +264,7 @@ public:
 	 * @param return 						bool				Determine if a move is valid or not
 	 */
 	bool IsValidMove(
-		ABasePiece* Pawn, 
+		ABasePiece* Piece,
 		const int8 NewX, 
 		const int8 NewY, 
 		const bool ConsiderOnlyAttackableTiles = false,
@@ -290,10 +290,10 @@ public:
 	/*
 	 * Promote the pawn with a new chess piece (type passed as parameter)
 	 *
-	 * @param PawnType	EPawnType	Type of the new chess piece to spawn
+	 * @param PieceType	EPieceType	Type of the new chess piece to spawn
 	 */
 	UFUNCTION(BlueprintCallable)
-	void SetPawnPromotionChoice(EPawnType PawnType);
+	void SetPawnPromotionChoice(EPieceType PieceType);
 	
 
 

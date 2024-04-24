@@ -50,7 +50,7 @@ void AChess_RandomPlayer::OnTurn()
 					// If GameMode is a valid pointer and no replay is showing
 					if (GameMode && GameMode->ReplayInProgress == 0)
 					{
-						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ?
+						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPieceColor::WHITE ?
 							GameMode->WhitePiecesCanMove : 
 							GameMode->BlackPiecesCanMove;
 
@@ -66,8 +66,8 @@ void AChess_RandomPlayer::OnTurn()
 							// Select randomly the index of the tile to move to
 							int8 RandNewTile = FMath::Rand() % AttackableTiles.Num();
 
-							int8 OldX = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[0];
-							int8 OldY = GameMode->GField->PawnArray[RandPieceNum]->GetGridPosition()[1];
+							int8 OldX = GameMode->GField->PieceArray[RandPieceNum]->GetGridPosition()[0];
+							int8 OldY = GameMode->GField->PieceArray[RandPieceNum]->GetGridPosition()[1];
 							int8 NewX = AttackableTiles[RandNewTile].first;
 							int8 NewY = AttackableTiles[RandNewTile].second;
 
@@ -75,26 +75,26 @@ void AChess_RandomPlayer::OnTurn()
 								&& GameMode->GField->IsValidTile(NewX, NewY))
 							{
 								// Make the selected move
-								bool EatFlag = GameMode->MakeMove(GameMode->GField->PawnArray[RandPieceNum], NewX, NewY);
+								bool EatFlag = GameMode->MakeMove(GameMode->GField->PieceArray[RandPieceNum], NewX, NewY);
 
 								// Pawn promotion handling
-								int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
-								if (NewX == OpponentSide && GameMode->GField->PawnArray[RandPieceNum]->GetType() == EPawnType::PAWN)
+								int8 OpponentSide = Color == EPieceColor::WHITE ? GameMode->GField->Size - 1 : 0;
+								if (NewX == OpponentSide && GameMode->GField->PieceArray[RandPieceNum]->GetType() == EPieceType::PAWN)
 								{
 									// Randomly choice of what to promote to
 									int8 RandSpawnPawn = FMath::Rand() % 4;
 									switch (RandSpawnPawn)
 									{
-									case 0: GameMode->SetPawnPromotionChoice(EPawnType::QUEEN); break;
-									case 1: GameMode->SetPawnPromotionChoice(EPawnType::ROOK);  break;
-									case 2: GameMode->SetPawnPromotionChoice(EPawnType::BISHOP); break;
-									case 3: GameMode->SetPawnPromotionChoice(EPawnType::KNIGHT); break;
+									case 0: GameMode->SetPawnPromotionChoice(EPieceType::QUEEN); break;
+									case 1: GameMode->SetPawnPromotionChoice(EPieceType::ROOK);  break;
+									case 2: GameMode->SetPawnPromotionChoice(EPieceType::BISHOP); break;
+									case 3: GameMode->SetPawnPromotionChoice(EPieceType::KNIGHT); break;
 									}
 								}
 								else
 								{
 									// End Turn
-									GameMode->LastPiece = GameMode->GField->PawnArray[RandPieceNum];
+									GameMode->LastPiece = GameMode->GField->PieceArray[RandPieceNum];
 									GameMode->LastEatFlag = EatFlag;
 									GameMode->EndTurn(PlayerNumber);
 								}

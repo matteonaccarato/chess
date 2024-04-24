@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 UENUM()
-enum class EPawnType : uint8
+enum class EPieceType : uint8
 {
 	NONE,	// 0
 	ROOK,	// 1
@@ -24,7 +24,7 @@ enum class EPawnType : uint8
  *	 - Black ones move from the top to the bottom   (-1 along the vertical axis)
  */
 UENUM()
-enum class EPawnColor : int8
+enum class EPieceColor : int8
 {
 	NONE = 0,	// No color assigned
 	WHITE = 1,	// White color
@@ -89,7 +89,7 @@ enum class ELine : uint8
 
 
 UENUM()
-enum class EPawnStatus : int8
+enum class EPieceStatus : int8
 {
 	ALIVE,	// 0
 	DEAD	// 1

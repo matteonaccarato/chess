@@ -25,7 +25,7 @@ AChess_HumanPlayer::AChess_HumanPlayer()
 
 	// Initialise values
 	PlayerNumber = -1;
-	Color = EPawnColor::WHITE;
+	Color = EPieceColor::WHITE;
 }
 
 // Called when the game starts or when spawned
@@ -85,7 +85,7 @@ void AChess_HumanPlayer::OnClick()
 	if (Hit.bBlockingHit && IsMyTurn)
 	{
 		// Auxiliary variable used to store the piece to eat(if necessary)
-		ABasePiece* PawnToEat = nullptr;
+		ABasePiece* PieceToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
@@ -118,8 +118,8 @@ void AChess_HumanPlayer::OnClick()
 						{
 							FTileStatus TileStatus = Tile->GetTileStatus();
 							TileStatus.EmptyFlag = 1;
-							TileStatus.PawnColor = EPawnColor::NONE;
-							TileStatus.PawnType = EPawnType::NONE;
+							TileStatus.PieceColor = EPieceColor::NONE;
+							TileStatus.PieceType = EPieceType::NONE;
 							TileStatus.AttackableFrom[0] = 0; TileStatus.AttackableFrom[1] = 0;
 							TileStatus.WhoCanGo.Empty();
 							Tile->SetTileStatus({ 
@@ -127,15 +127,15 @@ void AChess_HumanPlayer::OnClick()
 								1, 
 								{ 0, 0 },
 								Tile->GetTileStatus().WhoCanGo,
-								EPawnColor::NONE,
-								EPawnType::NONE 
+								EPieceColor::NONE,
+								EPieceType::NONE 
 							});
 						} 
 
 						// Restore pieces data in array from board
-						for (const auto& Piece : GameMode->GField->PawnArray)
+						for (const auto& Piece : GameMode->GField->PieceArray)
 						{
-							if (Piece->GetStatus() == EPawnStatus::ALIVE && GameMode->GField->IsValidTile(Piece->GetGridPosition()[0], Piece->GetGridPosition()[1]))
+							if (Piece->GetStatus() == EPieceStatus::ALIVE && GameMode->GField->IsValidTile(Piece->GetGridPosition()[0], Piece->GetGridPosition()[1]))
 							{
 								ATile* Tile = GameMode->GField->TileArray[Piece->GetGridPosition()[0] * GameMode->GField->Size + Piece->GetGridPosition()[1]];
 								Tile->SetTileStatus({
@@ -147,10 +147,10 @@ void AChess_HumanPlayer::OnClick()
 									Piece->GetType()
 								});
 
-								if (Piece->GetType() == EPawnType::PAWN)
+								if (Piece->GetType() == EPieceType::PAWN)
 								{
-									if ((Piece->GetColor() == EPawnColor::WHITE && Piece->GetGridPosition()[0] == 1)
-										|| (Piece->GetColor() == EPawnColor::BLACK && Piece->GetGridPosition()[0] == GameMode->GField->Size - 2))
+									if ((Piece->GetColor() == EPieceColor::WHITE && Piece->GetGridPosition()[0] == 1)
+										|| (Piece->GetColor() == EPieceColor::BLACK && Piece->GetGridPosition()[0] == GameMode->GField->Size - 2))
 									{
 										Piece->SetMaxNumberSteps(2);
 									}
@@ -164,9 +164,26 @@ void AChess_HumanPlayer::OnClick()
 
 						// Compute check situation
 						GameMode->IsCheck();
+
+						if (GameMode->CheckFlag != EPieceColor::NONE)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), GameMode->CheckFlag));
+							UGameplayStatics::PlaySound2D(GetWorld(), GameMode->CheckSound, 1, 1, 0, NULL, false, true);
+
+							const ABasePiece* KingUnderCheck = GameMode->CheckFlag == EPieceColor::WHITE ?
+								GameMode->GField->PieceArray[GameMode->KingWhitePieceNum] :
+								GameMode->GField->PieceArray[GameMode->KingBlackPieceNum];
+							int8 x = KingUnderCheck->GetGridPosition()[0];
+							int8 y = KingUnderCheck->GetGridPosition()[1];
+							UMaterialInterface* Material = ((x + y) % 2) ?
+								GameMode->GField->MaterialsLight[ETileMaterialType::CHECK] :
+								GameMode->GField->MaterialsDark[ETileMaterialType::CHECK];
+							GameMode->GField->TileArray[x * GameMode->GField->Size + y]->GetStaticMeshComponent()->SetMaterial(0, Material);
+							GameMode->GField->TileRestoreMaterialCoordinates = FVector2D(x, y);
+						}
 						
 						// Compute all possible moves
-						for (const auto& Piece : GameMode->GField->PawnArray)
+						for (const auto& Piece : GameMode->GField->PieceArray)
 						{
 							TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(Piece, false, true, true);
 							GameMode->TurnPossibleMoves.Add(Tmp);
@@ -174,11 +191,11 @@ void AChess_HumanPlayer::OnClick()
 							{
 								switch (Piece->GetColor())
 								{
-								case EPawnColor::WHITE: GameMode->WhitePiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
-								case EPawnColor::BLACK: GameMode->BlackPiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+								case EPieceColor::WHITE: GameMode->WhitePiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+								case EPieceColor::BLACK: GameMode->BlackPiecesCanMove.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
 								}
 							}
-						} 
+						}
 
 						// Delete following moves from replay history
 						if (GameMode->ReplayWidget)
@@ -210,55 +227,55 @@ void AChess_HumanPlayer::OnClick()
 				// Temporary variable to store the selected piece (it can be the one to move or the one to eat).
 				// This decision is based on SelectedPawnFlag (bool)
 				ABasePiece* PawnSelected = Cast<ABasePiece>(Hit.GetActor());
-				if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
+				if (PawnSelected && PawnSelected->GetColor() == EPieceColor::WHITE)
 				{
 					// Selected human's chess piece (piece to move)
-					PawnTemp = PawnSelected;
+					PieceTemp = PawnSelected;
 
 					// Visually show possible tile to go on
-					if (GameMode->TurnPossibleMoves.IsValidIndex(PawnTemp->GetPieceNum()))
+					if (GameMode->TurnPossibleMoves.IsValidIndex(PieceTemp->GetPieceNum()))
 					{
-						GameMode->ShownPossibleMoves = GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()];
+						GameMode->ShownPossibleMoves = GameMode->TurnPossibleMoves[PieceTemp->GetPieceNum()];
 						for (const auto& move : GameMode->ShownPossibleMoves)
 						{
 							UMaterialInterface* Material = ((move.first + move.second) % 2) ? GameMode->GField->MaterialsLight[ETileMaterialType::ACTIVE] : GameMode->GField->MaterialsDark[ETileMaterialType::ACTIVE];
 							GameMode->GField->TileArray[move.first * GameMode->GField->Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 						}
 						// Notify white chess piece has been seleceted
-						SelectedPawnFlag = true;
+						SelectedPieceFlag = true;
 					}
 				}
-				else if (PawnSelected && PawnSelected->GetColor() == EPawnColor::BLACK && SelectedPawnFlag)
+				else if (PawnSelected && PawnSelected->GetColor() == EPieceColor::BLACK && SelectedPieceFlag)
 				{
 					// Black chess piece has been selected after a white one was already selected.
 					// This black piece is the one to capture
-					PawnToEat = PawnSelected;
+					PieceToEat = PawnSelected;
 				}
 			}
 
 			// Chess piece was already selected
-			if (SelectedPawnFlag)
+			if (SelectedPieceFlag)
 			{
 				// Get new tile instance (through PawnToEat OR actor clicked)
 				ATile* NewTile = Cast<ATile>(Hit.GetActor());
-				if (PawnToEat)
-					NewTile = GameMode->GField->TileArray[PawnToEat->GetGridPosition()[0] * GameMode->GField->Size + PawnToEat->GetGridPosition()[1]];
+				if (PieceToEat)
+					NewTile = GameMode->GField->TileArray[PieceToEat->GetGridPosition()[0] * GameMode->GField->Size + PieceToEat->GetGridPosition()[1]];
 				
 				if (NewTile)
 				{
 					// Get PieceToEat if not properly selected by mouse clicking (e.g. the user clicked the tile and not the actor of the opponent chess piece)
-					PawnToEat = NewTile->GetPawn();
+					PieceToEat = NewTile->GetPiece();
 
-					if (GameMode->TurnPossibleMoves[PawnTemp->GetPieceNum()].Contains(std::make_pair<int8,int8>(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1])))
+					if (GameMode->TurnPossibleMoves[PieceTemp->GetPieceNum()].Contains(std::make_pair<int8,int8>(NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1])))
 					{
-						bool EatFlag = GameMode->MakeMove(PawnTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
+						bool EatFlag = GameMode->MakeMove(PieceTemp, NewTile->GetGridPosition()[0], NewTile->GetGridPosition()[1]);
 
-						SelectedPawnFlag = false;
+						SelectedPieceFlag = false;
 						
 						// Pawn promotion handling
-						int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
+						int8 OpponentSide = Color == EPieceColor::WHITE ? GameMode->GField->Size - 1 : 0;
 						if (NewTile->GetGridPosition()[0] == OpponentSide
-							&& PawnTemp->GetType() == EPawnType::PAWN)
+							&& PieceTemp->GetType() == EPieceType::PAWN)
 						{
 							UWorld* World = GetWorld();							
 							if (World && GameMode->PawnPromotionMenuWidgetRef)
@@ -274,7 +291,7 @@ void AChess_HumanPlayer::OnClick()
 						else
 						{
 							// End Turn 
-							GameMode->LastPiece = PawnTemp;
+							GameMode->LastPiece = PieceTemp;
 							GameMode->LastEatFlag = EatFlag;
 							GameMode->EndTurn(PlayerNumber);
 						}						

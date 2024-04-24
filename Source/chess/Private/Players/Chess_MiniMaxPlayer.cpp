@@ -54,7 +54,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 					// If GameMode is a valid pointer and no replay is showing
 					if (GameMode && GameMode->ReplayInProgress == 0)
 					{
-						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPawnColor::WHITE ?
+						TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPiecesCanMove = Color == EPieceColor::WHITE ?
 							GameMode->WhitePiecesCanMove :
 							GameMode->BlackPiecesCanMove;
 
@@ -66,30 +66,30 @@ void AChess_MiniMaxPlayer::OnTurn()
 							// Find best move to make ( <piece_number, <new_x, new_y>> )
 							std::pair<int8, std::pair<int8, int8>> BestMove = FindBestMove(GameMode->GField->TileArray, PlayerPiecesCanMove);
 
-							if (GameMode->GField->PawnArray.IsValidIndex(BestMove.first))
+							if (GameMode->GField->PieceArray.IsValidIndex(BestMove.first))
 							{
-								ABasePiece* Pawn = GameMode->GField->PawnArray[BestMove.first];
-								if (Pawn)
+								ABasePiece* Piece = GameMode->GField->PieceArray[BestMove.first];
+								if (Piece)
 								{
-									int8 OldX = Pawn->GetGridPosition()[0];
-									int8 OldY = Pawn->GetGridPosition()[1];
+									int8 OldX = Piece->GetGridPosition()[0];
+									int8 OldY = Piece->GetGridPosition()[1];
 									int8 NewX = BestMove.second.first;
 									int8 NewY = BestMove.second.second;
 
 									// Make the move
-									bool EatFlag = GameMode->MakeMove(Pawn, NewX, NewY);
+									bool EatFlag = GameMode->MakeMove(Piece, NewX, NewY);
 
 									// Pawn promotion handling
-									int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
-									if (NewX == OpponentSide && Pawn->GetType() == EPawnType::PAWN)
+									int8 OpponentSide = Color == EPieceColor::WHITE ? GameMode->GField->Size - 1 : 0;
+									if (NewX == OpponentSide && Piece->GetType() == EPieceType::PAWN)
 									{
-										// Queen is the only pawn promotion taken into account since it is most valuable piece
-										GameMode->SetPawnPromotionChoice(EPawnType::QUEEN);
+										// Queen is the only pawn promotion taken into account since it is the most valuable piece
+										GameMode->SetPawnPromotionChoice(EPieceType::QUEEN);
 									}
 									else
 									{
 										// End Turn
-										GameMode->LastPiece = Pawn;
+										GameMode->LastPiece = Piece;
 										GameMode->LastEatFlag = EatFlag;
 										GameMode->EndTurn(PlayerNumber);
 									}
@@ -123,7 +123,7 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 {
 	// Return value <piece_number, <new_x, new_y>>
 	std::pair<int8, std::pair<int8, int8>> BestMove;
-	int32 BestVal = AChess_MiniMaxPlayer::INFINITE * (Color == EPawnColor::BLACK ? -1 : 1);
+	int32 BestVal = AChess_MiniMaxPlayer::INFINITE * (Color == EPieceColor::BLACK ? -1 : 1);
 	BestMove.first = -1; BestMove.second.first = -1; BestMove.second.second = -1;
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
@@ -136,30 +136,30 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 			for (const auto& Move : PieceMove.second)
 			{
 				// Data backup
-				EPawnColor CheckFlagBackup = GameMode->CheckFlag;
+				EPieceColor CheckFlagBackup = GameMode->CheckFlag;
 				TArray<FTileStatus> TilesStatusBackup;
-				TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+				TArray<std::pair<EPieceStatus, FVector2D>> PiecesInfoBackup;
 				GameMode->GField->BackupTiles(TilesStatusBackup);
 				GameMode->GField->BackupPiecesInfo(PiecesInfoBackup);
-				int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
-				int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
-				EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+				int8 XBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0];
+				int8 YBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1];
+				EPieceStatus PieceStatusBackup = GameMode->GField->PieceArray[PieceMove.first]->GetStatus();
 				FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
-				int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
+				int8 MaxNumberStepsBackup = GameMode->GField->PieceArray[PieceMove.first]->GetMaxNumberSteps();
 
 				// Make the move
-				GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
+				GameMode->MakeMove(GameMode->GField->PieceArray[PieceMove.first], Move.first, Move.second, true);
 
 				// Pawn promotion
-				int8 OpponentSide = Color == EPawnColor::WHITE ? GameMode->GField->Size - 1 : 0;
-				if (Move.first == OpponentSide && GameMode->GField->PawnArray[PieceMove.first]->GetType() == EPawnType::PAWN)
+				int8 OpponentSide = Color == EPieceColor::WHITE ? GameMode->GField->Size - 1 : 0;
+				if (Move.first == OpponentSide && GameMode->GField->PieceArray[PieceMove.first]->GetType() == EPieceType::PAWN)
 				{
-					GameMode->GField->DespawnPawn(Move.first, Move.second, true);
-					GameMode->GField->SpawnPawn(EPawnType::QUEEN, Color, Move.first, Move.second, PlayerNumber, true);
+					GameMode->GField->DespawnPiece(Move.first, Move.second, true);
+					GameMode->GField->SpawnPiece(EPieceType::QUEEN, Color, Move.first, Move.second, PlayerNumber, true);
 				}
 
 				// MiniMax call
-				int32 MoveValue = MiniMax(Board, DEPTH, -AChess_MiniMaxPlayer::INFINITE, AChess_MiniMaxPlayer::INFINITE, Color != EPawnColor::BLACK);
+				int32 MoveValue = MiniMax(Board, DEPTH, -AChess_MiniMaxPlayer::INFINITE, AChess_MiniMaxPlayer::INFINITE, Color != EPieceColor::BLACK);
 
 				// Undo the move (restore data)
 				GameMode->CheckFlag = CheckFlagBackup;
@@ -167,12 +167,12 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 				GameMode->GField->RestorePiecesInfo(PiecesInfoBackup);
 				GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
 				GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
-				GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
-				GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
-				GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
+				GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+				GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+				GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
 				// Compare evaluation
-				bool bIsBetterMove = Color == EPawnColor::BLACK ?
+				bool bIsBetterMove = Color == EPieceColor::BLACK ?
 					(MoveValue > BestVal) :
 					(MoveValue < BestVal);
 				if (bIsBetterMove 
@@ -228,15 +228,15 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 		// Compute all possible moves
 		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> Whites;
 		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> Blacks;
-		for (const auto& Piece : GameMode->GField->PawnArray)
+		for (const auto& Piece : GameMode->GField->PieceArray)
 		{
 			TArray<std::pair<int8, int8>> Tmp = GameMode->ShowPossibleMoves(Piece, false, true, true);
 			if (Tmp.Num() > 0)
 			{
 				switch (Piece->GetColor())
 				{
-				case EPawnColor::WHITE: Whites.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
-				case EPawnColor::BLACK: Blacks.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+				case EPieceColor::WHITE: Whites.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
+				case EPieceColor::BLACK: Blacks.Add(std::make_pair(Piece->GetPieceNum(), Tmp)); break;
 				}
 			}
 		}
@@ -269,25 +269,25 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 				for (const auto& Move : PieceMove.second)
 				{
 					// Data backup
-					EPawnColor CheckFlagBackup = GameMode->CheckFlag;
+					EPieceColor CheckFlagBackup = GameMode->CheckFlag;
 					TArray<FTileStatus> TilesStatusBackup;
-					TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+					TArray<std::pair<EPieceStatus, FVector2D>> PiecesInfoBackup;
 					GameMode->GField->BackupTiles(TilesStatusBackup);
 					GameMode->GField->BackupPiecesInfo(PiecesInfoBackup);
-					int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
-					int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
-					EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+					int8 XBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0];
+					int8 YBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1];
+					EPieceStatus PieceStatusBackup = GameMode->GField->PieceArray[PieceMove.first]->GetStatus();
 					FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
-					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
+					int8 MaxNumberStepsBackup = GameMode->GField->PieceArray[PieceMove.first]->GetMaxNumberSteps();
 
 					// Make the move & compute new minimax at depth - 1
-					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
+					GameMode->MakeMove(GameMode->GField->PieceArray[PieceMove.first], Move.first, Move.second, true);
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PawnArray[PieceMove.first]->GetStatus()
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
+							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
 						GameMode->GameSaving.Add(GameMode->CurrentBoard);
 					}
@@ -299,9 +299,9 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->RestorePiecesInfo(PiecesInfoBackup);
 					GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
 					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
-					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
+					GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+					GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
 					{
 						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
@@ -309,9 +309,9 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PawnArray[PieceMove.first]->GetStatus()
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
+							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
 					}
 
@@ -335,25 +335,25 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 				for (const auto& Move : PieceMove.second)
 				{
 					// Data backup
-					EPawnColor CheckFlagBackup = GameMode->CheckFlag;
+					EPieceColor CheckFlagBackup = GameMode->CheckFlag;
 					TArray<FTileStatus> TilesStatusBackup;
-					TArray<std::pair<EPawnStatus, FVector2D>> PiecesInfoBackup;
+					TArray<std::pair<EPieceStatus, FVector2D>> PiecesInfoBackup;
 					GameMode->GField->BackupTiles(TilesStatusBackup);
 					GameMode->GField->BackupPiecesInfo(PiecesInfoBackup);
-					int8 XBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0];
-					int8 YBackup = GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1];
-					EPawnStatus PieceStatusBackup = GameMode->GField->PawnArray[PieceMove.first]->GetStatus();
+					int8 XBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0];
+					int8 YBackup = GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1];
+					EPieceStatus PieceStatusBackup = GameMode->GField->PieceArray[PieceMove.first]->GetStatus();
 					FCastlingInfo CastlingInfoBackup[2] = { GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack };
-					int8 MaxNumberStepsBackup = GameMode->GField->PawnArray[PieceMove.first]->GetMaxNumberSteps();
+					int8 MaxNumberStepsBackup = GameMode->GField->PieceArray[PieceMove.first]->GetMaxNumberSteps();
 
 					// Make the move & compute minimax with depth - 1
-					GameMode->MakeMove(GameMode->GField->PawnArray[PieceMove.first], Move.first, Move.second, true);
+					GameMode->MakeMove(GameMode->GField->PieceArray[PieceMove.first], Move.first, Move.second, true);
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PawnArray[PieceMove.first]->GetStatus()
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
+							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
 						GameMode->GameSaving.Add(GameMode->CurrentBoard);
 					}
@@ -365,9 +365,9 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->RestorePiecesInfo(PiecesInfoBackup);
 					GameMode->CastlingInfoWhite = CastlingInfoBackup[0];
 					GameMode->CastlingInfoBlack = CastlingInfoBackup[1];
-					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
-					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
+					GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
+					GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
+					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
 					{
 						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
@@ -375,9 +375,9 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PawnArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PawnArray[PieceMove.first]->GetStatus()
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
+							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
+							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
 					}
 
@@ -433,8 +433,8 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		int8 PawnsCounts[2]	  = { 0, 0 };
 
 		GameMode->ComputeAttackableTiles();
-		ABasePiece* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
-		ABasePiece* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
+		ABasePiece* WhiteKing = GameMode->GField->PieceArray[GameMode->KingWhitePieceNum];
+		ABasePiece* BlackKing = GameMode->GField->PieceArray[GameMode->KingBlackPieceNum];
 		int8 AttackableKings[2] = {
 			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
 			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
@@ -445,18 +445,18 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		};
 
 		// Materials count
-		for (const auto& Piece : GameMode->GField->PawnArray)
+		for (const auto& Piece : GameMode->GField->PieceArray)
 		{
-			if (Piece->GetStatus() == EPawnStatus::ALIVE)
+			if (Piece->GetStatus() == EPieceStatus::ALIVE)
 			{
-				int8 IdxColor = Piece->GetColor() == EPawnColor::WHITE ? 0 : 1;
+				int8 IdxColor = Piece->GetColor() == EPieceColor::WHITE ? 0 : 1;
 				switch (Piece->GetType())
 				{
-				case EPawnType::QUEEN: QueenCounts[IdxColor]++; break;
-				case EPawnType::ROOK: RookCounts[IdxColor]++; break;
-				case EPawnType::BISHOP: BishopCounts[IdxColor]++; break;
-				case EPawnType::KNIGHT: KnightsCounts[IdxColor]++; break;
-				case EPawnType::PAWN: PawnsCounts[IdxColor]++; break;
+				case EPieceType::QUEEN: QueenCounts[IdxColor]++; break;
+				case EPieceType::ROOK: RookCounts[IdxColor]++; break;
+				case EPieceType::BISHOP: BishopCounts[IdxColor]++; break;
+				case EPieceType::KNIGHT: KnightsCounts[IdxColor]++; break;
+				case EPieceType::PAWN: PawnsCounts[IdxColor]++; break;
 				}
 			}
 		}
@@ -497,7 +497,7 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 int32 AChess_MiniMaxPlayer::ComputeBlockingKingScore(const ABasePiece* KingToBlock) const
 {
 	int32 Score = 0;
-	int8 OpponentIdx = KingToBlock->GetColor() == EPawnColor::WHITE ? 1 : 0;
+	int8 OpponentIdx = KingToBlock->GetColor() == EPieceColor::WHITE ? 1 : 0;
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode && KingToBlock)
 	{

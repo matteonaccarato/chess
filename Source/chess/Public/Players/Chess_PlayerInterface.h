@@ -9,7 +9,7 @@
 #include "../Chess_GameInstance.h"
 #include "Chess_PlayerInterface.generated.h"
 
-enum class EPawnColor : int8;
+enum class EPieceColor : int8;
 
 class AChess_GameField;
 class ABasePiece;
@@ -33,7 +33,7 @@ public:
 	static constexpr int8 TIMER_NONE = 1;
 
 	int32 PlayerNumber;
-	EPawnColor Color;
+	EPieceColor Color;
 	TArray<TArray<std::pair<int8, int8>>> AttackableTiles;
 	bool IsMyTurn = false;
 	bool bIsActivePlayer = true;

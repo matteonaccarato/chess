@@ -23,8 +23,8 @@ ATile::ATile()
 		1, 
 		{ 0, 0 }, 
 		TArray<ABasePiece*>(),
-		EPawnColor::NONE,
-		EPawnType::NONE, 
+		EPieceColor::NONE,
+		EPieceType::NONE, 
 		ChessEnums::NOT_ASSIGNED
 	};
 
@@ -34,8 +34,8 @@ ATile::ATile()
 
 UStaticMeshComponent* ATile::GetStaticMeshComponent() const { return StaticMeshComponent; }
 
-ABasePiece* ATile::GetPawn() const { return Status.Piece; }
-void ATile::SetPawn(ABasePiece* Piece) { Status.Piece = Piece; }
+ABasePiece* ATile::GetPiece() const { return Status.Piece; }
+void ATile::SetPiece(ABasePiece* Piece) { Status.Piece = Piece; }
 
 FString ATile::GetId() const { return LetterId + FString::Printf(TEXT("%d"), NumberId); }
 
@@ -62,8 +62,8 @@ void ATile::ClearInfo()
 		1, 
 		{ 0, 0 }, 
 		GetTileStatus().WhoCanGo, 
-		EPawnColor::NONE,
-		EPawnType::NONE, 
+		EPieceColor::NONE,
+		EPieceType::NONE, 
 		ChessEnums::NOT_ASSIGNED
 	});
 }

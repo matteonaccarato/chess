@@ -6,7 +6,7 @@
 AQueen::AQueen()
 {
 	Id = TEXT("Q");
-	Type = EPawnType::QUEEN;
+	Type = EPieceType::QUEEN;
 	MaxNumberSteps = QUEEN_MAX_NUMBER_STEPS;
 	CardinalDirections.Add(ECardinalDirection::NORTH);
 	CardinalDirections.Add(ECardinalDirection::NORTHEAST);

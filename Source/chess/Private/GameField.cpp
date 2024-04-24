@@ -117,13 +117,13 @@ void AGameField::GenerateField()
 				if (x < Pawns_Rows || (Size - x - 1) < Pawns_Rows)
 				{
 					if (x == 0)
-						SpawnPawn(PawnTypesOnRow[y], EPawnColor::WHITE, x, y, 0);
+						SpawnPiece(PawnTypesOnRow[y], EPieceColor::WHITE, x, y, 0);
 					else if (x == 1)
-						SpawnPawn(EPawnType::PAWN, EPawnColor::WHITE, x, y, 0);
+						SpawnPiece(EPieceType::PAWN, EPieceColor::WHITE, x, y, 0);
 					else if (x == Size - 1)
-						SpawnPawn(PawnTypesOnRow[y], EPawnColor::BLACK, x, y, 1);
+						SpawnPiece(PawnTypesOnRow[y], EPieceColor::BLACK, x, y, 1);
 					else
-						SpawnPawn(EPawnType::PAWN, EPawnColor::BLACK, x, y, 1);
+						SpawnPiece(EPieceType::PAWN, EPieceColor::BLACK, x, y, 1);
 				}
 				flag = !flag;
 			}
@@ -158,43 +158,43 @@ void AGameField::ResetField(bool bRestartGame)
 
 		// Clear tile status
 		for (ATile* Obj : TileArray)
-			DespawnPawn(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
+			DespawnPiece(Obj->GetGridPosition()[0], Obj->GetGridPosition()[1]);
 		
 		// Load initial board
 		TArray<FPieceSaving> InitialBoard;
-		int n = PawnArray.Num();
+		int n = PieceArray.Num();
 		for (int i = 0; i < n; i++)
 		{
 			// Initial 32 chess pieces
 			if (i < 32)
 			{
-				int8 x = (PawnArray[i]->GetColor() == EPawnColor::WHITE) ?
-					PawnArray[i]->GetPieceNum() / 8
-					: PawnArray[i]->GetPieceNum() / 8 + 4;
-				int8 y = PawnArray[i]->GetPieceNum() % 8;
-				PawnArray[i]->SetGridPosition(x, y);
-				PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
+				int8 x = (PieceArray[i]->GetColor() == EPieceColor::WHITE) ?
+					PieceArray[i]->GetPieceNum() / 8
+					: PieceArray[i]->GetPieceNum() / 8 + 4;
+				int8 y = PieceArray[i]->GetPieceNum() % 8;
+				PieceArray[i]->SetGridPosition(x, y);
+				PieceArray[i]->SetStatus(EPieceStatus::ALIVE);
 
-				PawnArray[i]->Move(TileArray[x * Size + y], TileArray[x * Size + y]);
-				if (PawnArray[i]->GetType() == EPawnType::PAWN)
+				PieceArray[i]->Move(TileArray[x * Size + y], TileArray[x * Size + y]);
+				if (PieceArray[i]->GetType() == EPieceType::PAWN)
 				{
-					PawnArray[i]->SetMaxNumberSteps(2); // restore two steps of first move on pawn
+					PieceArray[i]->SetMaxNumberSteps(2); // restore two steps of first move on pawn
 				}
 
 				InitialBoard.Add({
 					x,
 					y,
-					EPawnStatus::ALIVE
+					EPieceStatus::ALIVE
 				});
 			}
 			else
 			{
 				// Here are the pieces added during the game.
 				// Destroy actor and reference to it
-				if (PawnArray.IsValidIndex(i))
+				if (PieceArray.IsValidIndex(i))
 				{
-					PawnArray[i]->SelfDestroy();
-					PawnArray.RemoveAt(i);
+					PieceArray[i]->SelfDestroy();
+					PieceArray.RemoveAt(i);
 				}
 			}
 		}
@@ -214,7 +214,7 @@ void AGameField::ResetField(bool bRestartGame)
 			ScrollBoxBlack->ClearChildren();
 		}
 	
-		GameMode->CheckFlag = EPawnColor::NONE;
+		GameMode->CheckFlag = EPieceColor::NONE;
 		GameMode->MatchStatus = EMatchResult::NONE;
 		GameMode->IsGameOver = false;
 		GameMode->MoveCounter = 0;
@@ -247,16 +247,16 @@ void AGameField::LoadBoard(std::tuple<const TArray<FPieceSaving>&, FCastlingInfo
 		// Load chess pieces
 		const TArray<FPieceSaving>& Board = std::get<0>(BoardInfo);
 		FVector Origin, BoxExtent, Location, PawnLocation;
-		for (int8 i = 0; i < PawnArray.Num(); i++)
+		for (int8 i = 0; i < PieceArray.Num(); i++)
 		{
 			if (Board.IsValidIndex(i))
 			{
 				switch (Board[i].Status)
 				{
-				case EPawnStatus::ALIVE:
-					PawnArray[i]->SetActorHiddenInGame(false);
-					PawnArray[i]->SetActorEnableCollision(true);
-					PawnArray[i]->SetActorTickEnabled(true);
+				case EPieceStatus::ALIVE:
+					PieceArray[i]->SetActorHiddenInGame(false);
+					PieceArray[i]->SetActorEnableCollision(true);
+					PieceArray[i]->SetActorTickEnabled(true);
 
 					TileArray[Board[i].X * Size + Board[i].Y]->GetActorBounds(false, Origin, BoxExtent);
 					Location = GetRelativeLocationByXYPosition(Board[i].X, Board[i].Y);
@@ -265,30 +265,30 @@ void AGameField::LoadBoard(std::tuple<const TArray<FPieceSaving>&, FCastlingInfo
 						Location.GetComponentForAxis(EAxis::Y),
 						Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
 					);
-					PawnArray[i]->SetActorLocation(PawnLocation);
-					PawnArray[i]->SetGridPosition(Board[i].X, Board[i].Y);
-					PawnArray[i]->SetStatus(EPawnStatus::ALIVE);
+					PieceArray[i]->SetActorLocation(PawnLocation);
+					PieceArray[i]->SetGridPosition(Board[i].X, Board[i].Y);
+					PieceArray[i]->SetStatus(EPieceStatus::ALIVE);
 					break;
 
-				case EPawnStatus::DEAD:
-					PawnArray[i]->SetActorHiddenInGame(true);
-					PawnArray[i]->SetActorEnableCollision(false);
-					PawnArray[i]->SetActorTickEnabled(false);
-					PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
-					PawnArray[i]->SetGridPosition(-1, -1);
-					PawnArray[i]->SetStatus(EPawnStatus::DEAD);
+				case EPieceStatus::DEAD:
+					PieceArray[i]->SetActorHiddenInGame(true);
+					PieceArray[i]->SetActorEnableCollision(false);
+					PieceArray[i]->SetActorTickEnabled(false);
+					PieceArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PieceArray[i]->GetGridPosition()[0], PieceArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
+					PieceArray[i]->SetGridPosition(-1, -1);
+					PieceArray[i]->SetStatus(EPieceStatus::DEAD);
 					break;
 				}
 			}
 			else 
 			{
 				// Chess piece in current PieceArray was not in game when the board was stored
-				PawnArray[i]->SetActorHiddenInGame(true);
-				PawnArray[i]->SetActorEnableCollision(false);
-				PawnArray[i]->SetActorTickEnabled(false);
-				PawnArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PawnArray[i]->GetGridPosition()[0], PawnArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
-				PawnArray[i]->SetGridPosition(-1, -1);
-				PawnArray[i]->SetStatus(EPawnStatus::DEAD);
+				PieceArray[i]->SetActorHiddenInGame(true);
+				PieceArray[i]->SetActorEnableCollision(false);
+				PieceArray[i]->SetActorTickEnabled(false);
+				PieceArray[i]->SetActorLocation(GetRelativeLocationByXYPosition(PieceArray[i]->GetGridPosition()[0], PieceArray[i]->GetGridPosition()[0]) + FVector(0, 0, -20));
+				PieceArray[i]->SetGridPosition(-1, -1);
+				PieceArray[i]->SetStatus(EPieceStatus::DEAD);
 			}
 		}
 		GameMode->CastlingInfoWhite = std::get<1>(BoardInfo);
@@ -365,23 +365,23 @@ bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const
 
 
 /*
- * Function: SpawnPawn
+ * Function: SpawnPiece
  * ----------------------------
- * Spawn the pawn specified through parameters
+ * Spawn the piece specified through parameters
  *
- * @param PawnType		EPawnType	Type of the pawn to spawn
- * @param PawnColor		EPawnColor	Color of the pawn to spawn
- * @param X				int8		X position of the pawn to spawn
- * @param Y				int8		Y position of the pawn to spawn
+ * @param PieceType		EPieceType	Type of the piece to spawn
+ * @param PieceColor	EPieceColor	Color of the piece to spawn
+ * @param X				int8		X position of the piece to spawn
+ * @param Y				int8		Y position of the piece to spawn
  * @param PlayerOwner	int8		Player owner of the new piece
  * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
  *
- * @return				ABasePiece*	Pointer to the spawned pawn
+ * @return				ABasePiece*	Pointer to the spawned piece
  */
-ABasePiece* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
+ABasePiece* AGameField::SpawnPiece(EPieceType PieceType, EPieceColor PieceColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
 {
-	TSubclassOf<ABasePiece> BasePawnClass;
-	ABasePiece* BasePawnObj = nullptr;
+	TSubclassOf<ABasePiece> BasePieceClass;
+	ABasePiece* BasePieceObj = nullptr;
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode && IsValidTile(X, Y))
@@ -393,13 +393,13 @@ ABasePiece* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8
 			0, 
 			{ 0, 0 }, 
 			TileObj->GetTileStatus().WhoCanGo,
-			EPawnColor::NONE, 
-			EPawnType::NONE, 
+			EPieceColor::NONE, 
+			EPieceType::NONE, 
 			ChessEnums::NOT_ASSIGNED 
 		};
 
-		TileStatus.PawnType = PawnType;
-		TileStatus.PawnColor = PawnColor;
+		TileStatus.PieceType = PieceType;
+		TileStatus.PieceColor = PieceColor;
 		
 		// Calculate spawn location
 		FVector Origin; FVector BoxExtent;
@@ -411,65 +411,65 @@ ABasePiece* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8
 			Location.GetComponentForAxis(EAxis::Z) + 2 * BoxExtent.GetComponentForAxis(EAxis::Z) + 0.1
 		);
 
-		BasePawnClass = ChessPieces[PawnType];
-		BasePawnObj = GetWorld()->SpawnActor<ABasePiece>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
-		if (BasePawnObj)
+		BasePieceClass = ChessPieces[PieceType];
+		BasePieceObj = GetWorld()->SpawnActor<ABasePiece>(BasePieceClass, PawnLocation, FRotator(0, 90, 0));
+		if (BasePieceObj)
 		{
 			if (Simulate)
-				BasePawnObj->SetActorHiddenInGame(true);
-			BasePawnObj->SetGridPosition(X, Y);
+				BasePieceObj->SetActorHiddenInGame(true);
+			BasePieceObj->SetGridPosition(X, Y);
 			const float TileScale = TileSize / 100;
-			BasePawnObj->SetActorScale3D(FVector(TileScale * CHESS_PIECES_SCALE, TileScale * CHESS_PIECES_SCALE, CHESS_PIECES_Z));
-			BasePawnObj->SetPieceNum(PawnArray.Num());
-			BasePawnObj->SetType(TileStatus.PawnType);
-			BasePawnObj->SetColor(TileStatus.PawnColor);
-			BasePawnObj->SetStatus(EPawnStatus::ALIVE);
+			BasePieceObj->SetActorScale3D(FVector(TileScale * CHESS_PIECES_SCALE, TileScale * CHESS_PIECES_SCALE, CHESS_PIECES_Z));
+			BasePieceObj->SetPieceNum(PieceArray.Num());
+			BasePieceObj->SetType(TileStatus.PieceType);
+			BasePieceObj->SetColor(TileStatus.PieceColor);
+			BasePieceObj->SetStatus(EPieceStatus::ALIVE);
 
-			TMap<EPawnType, UMaterialInterface*>& ChessPiecesMaterials = PawnColor == EPawnColor::WHITE ? 
+			TMap<EPieceType, UMaterialInterface*>& ChessPiecesMaterials = PieceColor == EPieceColor::WHITE ?
 				ChessPiecesWhiteMaterials : 
 				ChessPiecesBlackMaterials;
-			BasePawnObj->GetStaticMeshComponent()->SetMaterial(0, ChessPiecesMaterials[PawnType]);
+			BasePieceObj->GetStaticMeshComponent()->SetMaterial(0, ChessPiecesMaterials[PieceType]);
 
-			PawnArray.Add(BasePawnObj);
-			PawnMap.Add(FVector2D(X, Y), BasePawnObj);
+			PieceArray.Add(BasePieceObj);
+			PieceMap.Add(FVector2D(X, Y), BasePieceObj);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Error, TEXT("ABasePiece Obj is null"));
 		}
 
-		TileStatus.Piece = BasePawnObj;
+		TileStatus.Piece = BasePieceObj;
 		TileStatus.PlayerOwner = PlayerOwner;
 		TileObj->SetPlayerOwner(PlayerOwner);
 		TileObj->SetTileStatus(TileStatus);
 
-		if (BasePawnObj->GetType() == EPawnType::KING)
+		if (BasePieceObj->GetType() == EPieceType::KING)
 		{
-			int8& KingPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+			int8& KingPieceNum = BasePieceObj->GetColor() == EPieceColor::WHITE ?
 				GameMode->KingWhitePieceNum :
 				GameMode->KingBlackPieceNum;
-			KingPieceNum = BasePawnObj->GetPieceNum();
+			KingPieceNum = BasePieceObj->GetPieceNum();
 		}
-		else if (BasePawnObj->GetType() == EPawnType::ROOK)
+		else if (BasePieceObj->GetType() == EPieceType::ROOK)
 		{
 			if (Y == 0)
 			{
-				int8& RookLeftPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+				int8& RookLeftPieceNum = BasePieceObj->GetColor() == EPieceColor::WHITE ?
 					GameMode->RookWhiteLeftPieceNum :
 					GameMode->RookBlackLeftPieceNum;
-				RookLeftPieceNum = BasePawnObj->GetPieceNum();
+				RookLeftPieceNum = BasePieceObj->GetPieceNum();
 			}
 			else
 			{
-				int8& RookRightPieceNum = BasePawnObj->GetColor() == EPawnColor::WHITE ?
+				int8& RookRightPieceNum = BasePieceObj->GetColor() == EPieceColor::WHITE ?
 					GameMode->RookWhiteRightPieceNum :
 					GameMode->RookBlackRightPieceNum;
-				RookRightPieceNum = BasePawnObj->GetPieceNum();
+				RookRightPieceNum = BasePieceObj->GetPieceNum();
 			}
 		}
 	}
 
-	return BasePawnObj;
+	return BasePieceObj;
 }
 
 
@@ -482,12 +482,12 @@ ABasePiece* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8
  * @param Y			int8	Y position of the piece to despawn
  * @param Simulate	bool	Flag if the spawn should be simulated or not (graphically hide the piece or not)
  */
-void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
+void AGameField::DespawnPiece(int8 X, int8 Y, bool Simulate)
 {
 	if (IsValidTile(X, Y))
 	{
 		ATile* Tile = TileArray[X * Size + Y];
-		ABasePiece* Pawn = Tile->GetPawn();
+		ABasePiece* Piece = Tile->GetPiece();
 		if (Tile)
 		{
 			// Reset old tile status
@@ -496,23 +496,23 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 				1, 
 				{ 0, 0 }, 
 				Tile->GetTileStatus().WhoCanGo, 
-				EPawnColor::NONE, 
-				EPawnType::NONE
+				EPieceColor::NONE, 
+				EPieceType::NONE
 			});
 			Tile->SetPlayerOwner(ChessEnums::NOT_ASSIGNED);
 		}
 
-		if (Pawn)
+		if (Piece)
 		{
-			// Update pawn information
-			Pawn->SetStatus(EPawnStatus::DEAD);
-			Pawn->SetGridPosition(-1, -1);
+			// Update piece information
+			Piece->SetStatus(EPieceStatus::DEAD);
+			Piece->SetGridPosition(-1, -1);
 			if (!Simulate)
 			{
-				Pawn->SetActorHiddenInGame(true);
-				Pawn->SetActorEnableCollision(false);
-				Pawn->SetActorTickEnabled(false);
-				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f pawn has been eaten/despawned"), Pawn->GetGridPosition()[0], Pawn->GetGridPosition()[1]));
+				Piece->SetActorHiddenInGame(true);
+				Piece->SetActorEnableCollision(false);
+				Piece->SetActorTickEnabled(false);
+				// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Blue, FString::Printf(TEXT("%f %f piece has been eaten/despawned"), Piece->GetGridPosition()[0], Piece->GetGridPosition()[1]));
 			}
 		}
 	}
@@ -563,13 +563,13 @@ void AGameField::RestoreTiles(TArray<FTileStatus>& TilesStatusBackup)
  * ----------------------------
  * Do a backup of pieces information in the data structured passed as parameter
  *
- * @param PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
+ * @param PiecesInfo  TArray<std::pair<EPieceStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
  *																	1st element: piece status (ALIVE / DEAD)
  *																	2nd element: grid position
  */
-void AGameField::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const
+void AGameField::BackupPiecesInfo(TArray<std::pair<EPieceStatus, FVector2D>>& PiecesInfo) const
 {
-	for (const auto& Piece : PawnArray)
+	for (const auto& Piece : PieceArray)
 	{
 		PiecesInfo.Add(std::make_pair(Piece->GetStatus(), Piece->GetGridPosition()));
 	}
@@ -580,15 +580,15 @@ void AGameField::BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& Pie
  * ----------------------------
  * Restore pieces information in the data structured through the TArray passed as parameter
  *
- * @param PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+ * @param PiecesInfoBackup  TArray<std::pair<EPieceStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
  *																			1st element: piece status (ALIVE / DEAD)
  *																			2nd element: grid position
  */
-void AGameField::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup)
+void AGameField::RestorePiecesInfo(TArray<std::pair<EPieceStatus, FVector2D>>& PiecesInfoBackup)
 {
 	int8 i = 0;
-	int8 PiecesToRemoveCnt = PawnArray.Num() - PiecesInfoBackup.Num();
-	for (auto& Piece : PawnArray)
+	int8 PiecesToRemoveCnt = PieceArray.Num() - PiecesInfoBackup.Num();
+	for (auto& Piece : PieceArray)
 	{
 		if (PiecesInfoBackup.IsValidIndex(i))
 		{
@@ -601,8 +601,8 @@ void AGameField::RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& Pi
 
 	for (int8 idx = 0; idx < PiecesToRemoveCnt; idx++)
 	{
-		PawnArray[PawnArray.Num() - 1]->Destroy();
-		PawnArray.RemoveAt(PawnArray.Num() - 1);
+		PieceArray[PieceArray.Num() - 1]->Destroy();
+		PieceArray.RemoveAt(PieceArray.Num() - 1);
 	}
 }
 

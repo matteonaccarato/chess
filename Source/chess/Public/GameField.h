@@ -42,15 +42,15 @@ public:
 	static constexpr float CHESS_PIECES_Z		= 0.03;
 	static constexpr float TILES_Z				= 0.2;
 
-	static constexpr EPawnType PawnTypesOnRow[] = {
-		EPawnType::ROOK,
-		EPawnType::KNIGHT,
-		EPawnType::BISHOP,
-		EPawnType::QUEEN,
-		EPawnType::KING,
-		EPawnType::BISHOP,
-		EPawnType::KNIGHT,
-		EPawnType::ROOK
+	static constexpr EPieceType PawnTypesOnRow[] = {
+		EPieceType::ROOK,
+		EPieceType::KNIGHT,
+		EPieceType::BISHOP,
+		EPieceType::QUEEN,
+		EPieceType::KING,
+		EPieceType::BISHOP,
+		EPieceType::KNIGHT,
+		EPieceType::ROOK
 	};
 
 
@@ -74,19 +74,19 @@ public:
 
 	// PIECES
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EPawnType, TSubclassOf<ABasePiece>> ChessPieces;
+	TMap<EPieceType, TSubclassOf<ABasePiece>> ChessPieces;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	TMap<EPawnType, UMaterialInterface*> ChessPiecesWhiteMaterials;
+	TMap<EPieceType, UMaterialInterface*> ChessPiecesWhiteMaterials;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Materials")
-	TMap<EPawnType, UMaterialInterface*> ChessPiecesBlackMaterials;
+	TMap<EPieceType, UMaterialInterface*> ChessPiecesBlackMaterials;
 
 	UPROPERTY(Transient)
-	TArray<ABasePiece*> PawnArray;
+	TArray<ABasePiece*> PieceArray;
 	
 	UPROPERTY(Transient)
-	TMap<FVector2D, ABasePiece*> PawnMap;
+	TMap<FVector2D, ABasePiece*> PieceMap;
 
 
 	// Letters / Numbers
@@ -182,18 +182,18 @@ public:
 
 
 	/* 
-     * Spawn the pawn specified through parameters
+     * Spawn the piece specified through parameters
 	 *
-	 * @param PawnType		EPawnType	Type of the pawn to spawn
-	 * @param PawnColor		EPawnColor	Color of the pawn to spawn
-	 * @param X				int8		X position of the pawn to spawn
-	 * @param Y				int8		Y position of the pawn to spawn
+	 * @param PieceType		EPieceType	Type of the piece to spawn
+	 * @param PieceColor	EPieceColor	Color of the piece to spawn
+	 * @param X				int8		X position of the piece to spawn
+	 * @param Y				int8		Y position of the piece to spawn
 	 * @param PlayerOwner	int8		Player owner of the new piece
 	 * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
 	 *
 	 * @return				ABasePiece*	Pointer to the spawned pawn
 	 */
-	ABasePiece* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
+	ABasePiece* SpawnPiece(EPieceType PieceType, EPieceColor PieceColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
 
 
 	/*
@@ -203,7 +203,7 @@ public:
 	 * @param Y			int8	Y position of the piece to despawn
 	 * @param Simulate	bool	Flag if the spawn should be simulated or not (graphically hide the piece or not)
 	 */
-	void DespawnPawn(int8 X, int8 Y, bool Simulate = false);
+	void DespawnPiece(int8 X, int8 Y, bool Simulate = false);
 
 
 	/*
@@ -223,20 +223,20 @@ public:
 	/*
 	 * Do a backup of pieces information in the data structured passed as parameter
 	 *
-	 * @param PiecesInfo  TArray<std::pair<EPawnStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
+	 * @param PiecesInfo  TArray<std::pair<EPieceStatus, FVector2D>>&	Ordered collection (by PieceNum) to store pieces information
 	 *																	1st element: piece status (ALIVE / DEAD)
 	 *																	2nd element: grid position
 	 */
-	void BackupPiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfo) const;
+	void BackupPiecesInfo(TArray<std::pair<EPieceStatus, FVector2D>>& PiecesInfo) const;
 
 	/*
 	 * Restore pieces information in the data structured through the TArray passed as parameter
 	 *
-	 * @param PiecesInfoBackup  TArray<std::pair<EPawnStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
+	 * @param PiecesInfoBackup  TArray<std::pair<EPieceStatus, FVector2D>>&		Ordered collection (by PieceNum) to store pieces information
 	 *																			1st element: piece status (ALIVE / DEAD)
 	 *																			2nd element: grid position
 	 */
-	void RestorePiecesInfo(TArray<std::pair<EPawnStatus, FVector2D>>& PiecesInfoBackup);
+	void RestorePiecesInfo(TArray<std::pair<EPieceStatus, FVector2D>>& PiecesInfoBackup);
 
 	
 //protected:

@@ -37,11 +37,11 @@ public:
 	 * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
 	 *
 	 * @param GameMode			const AChess_GameMode*	Gamemode to refer to
-	 * @param Pawn				const ABasePiece*		The pawn which has been moved
+	 * @param Piece				const ABasePiece*		The piece which has been moved
 	 * @param EatFlag			const bool = false		If another piece has been captured
 	 * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
 	 */
-	static void AddToReplay(AChess_GameMode* GameMode, const ABasePiece* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false);
+	static void AddToReplay(AChess_GameMode* GameMode, const ABasePiece* Piece, const bool EatFlag = false, const bool PawnPromotionFlag = false);
 	
 
 	/*
@@ -49,11 +49,11 @@ public:
 	 * The piece is taken as argument, while the previous tile is taken from the attributes of the GameMode
 	 *
 	 * @param GameMode			AChess_GameMode*		GameMode to refer to
-	 * @param Pawn				const ABasePiece*		The pawn which has been moved
+	 * @param Piece				const ABasePiece*		The piece which has been moved
 	 * @param EatFlag			const bool = false		If another piece has been captured
 	 * @param PawnPromotionFlag	const bool = false		If a pawn promotion has been happened
 	 * 
 	 * @return					FString					Move name
 	 */
-	static FString ComputeMoveName(const AChess_GameMode* GameMode, const ABasePiece* Pawn, const bool EatFlag = false, const bool PawnPromotionFlag = false);
+	static FString ComputeMoveName(const AChess_GameMode* GameMode, const ABasePiece* Piece, const bool EatFlag = false, const bool PawnPromotionFlag = false);
 };

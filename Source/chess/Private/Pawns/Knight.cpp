@@ -6,7 +6,7 @@
 AKnight::AKnight()
 {
 	Id = TEXT("N");
-	Type = EPawnType::KNIGHT;
+	Type = EPieceType::KNIGHT;
 	MaxNumberSteps = KNIGHT_MAX_NUMBER_STEPS; 
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TL);
 	CardinalDirections.Add(ECardinalDirection::KNIGHT_TR);
