@@ -26,7 +26,7 @@
 class IChess_PlayerInterface;
 class AActor;
 class AGameField;
-class ABasePawn;
+class ABasePiece;
 
 enum class EPawnType : uint8;
 enum class EPawnColor : int8;
@@ -153,7 +153,7 @@ public:
 	EPawnType PawnPromotionType;
 
 	// Used to remember which information about last move
-	ABasePawn* LastPiece;
+	ABasePiece* LastPiece;
 	FVector2D LastGridPosition;
 	bool LastEatFlag = false;
 
@@ -183,14 +183,14 @@ public:
 	 * and verifying if a king is under attack, after this it is assigned to the gamemode attribute.
 	 * Otherwise, the new check situation obtained by simulating the move of Piece on [NewX, NewY] is evaluated
 	 *
-	 * @param Pawn	ABasePawn* = nullptr	Piece to move on new x and new y
+	 * @param Pawn	ABasePiece* = nullptr	Piece to move on new x and new y
 	 * @param NewX	const int8 = -1			New X position of the piece to move
 	 * @param NewY	const int8 = -1			New Y position of the piece to move
 	 *
 	 * @return		EPawnColor				Check situation
 	 */
 	EPawnColor IsCheck(
-		ABasePawn* Pawn			= nullptr, 
+		ABasePiece* Pawn			= nullptr, 
 		const int8 NeX			= -1, 
 		const int8 NewY			= -1, 
 		const bool CastlingFlag = false);
@@ -231,7 +231,7 @@ public:
 	/*
 	 * Compute the eligible moves of the chess piece passed as parameter
 	 *
-	 * @param Pawn								ABasePawn*							Piece on which to calculate the eligible moves
+	 * @param Pawn								ABasePiece*							Piece on which to calculate the eligible moves
 	 * @param ConsiderOnlyAttackableTiles		bool = false						Flag to determine if only the attackable tiles should be taken into account 
 	 *																				(possible tiles to move on and attackable tiles are different for pawns)
 	 * @param CheckCheckFlag					bool = false						Flag to determine if checking the new check situation should be evaluated
@@ -241,7 +241,7 @@ public:
 	 * @return									TArray<std::pair<int8, int8>>		TArray made of new possible X,Y of the chess piece
 	 */
 	TArray<std::pair<int8, int8>> ShowPossibleMoves(
-		ABasePawn* Pawn, 
+		ABasePiece* Pawn, 
 		const bool ConsiderOnlyAttackableTiles = false,
 		const bool CheckCheckFlag			   = true, 
 		const bool UpdateWhoCanGoFlag		   = false
@@ -251,7 +251,7 @@ public:
 	/*
 	 * Compute if a move (specified through parameters) is valid or not (following the rule of chess game)
 	 *
-	 * @param Pawn							ABasePawn*			Piece to try to move on new x and new y 
+	 * @param Pawn							ABasePiece*			Piece to try to move on new x and new y 
 	 * @param NewX							const int8			New x position of the piece
 	 * @param NewY							const int8			New y position of the piece
 	 * @param ConsiderOnlyAttackableTiles	const bool = false	Determine if only the attackable tiles should be taken into account 
@@ -262,7 +262,7 @@ public:
 	 * @param return 						bool				Determine if a move is valid or not
 	 */
 	bool IsValidMove(
-		ABasePawn* Pawn, 
+		ABasePiece* Pawn, 
 		const int8 NewX, 
 		const int8 NewY, 
 		const bool ConsiderOnlyAttackableTiles = false,
@@ -274,7 +274,7 @@ public:
 	/*
 	 * Make the move specified through paramters
 	 *
-	 * @param Piece		ABasePawn*		Piece to move
+	 * @param Piece		ABasePiece*		Piece to move
 	 * @param NewX		const int8		X to end to
 	 * @param NewY		const int8		Y to end to
 	 * @param Simulate	bool = false	Determine if the move is just a simulation or not.
@@ -282,7 +282,7 @@ public:
 	 *
 	 * @return			bool			Flag to notify if a capture happened
 	 */
-	bool MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate = false);
+	bool MakeMove(ABasePiece* Piece, const int8 NewX, const int8 NewY, bool Simulate = false);
 
 
 	/*

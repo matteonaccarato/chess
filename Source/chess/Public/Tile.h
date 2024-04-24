@@ -7,20 +7,20 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
-class ABasePawn;
+class ABasePiece;
 
 USTRUCT(BlueprintType)
 struct FTileStatus
 {
 	GENERATED_BODY()
 
-	ABasePawn* Piece;
+	ABasePiece* Piece;
 	bool EmptyFlag;	// 1 => EMPTY | 0 => OCCUPIED
 	int8 AttackableFrom[2] = { 
 		0,	// from WHITE
 		0	// from BLACK
 	};
-	TArray<ABasePawn*> WhoCanGo;
+	TArray<ABasePiece*> WhoCanGo;
 	EPawnColor PawnColor;
 	EPawnType PawnType;
 	int8 PlayerOwner;
@@ -37,8 +37,8 @@ public:
 
 	UStaticMeshComponent* GetStaticMeshComponent() const;
 
-	void SetPawn(ABasePawn* Piece);
-	ABasePawn* GetPawn() const;
+	void SetPawn(ABasePiece* Piece);
+	ABasePiece* GetPawn() const;
 
 	FString GetId() const;
 

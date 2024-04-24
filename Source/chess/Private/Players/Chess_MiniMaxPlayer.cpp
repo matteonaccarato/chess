@@ -68,7 +68,7 @@ void AChess_MiniMaxPlayer::OnTurn()
 
 							if (GameMode->GField->PawnArray.IsValidIndex(BestMove.first))
 							{
-								ABasePawn* Pawn = GameMode->GField->PawnArray[BestMove.first];
+								ABasePiece* Pawn = GameMode->GField->PawnArray[BestMove.first];
 								if (Pawn)
 								{
 									int8 OldX = Pawn->GetGridPosition()[0];
@@ -427,8 +427,8 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		int8 PawnsCounts[2]	  = { 0, 0 };
 
 		GameMode->ComputeAttackableTiles();
-		ABasePawn* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
-		ABasePawn* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
+		ABasePiece* WhiteKing = GameMode->GField->PawnArray[GameMode->KingWhitePieceNum];
+		ABasePiece* BlackKing = GameMode->GField->PawnArray[GameMode->KingBlackPieceNum];
 		int8 AttackableKings[2] = {
 			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
 			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
@@ -483,12 +483,12 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
  * 	+ K +
  *	+ + +
  *
- * @param KingToBlock	const ABasePawn*	Pointer to the king to block the moves to
+ * @param KingToBlock	const ABasePiece*	Pointer to the king to block the moves to
  *
  * @return				int32				Number of blocked directions  
  *
  */
-int32 AChess_MiniMaxPlayer::ComputeBlockingKingScore(const ABasePawn* KingToBlock) const
+int32 AChess_MiniMaxPlayer::ComputeBlockingKingScore(const ABasePiece* KingToBlock) const
 {
 	int32 Score = 0;
 	int8 OpponentIdx = KingToBlock->GetColor() == EPawnColor::WHITE ? 1 : 0;

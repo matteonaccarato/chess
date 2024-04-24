@@ -10,7 +10,7 @@
 #include "GameFramework/Actor.h"
 #include "GameField.generated.h"
 
-class ABasePawn;
+class ABasePiece;
 struct FPieceSaving;
 
 UENUM()
@@ -73,7 +73,7 @@ public:
 
 	// PIECES
 	UPROPERTY(EditDefaultsOnly)
-	TMap<EPawnType, TSubclassOf<ABasePawn>> ChessPieces;
+	TMap<EPawnType, TSubclassOf<ABasePiece>> ChessPieces;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Materials")
 	TMap<EPawnType, UMaterialInterface*> ChessPiecesWhiteMaterials;
@@ -82,10 +82,10 @@ public:
 	TMap<EPawnType, UMaterialInterface*> ChessPiecesBlackMaterials;
 
 	UPROPERTY(Transient)
-	TArray<ABasePawn*> PawnArray;
+	TArray<ABasePiece*> PawnArray;
 	
 	UPROPERTY(Transient)
-	TMap<FVector2D, ABasePawn*> PawnMap;
+	TMap<FVector2D, ABasePiece*> PawnMap;
 
 
 	// Letters / Numbers
@@ -190,9 +190,9 @@ public:
 	 * @param PlayerOwner	int8		Player owner of the new piece
 	 * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
 	 *
-	 * @return				ABasePawn*	Pointer to the spawned pawn
+	 * @return				ABasePiece*	Pointer to the spawned pawn
 	 */
-	ABasePawn* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
+	ABasePiece* SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner = ChessEnums::NOT_ASSIGNED, bool Simulate = false);
 
 
 	/*

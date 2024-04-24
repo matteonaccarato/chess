@@ -22,7 +22,7 @@ ATile::ATile()
 		nullptr, 
 		1, 
 		{ 0, 0 }, 
-		TArray<ABasePawn*>(),
+		TArray<ABasePiece*>(),
 		EPawnColor::NONE,
 		EPawnType::NONE, 
 		ChessEnums::NOT_ASSIGNED
@@ -37,12 +37,12 @@ UStaticMeshComponent* ATile::GetStaticMeshComponent() const
 	return StaticMeshComponent;
 }
 
-ABasePawn* ATile::GetPawn() const
+ABasePiece* ATile::GetPawn() const
 {
 	return Status.Piece;
 }
 
-void ATile::SetPawn(ABasePawn* Piece)
+void ATile::SetPawn(ABasePiece* Piece)
 {
 	Status.Piece = Piece;
 }

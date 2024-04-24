@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BasePawn.h"
+#include "BasePiece.h"
 #include "King.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API AKing : public ABasePawn
+class CHESS_API AKing : public ABasePiece
 {
 	GENERATED_BODY()
 	

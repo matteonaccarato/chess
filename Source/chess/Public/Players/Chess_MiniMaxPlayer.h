@@ -101,11 +101,11 @@ public:
 	 * 	+ K +
 	 *	+ + +
 	 *
-	 * @param KingToBlock	const ABasePawn*	Pointer to the king to block the moves to
+	 * @param KingToBlock	const ABasePiece*	Pointer to the king to block the moves to
 	 *
 	 * @return				int32				Number of blocked directions  
 	 */
-	int32 ComputeBlockingKingScore(const ABasePawn* KingToBlock) const;
+	int32 ComputeBlockingKingScore(const ABasePiece* KingToBlock) const;
 
 protected:
 	// Called when the game starts or when spawned

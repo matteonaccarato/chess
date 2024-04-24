@@ -85,7 +85,7 @@ void AChess_HumanPlayer::OnClick()
 	if (Hit.bBlockingHit && IsMyTurn)
 	{
 		// Auxiliary variable used to store the piece to eat(if necessary)
-		ABasePawn* PawnToEat = nullptr;
+		ABasePiece* PawnToEat = nullptr;
 		AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
@@ -96,8 +96,8 @@ void AChess_HumanPlayer::OnClick()
 				GameMode->GField->TileArray[move.first * GameMode->GField->Size + move.second]->GetStaticMeshComponent()->SetMaterial(0, Material);
 			}
 			
-			// Click on a chess piece actor <ABasePawn>
-			if (Cast<ABasePawn>(Hit.GetActor()))
+			// Click on a chess piece actor <ABasePiece>
+			if (Cast<ABasePiece>(Hit.GetActor()))
 			{
 
 				if (GameMode->ReplayInProgress != 0)
@@ -229,7 +229,7 @@ void AChess_HumanPlayer::OnClick()
 
 				// Temporary variable to store the selected piece (it can be the one to move or the one to eat).
 				// This decision is based on SelectedPawnFlag (bool)
-				ABasePawn* PawnSelected = Cast<ABasePawn>(Hit.GetActor());
+				ABasePiece* PawnSelected = Cast<ABasePiece>(Hit.GetActor());
 				if (PawnSelected && PawnSelected->GetColor() == EPawnColor::WHITE)
 				{
 					// Selected human's chess piece (piece to move)

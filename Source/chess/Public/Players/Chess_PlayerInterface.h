@@ -12,7 +12,7 @@
 enum class EPawnColor : int8;
 
 class AChess_GameField;
-class ABasePawn;
+class ABasePiece;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)

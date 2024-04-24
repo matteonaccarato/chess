@@ -7,13 +7,13 @@
 #include "ChessEnums.h"
 #include "GameField.h"
 #include "GameFramework/Actor.h"
-#include "BasePawn.generated.h"
+#include "BasePiece.generated.h"
 
 class AChess_GameMode;
 class AGameField;
 
 UCLASS()
-class CHESS_API ABasePawn : public AActor
+class CHESS_API ABasePiece : public AActor
 {
 	GENERATED_BODY()
 	
@@ -33,7 +33,7 @@ public:
 	 * Construct the piece assigning its moving properties 
 	 *	(type, max number of steps and movement direction)
 	 */
-	ABasePawn();
+	ABasePiece();
 
 	UStaticMeshComponent* GetStaticMeshComponent() const;
 

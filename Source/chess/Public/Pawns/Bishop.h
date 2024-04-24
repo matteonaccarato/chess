@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BasePawn.h"
+#include "BasePiece.h"
 #include "Bishop.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CHESS_API ABishop : public ABasePawn
+class CHESS_API ABishop : public ABasePiece
 {
 	GENERATED_BODY()
 	

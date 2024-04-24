@@ -421,7 +421,7 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
 			UGameplayStatics::PlaySound2D(GetWorld(), CheckSound, 1, 1, 0, NULL, false, true);
 
-			const ABasePawn* KingUnderCheck = CheckFlag == EPawnColor::WHITE ? GField->PawnArray[KingWhitePieceNum] : GField->PawnArray[KingBlackPieceNum];
+			const ABasePiece* KingUnderCheck = CheckFlag == EPawnColor::WHITE ? GField->PawnArray[KingWhitePieceNum] : GField->PawnArray[KingBlackPieceNum];
 			int8 x = KingUnderCheck->GetGridPosition()[0];
 			int8 y = KingUnderCheck->GetGridPosition()[1];
 			UMaterialInterface* Material = ((x + y) % 2) ? 
@@ -458,13 +458,13 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
  * and verifying if a king is under attack, after this it is assigned to the gamemode attribute.
  * Otherwise, the new check situation obtained by simulating the move of Piece on [NewX, NewY] is evaluated
  *
- * @param Pawn	ABasePawn* = nullptr	Piece to move on new x and new y
+ * @param Pawn	ABasePiece* = nullptr	Piece to move on new x and new y
  * @param NewX	const int8 = -1			New X position of the piece to move
  * @param NewY	const int8 = -1			New Y position of the piece to move
  *
  * @return		EPawnColor				Check situation
  */
-EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool CastlingFlag)
+EPawnColor AChess_GameMode::IsCheck(ABasePiece* Pawn, const int8 NewX, const int8 NewY, const bool CastlingFlag)
 {
 	EPawnColor ColorAttacker = CurrentPlayer ? EPawnColor::BLACK : EPawnColor::WHITE;
 
@@ -489,14 +489,14 @@ EPawnColor AChess_GameMode::IsCheck(ABasePawn* Pawn, const int8 NewX, const int8
 			ATile* OldTile = GField->TileArray[Backup_OldPosition[0] * GField->Size + Backup_OldPosition[1]];
 			ATile* NewTile = GField->TileArray[NewX * GField->Size + NewY];
 
-			ABasePawn* Backup_OldPawn = OldTile->GetPawn();
+			ABasePiece* Backup_OldPawn = OldTile->GetPawn();
 			int32 Backup_OldPlayerOwner = OldTile->GetPlayerOwner();
 			FTileStatus Backup_OldTileStatus = OldTile->GetTileStatus();
 
 			int32 Backup_NewPlayerOwner = NewTile->GetPlayerOwner();
 			FTileStatus Backup_NewTileStatus = NewTile->GetTileStatus();
 
-			ABasePawn* PawnToEat = NewTile->GetPawn();
+			ABasePiece* PawnToEat = NewTile->GetPawn();
 			FVector2D Backup_PawnToEatGridPosition;
 			if (PawnToEat)
 			{
@@ -632,8 +632,8 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
 {
 	EMatchResult Result = EMatchResult::NONE;
 
-	ABasePawn* WhiteKing = GField->PawnArray[KingWhitePieceNum];
-	ABasePawn* BlackKing = GField->PawnArray[KingBlackPieceNum];
+	ABasePiece* WhiteKing = GField->PawnArray[KingWhitePieceNum];
+	ABasePiece* BlackKing = GField->PawnArray[KingBlackPieceNum];
 	if (WhitePieces.Num() == 0)
 		Result = CheckFlag == EPawnColor::WHITE ? EMatchResult::WHITE : EMatchResult::STALEMATE;
 	else if (BlackPieces.Num() == 0)
@@ -654,7 +654,7 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
  * ----------------------------
  * Compute the eligible moves of the chess piece passed as parameter
  *
- * @param Pawn								ABasePawn*							Piece on which to calculate the eligible moves
+ * @param Pawn								ABasePiece*							Piece on which to calculate the eligible moves
  * @param ConsiderOnlyAttackableTiles		bool = false						Flag to determine if only the attackable tiles should be taken into account 
  *																				(possible tiles to move on and attackable tiles are different for pawns)
  * @param CheckCheckFlag					bool = false						Flag to determine if checking the new check situation should be evaluated
@@ -663,7 +663,7 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
  *
  * @return									TArray<std::pair<int8, int8>>		TArray made of new possible X,Y of the chess piece
  */
-TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn, const bool ConsiderOnlyAttackableTiles, const bool CheckCheckFlag, const bool UpdateWhoCanGoFlag)
+TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePiece* Pawn, const bool ConsiderOnlyAttackableTiles, const bool CheckCheckFlag, const bool UpdateWhoCanGoFlag)
 {
 	TArray<std::pair<int8, int8>> PossibleMoves;
 	if (Pawn && Pawn->GetStatus() == EPawnStatus::ALIVE)
@@ -741,7 +741,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
  * ----------------------------
  * Compute if a move (specified through parameters) is valid or not (following the rule of chess game)
  *
- * @param Pawn							ABasePawn*			Piece to try to move on new x and new y 
+ * @param Pawn							ABasePiece*			Piece to try to move on new x and new y 
  * @param NewX							const int8			New x position of the piece
  * @param NewY							const int8			New y position of the piece
  * @param ConsiderOnlyAttackableTiles	const bool = false	Determine if only the attackable tiles should be taken into account 
@@ -751,7 +751,7 @@ TArray<std::pair<int8, int8>> AChess_GameMode::ShowPossibleMoves(ABasePawn* Pawn
  * 
  * @param return 						bool				Determine if a move is valid or not
  */
-bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 NewY, const bool ConsiderOnlyAttackableTiles, const bool CheckCheckFlag, const bool CastlingFlag)
+bool AChess_GameMode::IsValidMove(ABasePiece* Pawn, const int8 NewX, const int8 NewY, const bool ConsiderOnlyAttackableTiles, const bool CheckCheckFlag, const bool CastlingFlag)
 {
 	bool IsValid = false;
 
@@ -885,7 +885,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
  * ----------------------------
  * Make the move specified through paramters
  *
- * @param Piece		ABasePawn*		Piece to move
+ * @param Piece		ABasePiece*		Piece to move
  * @param NewX		const int8		X to end to
  * @param NewY		const int8		Y to end to
  * @param Simulate	bool = false	Determine if the move is just a simulation or not.
@@ -893,7 +893,7 @@ bool AChess_GameMode::IsValidMove(ABasePawn* Pawn, const int8 NewX, const int8 N
  *
  * @return			bool			Flag to notify if a capture happened
  */
-bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 NewY, bool Simulate)
+bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 NewY, bool Simulate)
 {
 	bool EatFlag = false;
 	int8 OldX = Piece->GetGridPosition()[0];
@@ -909,7 +909,7 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 		EatFlag = static_cast<int>(TilesArray[NewX * GField->Size + NewY]->GetTileStatus().PawnColor) == -static_cast<int>(Piece->GetColor());
 		if (EatFlag)
 		{
-			ABasePawn* PawnToEat = TilesArray[NewX * GField->Size + NewY]->GetPawn();
+			ABasePiece* PawnToEat = TilesArray[NewX * GField->Size + NewY]->GetPawn();
 			if (PawnToEat && PawnToEat->GetType() != EPawnType::KING)
 				GField->DespawnPawn(PawnToEat->GetGridPosition()[0], PawnToEat->GetGridPosition()[1], Simulate);
 			if (PawnToEat && PawnToEat->GetType() == EPawnType::KING)
@@ -936,7 +936,7 @@ bool AChess_GameMode::MakeMove(ABasePawn* Piece, const int8 NewX, const int8 New
 			int8 RookX = Piece->GetColor() == EPawnColor::WHITE ? 0 : GField->Size - 1;
 			int8 OldRookY = ShortCastling ? GField->Size - 1 : 0;
 			ATile* OldRookTile = GField->TileArray[RookX * GField->Size + OldRookY];
-			ABasePawn* RookToMove = OldRookTile->GetPawn();
+			ABasePiece* RookToMove = OldRookTile->GetPawn();
 
 			int8 NewRookY = OldRookY + (ShortCastling ? SHORT_CASTLING_OFFSET : LONG_CASTLING_OFFSET);
 			if (GField->IsValidTile(RookX, NewRookY))
@@ -993,7 +993,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPawnType PawnType)
 
 	// Despawn & Spawn selected pieces
 	GField->DespawnPawn(X, Y);
-	ABasePawn* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
+	ABasePiece* PawnTemp = GField->SpawnPawn(PawnType, Players[CurrentPlayer]->Color, X, Y);
 
 	if (PawnPromotionWidget != nullptr)
 		PawnPromotionWidget->RemoveFromParent();

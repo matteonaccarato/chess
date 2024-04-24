@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BasePawn.h"
+#include "BasePiece.h"
 
 // Sets default values
-ABasePawn::ABasePawn()
+ABasePiece::ABasePiece()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -15,28 +15,28 @@ ABasePawn::ABasePawn()
 	StaticMeshComponent->SetupAttachment(Scene);
 }
 
-UStaticMeshComponent* ABasePawn::GetStaticMeshComponent() const { return StaticMeshComponent; }
-FString ABasePawn::GetId() const { return Id; }
+UStaticMeshComponent* ABasePiece::GetStaticMeshComponent() const { return StaticMeshComponent; }
+FString ABasePiece::GetId() const { return Id; }
 
-int ABasePawn::GetPieceNum() const { return PieceNum; }
-void ABasePawn::SetPieceNum(int Num) { PieceNum = Num; }
+int ABasePiece::GetPieceNum() const { return PieceNum; }
+void ABasePiece::SetPieceNum(int Num) { PieceNum = Num; }
 
-void ABasePawn::SetMaxNumberSteps(int NumberSteps) { MaxNumberSteps = NumberSteps; }
-int ABasePawn::GetMaxNumberSteps() const { return MaxNumberSteps; }
+void ABasePiece::SetMaxNumberSteps(int NumberSteps) { MaxNumberSteps = NumberSteps; }
+int ABasePiece::GetMaxNumberSteps() const { return MaxNumberSteps; }
 
-void ABasePawn::SetColor(EPawnColor PawnColor) { Color = PawnColor; }
-EPawnColor ABasePawn::GetColor() const { return Color; }
+void ABasePiece::SetColor(EPawnColor PawnColor) { Color = PawnColor; }
+EPawnColor ABasePiece::GetColor() const { return Color; }
 
-TArray<ECardinalDirection> ABasePawn::GetCardinalDirections() const { return CardinalDirections; }
+TArray<ECardinalDirection> ABasePiece::GetCardinalDirections() const { return CardinalDirections; }
 
-void ABasePawn::SetType(EPawnType PawnType) { Type = PawnType; }
-EPawnType ABasePawn::GetType() const { return Type; }
+void ABasePiece::SetType(EPawnType PawnType) { Type = PawnType; }
+EPawnType ABasePiece::GetType() const { return Type; }
 
-void ABasePawn::SetStatus(EPawnStatus PawnStatus) { Status = PawnStatus; }
-EPawnStatus ABasePawn::GetStatus() const { return Status; }
+void ABasePiece::SetStatus(EPawnStatus PawnStatus) { Status = PawnStatus; }
+EPawnStatus ABasePiece::GetStatus() const { return Status; }
 
-void ABasePawn::SetGridPosition(const double InX, const double InY) { TileGridPosition.Set(InX, InY); }
-FVector2D ABasePawn::GetGridPosition() const { return TileGridPosition; }
+void ABasePiece::SetGridPosition(const double InX, const double InY) { TileGridPosition.Set(InX, InY); }
+FVector2D ABasePiece::GetGridPosition() const { return TileGridPosition; }
 
 
 /*
@@ -50,7 +50,7 @@ FVector2D ABasePawn::GetGridPosition() const { return TileGridPosition; }
  *
  * @return				std::pair<int8, int8>	Pair containing XOffset as first argument and YOffset as second one
  */
-std::pair<int8, int8> ABasePawn::GetXYOffset(const int8 Steps, const ECardinalDirection Direction) const
+std::pair<int8, int8> ABasePiece::GetXYOffset(const int8 Steps, const ECardinalDirection Direction) const
 {
 	// Flag to determine if going to north or south / east or west / ... / and exploit symmetry
 	int8 FlagDirection = 0;
@@ -146,7 +146,7 @@ std::pair<int8, int8> ABasePawn::GetXYOffset(const int8 Steps, const ECardinalDi
  *
  * @return	bool	Whether the movement along the specified direction is allowed or not
  */
-bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition)
+bool ABasePiece::CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition)
 {
 	EPawnColor DirectionFlag = Color;
 	int8 DeltaX = (NewGridPosition[0] - CurrGridPosition[0]);
@@ -204,7 +204,7 @@ bool ABasePawn::CheckDirection(const AGameField* GameBoard, const EDirection Dir
  * @param Simulate	bool = false	Determine if the move is just a simulation or not.
  *									If so, graphically moving the piece is not required
  */
-void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
+void ABasePiece::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 {
 	if (OldTile && NewTile)
 	{
@@ -233,18 +233,18 @@ void ABasePawn::Move(ATile* OldTile, ATile* NewTile, bool Simulate)
 
 
 // Called when the game starts or when spawned
-void ABasePawn::BeginPlay()
+void ABasePiece::BeginPlay()
 {
 	Super::BeginPlay();	
 }
 
 // Called every frame
-/* void ABasePawn::Tick(float DeltaTime)
+/* void ABasePiece::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 } */
 
-void ABasePawn::SelfDestroy()
+void ABasePiece::SelfDestroy()
 {
 	Destroy();
 }

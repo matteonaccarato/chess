@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 // #include "../Replay_GameMode.h"
 #include "GameFramework/Pawn.h"
-#include "../BasePawn.h"
+#include "../BasePiece.h"
 #include "../Chess_GameInstance.h"
 #include "Chess_PlayerInterface.h"
 #include "Camera/CameraComponent.h"
@@ -51,7 +51,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Auxiliary variable used to store the chosen piece to move
-	ABasePawn* PawnTemp;
+	ABasePiece* PawnTemp;
 
 	// 0 => Select Pawn to move is needed
 	// 1 => Pawn selected, Choose Tile to move on

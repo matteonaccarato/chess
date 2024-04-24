@@ -373,12 +373,12 @@ bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const
  * @param PlayerOwner	int8		Player owner of the new piece
  * @param Simulate		bool		Flag if the spawn should be simulated or not (graphically show the piece or not)
  *
- * @return				ABasePawn*	Pointer to the spawned pawn
+ * @return				ABasePiece*	Pointer to the spawned pawn
  */
-ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
+ABasePiece* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 X, int8 Y, int8 PlayerOwner, bool Simulate)
 {
-	TSubclassOf<ABasePawn> BasePawnClass;
-	ABasePawn* BasePawnObj = nullptr;
+	TSubclassOf<ABasePiece> BasePawnClass;
+	ABasePiece* BasePawnObj = nullptr;
 
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode && IsValidTile(X, Y))
@@ -409,7 +409,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		);
 
 		BasePawnClass = ChessPieces[PawnType];
-		BasePawnObj = GetWorld()->SpawnActor<ABasePawn>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
+		BasePawnObj = GetWorld()->SpawnActor<ABasePiece>(BasePawnClass, PawnLocation, FRotator(0, 90, 0));
 		if (BasePawnObj)
 		{
 			if (Simulate)
@@ -432,7 +432,7 @@ ABasePawn* AGameField::SpawnPawn(EPawnType PawnType, EPawnColor PawnColor, int8 
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("ABasePawn Obj is null"));
+			UE_LOG(LogTemp, Error, TEXT("ABasePiece Obj is null"));
 		}
 
 		TileStatus.Piece = BasePawnObj;
@@ -484,7 +484,7 @@ void AGameField::DespawnPawn(int8 X, int8 Y, bool Simulate)
 	if (IsValidTile(X, Y))
 	{
 		ATile* Tile = TileArray[X * Size + Y];
-		ABasePawn* Pawn = Tile->GetPawn();
+		ABasePiece* Pawn = Tile->GetPawn();
 		if (Tile)
 		{
 			// Reset old tile status
