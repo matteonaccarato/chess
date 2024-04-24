@@ -32,76 +32,27 @@ ATile::ATile()
 	TileGridPosition = FVector2D(ChessEnums::NOT_ASSIGNED, ChessEnums::NOT_ASSIGNED);
 }
 
-UStaticMeshComponent* ATile::GetStaticMeshComponent() const
-{
-	return StaticMeshComponent;
-}
+UStaticMeshComponent* ATile::GetStaticMeshComponent() const { return StaticMeshComponent; }
 
-ABasePiece* ATile::GetPawn() const
-{
-	return Status.Piece;
-}
+ABasePiece* ATile::GetPawn() const { return Status.Piece; }
+void ATile::SetPawn(ABasePiece* Piece) { Status.Piece = Piece; }
 
-void ATile::SetPawn(ABasePiece* Piece)
-{
-	Status.Piece = Piece;
-}
+FString ATile::GetId() const { return LetterId + FString::Printf(TEXT("%d"), NumberId); }
 
+void ATile::SetLetterId(const FString TileLetter) { LetterId = TileLetter; }
+FString ATile::GetLetterId() const { return LetterId; }
 
-FString ATile::GetId() const
-{
-	return LetterId + FString::Printf(TEXT("%d"), NumberId);
-}
+void ATile::SetNumberId(const int8 TileNumber) { NumberId = TileNumber; }
+int8 ATile::GetNumberId() const { return NumberId; }
 
-void ATile::SetLetterId(const FString TileLetter)
-{
-	LetterId = TileLetter;
-}
+void ATile::SetTileStatus(const FTileStatus TileStatus) { Status = TileStatus; }
+FTileStatus ATile::GetTileStatus() const { return Status; }
 
-FString ATile::GetLetterId() const
-{
-	return LetterId;
-}
+void ATile::SetPlayerOwner(const int32 P_Owner) { PlayerOwner = P_Owner; }
+int32 ATile::GetPlayerOwner() const { return PlayerOwner; }
 
-void ATile::SetNumberId(const int8 TileNumber)
-{
-	NumberId = TileNumber;
-}
-
-int8 ATile::GetNumberId() const
-{
-	return NumberId;
-}
-
-void ATile::SetTileStatus(const FTileStatus TileStatus)
-{
-	Status = TileStatus;
-}
-
-FTileStatus ATile::GetTileStatus() const
-{
-	return Status;
-}
-
-void ATile::SetPlayerOwner(const int32 P_Owner)
-{
-	PlayerOwner = P_Owner;
-}
-
-int32 ATile::GetPlayerOwner() const
-{
-	return PlayerOwner;
-}
-
-void ATile::SetGridPosition(const double InX, const double InY)
-{
-	TileGridPosition.Set(InX, InY);
-}
-
-FVector2D ATile::GetGridPosition() const
-{
-	return TileGridPosition;
-}
+void ATile::SetGridPosition(const double InX, const double InY) { TileGridPosition.Set(InX, InY); }
+FVector2D ATile::GetGridPosition() const { return TileGridPosition; }
 
 void ATile::ClearInfo()
 {

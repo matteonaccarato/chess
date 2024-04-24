@@ -83,7 +83,7 @@ public:
 	 *
 	 * @return	bool	Whether the movement along the specified direction is allowed or not
 	 */
-	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition);
+	bool CheckDirection(const AGameField* GameBoard, const EDirection Direction, const FVector2D NewGridPosition, const FVector2D CurrGridPosition) const;
 
 
 	/*
