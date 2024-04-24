@@ -302,7 +302,10 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
-					GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
+					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
+					{
+						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
+					}
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
@@ -365,7 +368,10 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PawnArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PawnArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
-					GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
+					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
+					{
+						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
+					}
 					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
