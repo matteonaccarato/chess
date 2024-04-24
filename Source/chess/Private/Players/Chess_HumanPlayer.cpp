@@ -147,9 +147,8 @@ void AChess_HumanPlayer::OnClick()
 									Piece->GetType()
 								});
 
-								switch (Piece->GetType())
+								if (Piece->GetType() == EPawnType::PAWN)
 								{
-								case EPawnType::PAWN:
 									if ((Piece->GetColor() == EPawnColor::WHITE && Piece->GetGridPosition()[0] == 1)
 										|| (Piece->GetColor() == EPawnColor::BLACK && Piece->GetGridPosition()[0] == GameMode->GField->Size - 2))
 									{
@@ -159,25 +158,6 @@ void AChess_HumanPlayer::OnClick()
 									{
 										Piece->SetMaxNumberSteps(1);
 									}
-									break;
-
-								case EPawnType::ROOK:
-									if (Piece->GetPieceNum() == GameMode->RookWhiteLeftPieceNum)
-										GameMode->CastlingInfoWhite.RooksMoved[0] = !(Piece->GetGridPosition() == FVector2D(0, 0));
-									else if (Piece->GetPieceNum() == GameMode->RookWhiteRightPieceNum)
-										GameMode->CastlingInfoWhite.RooksMoved[1] = !(Piece->GetGridPosition() == FVector2D(0, 7));
-									else if (Piece->GetPieceNum() == GameMode->RookBlackLeftPieceNum)
-										GameMode->CastlingInfoBlack.RooksMoved[0] = !(Piece->GetGridPosition() == FVector2D(7, 0));
-									else if (Piece->GetPieceNum() == GameMode->RookBlackRightPieceNum)
-										GameMode->CastlingInfoBlack.RooksMoved[1] = !(Piece->GetGridPosition() == FVector2D(7, 7));
-									break;
-
-								case EPawnType::KING:
-									if (Piece->GetColor() == EPawnColor::WHITE)
-										GameMode->CastlingInfoWhite.KingMoved = !(Piece->GetGridPosition() == FVector2D(0, 4));
-									else
-										GameMode->CastlingInfoBlack.KingMoved = !(Piece->GetGridPosition() == FVector2D(7, 4));
-									break;
 								}
 							}
 						}

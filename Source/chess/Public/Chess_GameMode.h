@@ -33,6 +33,15 @@ enum class EPawnColor : int8;
 
 
 USTRUCT(BlueprintType)
+struct FCastlingInfo
+{
+	GENERATED_BODY()
+
+	bool KingMoved = false;
+	bool RooksMoved[2] = { false, false }; // left / right
+};
+
+USTRUCT(BlueprintType)
 struct FPieceSaving
 {
 	GENERATED_BODY()
@@ -40,16 +49,6 @@ struct FPieceSaving
 	int8 X;
 	int8 Y;
 	EPawnStatus Status;
-};
-
-
-USTRUCT(BlueprintType)
-struct FCastlingInfo
-{
-	GENERATED_BODY()
-
-	bool KingMoved = false;
-	bool RooksMoved[2] = { false, false }; // left / right
 };
 
 
@@ -96,8 +95,11 @@ public:
 	int32 MoveCounter;
 	TArray<FString> RecordMoves;
 
-	TArray<TArray<FPieceSaving>> GameSaving;
-	TArray<FPieceSaving> CurrentBoard;
+	// 1st TArray of saved boards, each board is a TArray of PieceSaving structs
+	// 2nd CastlingInfo => for white
+	// 3rd CastlingInfo => for black
+	TArray<std::tuple<TArray<FPieceSaving>, FCastlingInfo, FCastlingInfo>> GameSaving;
+	std::tuple<TArray<FPieceSaving>, FCastlingInfo, FCastlingInfo> CurrentBoard;
 
 	/* Useful piece numbers to store */
 	int8 KingWhitePieceNum = -1;

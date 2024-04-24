@@ -408,8 +408,8 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		}
 
 		// Save current board and add it to the game history
-		CurrentBoard = BoardSaving;
-		GameSaving.Add(BoardSaving);
+		std::get<0>(CurrentBoard) = BoardSaving;
+		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack));
 
 
 		// Operation to init data strcture
@@ -1021,13 +1021,13 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 		// Init var to store if pieces of PieceConfiguration are the same as the current board
 		int8 ArePiecesEqual = 1;
 		int8 i = 0;
-		for (const auto& Piece : PieceConfiguration)
+		for (const auto& Piece : std::get<0>(PieceConfiguration))
 		{
-			if (CurrentBoard.IsValidIndex(i))
+			if (std::get<0>(CurrentBoard).IsValidIndex(i))
 			{
-				if (Piece.Status != CurrentBoard[i].Status
-					|| Piece.X != CurrentBoard[i].X
-					|| Piece.Y != CurrentBoard[i].Y)
+				if (Piece.Status != std::get<0>(CurrentBoard)[i].Status
+					|| Piece.X != std::get<0>(CurrentBoard)[i].X
+					|| Piece.Y != std::get<0>(CurrentBoard)[i].Y)
 				{
 					// Pieces are not equal anymore
 					ArePiecesEqual = 0;
@@ -1035,15 +1035,15 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 			} 
 			else
 			{
-				int EndPieceConfiguration = PieceConfiguration.Num();
-				for (int idx2 = EndPieceConfiguration; idx2 < CurrentBoard.Num(); idx2++)
+				int EndPieceConfiguration = std::get<0>(PieceConfiguration).Num();
+				for (int idx2 = EndPieceConfiguration; idx2 < std::get<0>(CurrentBoard).Num(); idx2++)
 				{
 					if (GField->PawnArray.IsValidIndex(idx2)
 						&& GField->PawnArray[idx2]->GetType() == GField->PawnArray[i]->GetType()
 						&& GField->PawnArray[idx2]->GetColor() == GField->PawnArray[i]->GetColor()
 						&& GField->PawnArray[idx2]->GetStatus() == GField->PawnArray[i]->GetStatus()
-						&& Piece.X == CurrentBoard[idx2].X
-						&& Piece.Y == CurrentBoard[idx2].Y)
+						&& Piece.X == std::get<0>(CurrentBoard)[idx2].X
+						&& Piece.Y == std::get<0>(CurrentBoard)[idx2].Y)
 						break; // the two pieces has the same color, type and grid position
 					else
 						ArePiecesEqual = 0; // pieces not equal
@@ -1171,8 +1171,8 @@ void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 			ReplayInProgress = NumMove;
 			if (GameSaving.IsValidIndex(NumMove - 1))
 			{
-				TArray<FPieceSaving> BoardToLoad = GameSaving[NumMove - 1];
-				GField->LoadBoard(BoardToLoad);
+				// std::tuple<TArray<FPieceSaving>, FCastlingInfo, FCastlingInfo> BoardToLoad = GameSaving[NumMove - 1];
+				GField->LoadBoard(GameSaving[NumMove - 1]);
 			}
 		}
 		else

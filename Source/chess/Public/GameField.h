@@ -12,6 +12,7 @@
 
 class ABasePiece;
 struct FPieceSaving;
+struct FCastlingInfo;
 
 UENUM()
 enum class ETileMaterialType : uint8
@@ -149,9 +150,9 @@ public:
 	/*
 	 * Load the board specified as argument
 	 *
-	 * @param Board		const TArray<FPieceSaving>&		Board to load
+	 * @param BoardInfo		std::tuple<const TArray<FPieceSaving>&, FCastlingInfo, FCastlingInfo>		Board to load (array of pieces, white castling info, black castling info)
 	 */
-	void LoadBoard(const TArray<FPieceSaving>& Board);
+	void LoadBoard(std::tuple<const TArray<FPieceSaving>&, FCastlingInfo, FCastlingInfo> BoardInfo);
 
 
 	/*

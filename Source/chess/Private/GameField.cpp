@@ -202,7 +202,7 @@ void AGameField::ResetField(bool bRestartGame)
 		GameMode->CastlingInfoWhite = { false, { false, false } };
 		GameMode->CastlingInfoBlack = { false, { false, false } };
 
-		LoadBoard(InitialBoard);
+		LoadBoard(std::make_tuple(InitialBoard, GameMode->CastlingInfoWhite, GameMode->CastlingInfoBlack));
 
 
 		// Clear replay
@@ -230,9 +230,9 @@ void AGameField::ResetField(bool bRestartGame)
  * ----------------------------
  * Load the board specified as argument
  * 
- * @param Board		const TArray<FPieceSaving>&		Board to load
+ * * @param BoardInfo		std::tuple<const TArray<FPieceSaving>&, FCastlingInfo, FCastlingInfo>		Board to load (array of pieces, white castling info, black castling info)
  */
-void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
+void AGameField::LoadBoard(std::tuple<const TArray<FPieceSaving>&, FCastlingInfo, FCastlingInfo> BoardInfo)
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
@@ -245,6 +245,7 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 		}
 
 		// Load chess pieces
+		const TArray<FPieceSaving>& Board = std::get<0>(BoardInfo);
 		FVector Origin, BoxExtent, Location, PawnLocation;
 		for (int8 i = 0; i < PawnArray.Num(); i++)
 		{
@@ -290,6 +291,8 @@ void AGameField::LoadBoard(const TArray<FPieceSaving>& Board)
 				PawnArray[i]->SetStatus(EPawnStatus::DEAD);
 			}
 		}
+		GameMode->CastlingInfoWhite = std::get<1>(BoardInfo);
+		GameMode->CastlingInfoBlack = std::get<2>(BoardInfo);
 	}
 }
 
