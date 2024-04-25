@@ -242,7 +242,6 @@ void AChess_GameMode::InitTurn()
 	WhitePiecesCanMove.Empty();
 	BlackPiecesCanMove.Empty();
 
-	// Pre-compute check needed to verify if castling condition is satisfied or not
 	IsCheck();
 
 	for (const auto& Piece : GField->PieceArray)
