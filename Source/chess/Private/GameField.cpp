@@ -325,7 +325,7 @@ bool AGameField::IsValidTile(const int8 X, const int8 Y) const
  * @param DeltaX				const int8			Movement delta X 
  * @param DeltaY				const int8			Movement delta Y
  * 
- * @param return				bool				true  -> no pieces along the movement
+ * @return						bool				true  -> no pieces along the movement
  *													false -> there is a piece along the movement
  */
 bool AGameField::IsLineClear(ELine Line, const FVector2D CurrGridPosition, const int8 DeltaX, const int8 DeltaY) const

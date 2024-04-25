@@ -261,7 +261,7 @@ public:
 	 * @param CheckCheckFlag				const bool = true	Determine if checking check state after this move is required
 	 * @param CastlingFlag					const bool = false	Determine if checking castling situation is required
 	 * 
-	 * @param return 						bool				Determine if a move is valid or not
+	 * @return		 						bool				Determine if a move is valid or not
 	 */
 	bool IsValidMove(
 		ABasePiece* Piece,
