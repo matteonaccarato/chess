@@ -30,7 +30,7 @@ Then you can resume the game from this position
 <hr>
 
 ### SAMPLE GAME
-![Sample game](./Content/Images/Readme/sample_game.png)
+![Sample game](./Content/Images/Readme/sample_game_2.png)
 
 <hr>
 
