@@ -308,8 +308,4 @@ void AChess_HumanPlayer::OnClick()
 			UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 		}
 	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("%d ERROR"), IsMyTurn));
-	}
 }
