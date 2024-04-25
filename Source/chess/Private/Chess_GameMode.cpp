@@ -242,6 +242,8 @@ void AChess_GameMode::InitTurn()
 	WhitePiecesCanMove.Empty();
 	BlackPiecesCanMove.Empty();
 
+	IsCheck();
+
 	for (const auto& Piece : GField->PieceArray)
 	{
 		TArray<std::pair<int8, int8>> Tmp = ShowPossibleMoves(Piece, false, true, true);
@@ -838,19 +840,24 @@ bool AChess_GameMode::IsValidMove(ABasePiece* Piece, const int8 NewX, const int8
 						if (CheckCheckFlag
 							&& GField->IsValidTile(NewGridPosition[0], CurrGridPosition[1] + i * FMath::Sign(DeltaY)))
 						{	
-							EPieceColor PreviousCheckFlag = CheckFlag;
-							EPieceColor NewCheckFlag = IsCheck(
-								Piece,
-								NewGridPosition[0], 
-								CurrGridPosition[1] + i * FMath::Sign(DeltaY),
-								true
-							);
-							CheckFlag = PreviousCheckFlag;
+							if (CheckFlag != Piece->GetColor())
+							{
+								EPieceColor PreviousCheckFlag = CheckFlag;
+								EPieceColor NewCheckFlag = IsCheck(
+									Piece,
+									NewGridPosition[0],
+									CurrGridPosition[1] + i * FMath::Sign(DeltaY),
+									true
+								);
+								CheckFlag = PreviousCheckFlag;
 
-							// Possible valid situations after having checked the new check situation
-							IsValid = NewCheckFlag == EPieceColor::NONE
-								|| (NewCheckFlag == EPieceColor::BLACK && Piece->GetColor() != EPieceColor::BLACK)
-								|| (NewCheckFlag == EPieceColor::WHITE && Piece->GetColor() != EPieceColor::WHITE);
+								// Possible valid situations after having checked the new check situation
+								IsValid = NewCheckFlag == EPieceColor::NONE
+									|| (NewCheckFlag == EPieceColor::BLACK && Piece->GetColor() != EPieceColor::BLACK)
+									|| (NewCheckFlag == EPieceColor::WHITE && Piece->GetColor() != EPieceColor::WHITE);
+							}
+							else
+								IsValid = false;
 						}
 					}
 				}
