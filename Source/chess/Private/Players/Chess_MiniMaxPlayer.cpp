@@ -282,15 +282,6 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 
 					// Make the move & compute new minimax at depth - 1
 					GameMode->MakeMove(GameMode->GField->PieceArray[PieceMove.first], Move.first, Move.second, true);
-					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
-					{
-						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
-						};
-						GameMode->GameSaving.Add(GameMode->CurrentBoard);
-					}
 					CurrentEval = FMath::Max(CurrentEval, MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer));
 
 					// Undo the move (restore data)
@@ -302,18 +293,6 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup); 
-					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
-					{
-						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
-					}
-					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
-					{
-						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
-							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
-							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
-							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
-						};
-					}
 
 					// Compare values
 					if (CurrentEval >= beta || CurrentEval == AChess_MiniMaxPlayer::INFINITE)
@@ -348,7 +327,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 
 					// Make the move & compute minimax with depth - 1
 					GameMode->MakeMove(GameMode->GField->PieceArray[PieceMove.first], Move.first, Move.second, true);
-					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
+					/*if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(PieceMove.first))
 					{
 						std::get<0>(GameMode->CurrentBoard)[PieceMove.first] = {
 							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[0]),
@@ -356,7 +335,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
 						GameMode->GameSaving.Add(GameMode->CurrentBoard);
-					}
+					} */
 					CurrentEval = FMath::Min(CurrentEval, MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer));
 
 					// Undo the move (restore data)
@@ -368,7 +347,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
-					if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
+					/* if (std::get<0>(GameMode->CurrentBoard).IsValidIndex(GameMode->GameSaving.Num() - 1))
 					{
 						GameMode->GameSaving.RemoveAt(GameMode->GameSaving.Num() - 1);
 					}
@@ -379,7 +358,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 							static_cast<int8>(GameMode->GField->PieceArray[PieceMove.first]->GetGridPosition()[1]),
 							GameMode->GField->PieceArray[PieceMove.first]->GetStatus()
 						};
-					}
+					} */
 
 					// Compare values
 					if (CurrentEval <= alpha || CurrentEval == -AChess_MiniMaxPlayer::INFINITE)

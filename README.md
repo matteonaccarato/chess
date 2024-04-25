@@ -24,7 +24,7 @@ to show bot performance data against each other.
 - History of the moves done in the game is shown on the right part of the screen (in proper buttons)
 - To view previous moves, you can just click on the button of the move you want to view. 
 The board configuration will be loaded as it was at that move.
-- REWIND: ONLY if you click on an opponent turn, you can active the rewind function by clicking one of your pieces.
+- <b>REWIND</b>: ONLY if you click on an opponent turn, you can active the rewind function by clicking one of your pieces.
 Then you can resume the game from this position
 
 <hr>
