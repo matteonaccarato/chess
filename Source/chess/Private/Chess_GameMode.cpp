@@ -171,7 +171,7 @@ void AChess_GameMode::ChoosePlayerAndStartGame()
 		1.0f, 
 		true);
 	
-	if (Players.Num() > 0 && Players[FMath::Abs(CurrentPlayer - 1)] && Players[CurrentPlayer])
+	if (Players.Num() >= MIN_NUMBER_SPAWN_PLAYERS && Players[FMath::Abs(CurrentPlayer - 1)] && Players[CurrentPlayer])
 	{
 		Players[FMath::Abs(CurrentPlayer - 1)]->IsMyTurn = false;
 		Players[CurrentPlayer]->IsMyTurn = true;
@@ -209,8 +209,11 @@ void AChess_GameMode::TurnNextPlayer()
 	MoveCounter += 1;
 	CurrentPlayer = GetNextPlayer(CurrentPlayer);
 
-	Players[CurrentPlayer]->IsMyTurn = true;
-	Players[CurrentPlayer]->OnTurn();
+	if (Players.IsValidIndex(CurrentPlayer))
+	{
+		Players[CurrentPlayer]->IsMyTurn = true;
+		Players[CurrentPlayer]->OnTurn();
+	}
 }
 
 
@@ -315,10 +318,13 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 				GField->MaterialsDark[ETileMaterialType::CHECKMATE];
 
 			UGameplayStatics::PlaySound2D(GetWorld(), GameOverCheckmateSound, 1, 1, 0, NULL, false, true);
-			Players[WinningPlayer]->OnWin();
-			for (int32 i = 0; i < Players.Num(); i++)
-				if (Players[i]->bIsActivePlayer && i != WinningPlayer)
-					Players[i]->OnLose();
+			if (Players.IsValidIndex(WinningPlayer))
+			{
+				Players[WinningPlayer]->OnWin();
+				for (int32 i = 0; i < Players.Num(); i++)
+					if (Players[i]->bIsActivePlayer && i != WinningPlayer)
+						Players[i]->OnLose();
+			}
 			break;
 		default:
 			UGameplayStatics::PlaySound2D(GetWorld(), GameOverDrawSound, 1, 1, 0, NULL, false, true);
@@ -372,81 +378,84 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 		if (IsGameOver || PlayerNumber != CurrentPlayer)
 			return;
 
-		Players[PlayerNumber]->IsMyTurn = false;
-
-		// Clean opponent's attackable tiles, they will be overwritten the next turn,
-		// so the previous state is useless
-		for (auto& InnerTArray : Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles)
-			InnerTArray.Empty();
-		Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
-
-		
-		// Clear AttackableFrom and WhoCanGo attribute of each tile
-		for (ATile* Tile : GField->TileArray)
+		if (Players.IsValidIndex(PlayerNumber) && Players.IsValidIndex(FMath::Abs(CurrentPlayer - 1)))
 		{
-			FTileStatus TileStatus = Tile->GetTileStatus();
-			TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)] = 0;
-			TileStatus.WhoCanGo.Empty();
-			Tile->SetTileStatus(TileStatus);
+			Players[PlayerNumber]->IsMyTurn = false;
+
+			// Clean opponent's attackable tiles, they will be overwritten the next turn,
+			// so the previous state is useless
+			for (auto& InnerTArray : Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles)
+				InnerTArray.Empty();
+			Players[FMath::Abs(CurrentPlayer - 1)]->AttackableTiles.Empty();
+
+
+			// Clear AttackableFrom and WhoCanGo attribute of each tile
+			for (ATile* Tile : GField->TileArray)
+			{
+				FTileStatus TileStatus = Tile->GetTileStatus();
+				TileStatus.AttackableFrom[FMath::Abs(CurrentPlayer - 1)] = 0;
+				TileStatus.WhoCanGo.Empty();
+				Tile->SetTileStatus(TileStatus);
+			}
+
+
+			// Save position (X,Y) of each piece in order to store current board situation
+			//	the index in the BoardSaving TArray identifies each piece
+			//	e.g. White rook at bottom-left is at index 0,
+			//	     White knight next to it is at 1,
+			//		 ...
+			//  e.g. [{0,0}, {2,0}, {1,3}, ...] means the Bottom-left white rook is at (0,0), the knight next to it is at (2,0), ...
+			TArray<FPieceSaving> BoardSaving;
+			for (const auto& Piece : GField->PieceArray)
+			{
+				BoardSaving.Add({
+					static_cast<int8>(Piece->GetGridPosition()[0]),
+					static_cast<int8>(Piece->GetGridPosition()[1]),
+					Piece->GetStatus()
+					});
+			}
+
+			// Save current board and add it to the game history
+			std::get<0>(CurrentBoard) = BoardSaving;
+			GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack));
+
+
+			// Operation to init data strcture
+			InitTurn();
+
+
+			if (CheckFlag != EPieceColor::NONE)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
+				UGameplayStatics::PlaySound2D(GetWorld(), CheckSound, 1, 1, 0, NULL, false, true);
+
+				const ABasePiece* KingUnderCheck = CheckFlag == EPieceColor::WHITE ? GField->PieceArray[KingWhitePieceNum] : GField->PieceArray[KingBlackPieceNum];
+				int8 x = KingUnderCheck->GetGridPosition()[0];
+				int8 y = KingUnderCheck->GetGridPosition()[1];
+				UMaterialInterface* Material = ((x + y) % 2) ?
+					GField->MaterialsLight[ETileMaterialType::CHECK] :
+					GField->MaterialsDark[ETileMaterialType::CHECK];
+				GField->TileArray[x * GField->Size + y]->GetStaticMeshComponent()->SetMaterial(0, Material);
+				GField->TileRestoreMaterialCoordinates = FVector2D(x, y);
+			}
+
+
+			// Match situation
+			MatchStatus = ComputeMatchResult(WhitePiecesCanMove, BlackPiecesCanMove);
+
+			if (LastPiece->GetType() == EPieceType::PAWN)
+				LastPawnMoveHappened = MoveCounter;
+			if (LastEatFlag)
+				LastCaptureHappened = MoveCounter;
+
+			ReplayManager::AddToReplay(this, LastPiece, LastEatFlag, PiecePromotionFlag);
+
+			// New turn
+			if (MatchStatus != EMatchResult::NONE)
+				EndTurn(-1);
+			else
+				TurnNextPlayer();
 		}
-
-
-		// Save position (X,Y) of each piece in order to store current board situation
-		//	the index in the BoardSaving TArray identifies each piece
-		//	e.g. White rook at bottom-left is at index 0,
-		//	     White knight next to it is at 1,
-		//		 ...
-		//  e.g. [{0,0}, {2,0}, {1,3}, ...] means the Bottom-left white rook is at (0,0), the knight next to it is at (2,0), ...
-		TArray<FPieceSaving> BoardSaving;
-		for (auto& Piece : GField->PieceArray)
-		{
-			BoardSaving.Add({
-				static_cast<int8>(Piece->GetGridPosition()[0]),
-				static_cast<int8>(Piece->GetGridPosition()[1]),
-				Piece->GetStatus()
-			});
-		}
-
-		// Save current board and add it to the game history
-		std::get<0>(CurrentBoard) = BoardSaving;
-		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack));
-
-
-		// Operation to init data strcture
-		InitTurn();
-
-
-		if (CheckFlag != EPieceColor::NONE)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Yellow, FString::Printf(TEXT("King under check | %d"), CheckFlag));
-			UGameplayStatics::PlaySound2D(GetWorld(), CheckSound, 1, 1, 0, NULL, false, true);
-
-			const ABasePiece* KingUnderCheck = CheckFlag == EPieceColor::WHITE ? GField->PieceArray[KingWhitePieceNum] : GField->PieceArray[KingBlackPieceNum];
-			int8 x = KingUnderCheck->GetGridPosition()[0];
-			int8 y = KingUnderCheck->GetGridPosition()[1];
-			UMaterialInterface* Material = ((x + y) % 2) ? 
-				GField->MaterialsLight[ETileMaterialType::CHECK] : 
-				GField->MaterialsDark[ETileMaterialType::CHECK];
-			GField->TileArray[x*GField->Size + y]->GetStaticMeshComponent()->SetMaterial(0, Material);
-			GField->TileRestoreMaterialCoordinates = FVector2D(x, y);
-		}
-		
-
-		// Match situation
-		MatchStatus = ComputeMatchResult(WhitePiecesCanMove, BlackPiecesCanMove);
-
-		if (LastPiece->GetType() == EPieceType::PAWN)
-			LastPawnMoveHappened = MoveCounter;
-		if (LastEatFlag)
-			LastCaptureHappened = MoveCounter;
-
-		ReplayManager::AddToReplay(this, LastPiece, LastEatFlag, PiecePromotionFlag);
-
-		// New turn
-		if (MatchStatus != EMatchResult::NONE)
-			EndTurn(-1);
-		else
-			TurnNextPlayer();
 	}
 }
 
@@ -570,7 +579,7 @@ void AChess_GameMode::ComputeAttackableTiles()
 		Tile->SetTileStatus(TileStatus);
 	}
 
-	for (auto& Piece : GField->PieceArray)
+	for (const auto& Piece : GField->PieceArray)
 	{
 		if (Piece->GetStatus() == EPieceStatus::ALIVE)
 		{
@@ -987,20 +996,23 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
  */
 void AChess_GameMode::SetPawnPromotionChoice(EPieceType PieceType)
 {
-	int8 X = LastGridPosition.X;
-	int8 Y = LastGridPosition.Y;
-	PawnPromotionType = PieceType;
+	if (Players.IsValidIndex(CurrentPlayer))
+	{
+		int8 X = LastGridPosition.X;
+		int8 Y = LastGridPosition.Y;
+		PawnPromotionType = PieceType;
 
-	// Despawn & Spawn selected pieces
-	GField->DespawnPiece(X, Y);
-	ABasePiece* PawnTemp = GField->SpawnPiece(PieceType, Players[CurrentPlayer]->Color, X, Y);
+		// Despawn & Spawn selected pieces
+		GField->DespawnPiece(X, Y);
+		ABasePiece* PawnTemp = GField->SpawnPiece(PieceType, Players[CurrentPlayer]->Color, X, Y);
 
-	if (PawnPromotionWidget != nullptr)
-		PawnPromotionWidget->RemoveFromParent();
+		if (PawnPromotionWidget != nullptr)
+			PawnPromotionWidget->RemoveFromParent();
 
-	LastPiece = PawnTemp;
-	LastEatFlag = LastEatFlag;
-	EndTurn(CurrentPlayer, true);
+		LastPiece = PawnTemp;
+		LastEatFlag = LastEatFlag;
+		EndTurn(CurrentPlayer, true);
+	}
 }
 
 
@@ -1157,7 +1169,7 @@ bool AChess_GameMode::ImpossibilityToCheckmate() const
  */
 void AChess_GameMode::ReplayMove(UTextBlock* TxtBlock)
 {
-	if (Cast<AChess_HumanPlayer>(Players[CurrentPlayer]))
+	if (Players.IsValidIndex(CurrentPlayer) && Cast<AChess_HumanPlayer>(Players[CurrentPlayer]))
 	{
 		// Human is playing (replay available)
 		FString BtnName = TxtBlock->GetText().ToString();
