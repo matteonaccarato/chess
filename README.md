@@ -39,7 +39,7 @@ Then you can resume the game from this position
 
 <hr>
 
-### (BOT) PERFORMANCES ([data](./GameData))
+### (BOT) PERFORMANCE ([data](./GameData))
 #### 1) RANDOM vs RANDOM
 ![Random vs Random](./GameData/Plots/random_random.png)
 
