@@ -555,84 +555,230 @@ int AChess_MiniMaxPlayer::GetGamePhaseScore() const
 }
 
 
+/*
+* =============================V2======================================
+* // Funzione per determinare la fase del gioco (es. soglia semplificata)
+bool isEndgame(const int8 QueenCounts[2], const int8 RookCounts[2], const int8 BishopCounts[2], const int8 KnightsCounts[2]) {
+    int materialWeight = 0;
+    materialWeight += (QueenCounts[0] + QueenCounts[1]) * 9;
+    materialWeight += (RookCounts[0] + RookCounts[1]) * 5;
+    materialWeight += (BishopCounts[0] + BishopCounts[1]) * 3;
+    materialWeight += (KnightsCounts[0] + KnightsCounts[1]) * 3;
+    // Consideriamo anche i pedoni (aggiungi se necessario)
+
+    return materialWeight < 14; // Soglia per considerare endgame
+}
+
+int EvaluateBoard(const GameMode* GameMode) {
+    int Score = 0;
+
+    // Variabili di punteggio per bianco e nero
+    int8 QueenCounts[2] = { 0, 0 };
+    int8 RookCounts[2] = { 0, 0 };
+    int8 BishopCounts[2] = { 0, 0 };
+    int8 KnightsCounts[2] = { 0, 0 };
+    int8 PawnsCounts[2] = { 0, 0 };
+
+    GameMode->ComputeAttackableTiles();
+    ABasePiece* WhiteKing = GameMode->GField->PieceArray[GameMode->KingWhitePieceNum];
+    ABasePiece* BlackKing = GameMode->GField->PieceArray[GameMode->KingBlackPieceNum];
+    int8 AttackableKings[2] = {
+        GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
+        GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
+    };
+    int BlockingKingsScores[2] = {
+        ComputeBlockingKingScore(BlackKing), // score for white
+        ComputeBlockingKingScore(WhiteKing)  // score for black
+    };
+
+    // Conteggio dei materiali
+    for (const auto& Piece : GameMode->GField->PieceArray) {
+        if (Piece->GetStatus() == EPieceStatus::ALIVE) {
+            int8 IdxColor = Piece->GetColor() == EPieceColor::WHITE ? 0 : 1;
+            switch (Piece->GetType()) {
+                case EPieceType::QUEEN: QueenCounts[IdxColor]++; break;
+                case EPieceType::ROOK: RookCounts[IdxColor]++; break;
+                case EPieceType::BISHOP: BishopCounts[IdxColor]++; break;
+                case EPieceType::KNIGHT: KnightsCounts[IdxColor]++; break;
+                case EPieceType::PAWN: PawnsCounts[IdxColor]++; break;
+            }
+        }
+    }
+
+    // Determina se siamo in endgame
+    bool endgame = isEndgame(QueenCounts, RookCounts, BishopCounts, KnightsCounts);
+
+    // Calcolo del punteggio del materiale e delle Piece Square Tables
+    for (const auto& Piece : GameMode->GField->PieceArray) {
+        if (Piece->GetStatus() == EPieceStatus::ALIVE) {
+            int8 IdxColor = Piece->GetColor() == EPieceColor::WHITE ? 0 : 1;
+            int position = Piece->GetGridPosition()[0] * GameMode->GField->Size + Piece->GetGridPosition()[1];
+            if (!Piece->GetColor() == EPieceColor::WHITE) {
+                position = 63 - position; // Inverti la posizione per i neri
+            }
+            
+            int pieceSquareValue = 0;
+            switch (Piece->GetType()) {
+                case EPieceType::PAWN:
+                    pieceSquareValue = endgame ? eg_pawn_table[position] : mg_pawn_table[position];
+                    break;
+                case EPieceType::KNIGHT:
+                    pieceSquareValue = endgame ? eg_knight_table[position] : mg_knight_table[position];
+                    break;
+                // Aggiungi casi per bishop, rook, queen, king
+            }
+
+            Score += Piece->GetColor() == EPieceColor::WHITE ? pieceSquareValue : -pieceSquareValue;
+        }
+    }
+
+    // Calcolo del punteggio totale
+    Score += AChess_MiniMaxPlayer::QUEEN_VALUE * (QueenCounts[1] - QueenCounts[0])
+            + AChess_MiniMaxPlayer::ATTACKABLE_KING_VALUE * (AttackableKings[0] - AttackableKings[1])
+            + AChess_MiniMaxPlayer::BLOCKING_KING_VALUE * (BlockingKingsScores[1] - BlockingKingsScores[0])
+            + AChess_MiniMaxPlayer::ROOK_VALUE * (RookCounts[1] - RookCounts[0])
+            + AChess_MiniMaxPlayer::BISHOP_VALUE * (BishopCounts[1] - BishopCounts[0])
+            + AChess_MiniMaxPlayer::KNIGHT_VALUE * (KnightsCounts[1] - KnightsCounts[0])
+            + AChess_MiniMaxPlayer::PAWN_VALUE * (PawnsCounts[1] - PawnsCounts[0]);
+
+    return Score;
+}==========================================================================
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* 
+* ==================================V1================================
+* 
+int evaluateMaterial(const std::vector<Piece>& pieces) {
+	int score = 0;
+
+	for (const Piece& piece : pieces) {
+		int value = 0;
+		switch (piece.type) {
+			case PAWN: value = PAWN; break;
+			case KNIGHT: value = KNIGHT; break;
+			case BISHOP: value = BISHOP; break;
+			case ROOK: value = ROOK; break;
+			case QUEEN: value = QUEEN; break;
+			case KING: value = KING; break;
+			default: value = 0; break;
+		}
+		score += piece.isWhite ? value : -value;
+	}
+
+	return score;
+}
+
+
+
+int evaluatePieceSquareTables(const std::vector<Piece>& pieces, bool isEndgame) {
+	int score = 0;
+
+	for (const Piece& piece : pieces) {
+		int value = 0;
+		int position = piece.position;
+		if (!piece.isWhite) {
+			position = 63 - position; // Inverti la posizione per i neri
+		}
+
+		switch (piece.type) {
+			case PAWN: value = isEndgame ? eg_pawn_table[position] : mg_pawn_table[position]; break;
+			case KNIGHT: value = isEndgame ? eg_knight_table[position] : mg_knight_table[position]; break;
+			// Altri casi per bishop, rook, queen, king
+		}
+		score += piece.isWhite ? value : -value;
+	}
+
+	return score;
+}
+
+bool isEndgame(const std::vector<Piece>& pieces) {
+	int materialWeight = 0;
+	for (const Piece& piece : pieces) {
+		switch (piece.type) {
+			case PAWN: materialWeight += PAWN; break;
+			case KNIGHT: materialWeight += KNIGHT; break;
+			case BISHOP: materialWeight += BISHOP; break;
+			case ROOK: materialWeight += ROOK; break;
+			case QUEEN: materialWeight += QUEEN; break;
+			default: break;
+		}
+	}
+	return materialWeight < 1400; // Soglia per considerare endgame
+}
+
+
+int evaluate(const std::vector<Piece>& pieces) {
+	int materialScore = evaluateMaterial(pieces);
+	bool endgame = isEndgame(pieces);
+	int pieceSquareTableScore = evaluatePieceSquareTables(pieces, endgame);
+
+	return materialScore + pieceSquareTableScore;
+}
+
+*/
+
 
 // TODO => non serve la board
 int32 AChess_MiniMaxPlayer::Pesto() const
 {
-	// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("PESTO ")));
+
+
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
-		int Score = 0;
-		int ScoreOpening = 0;
-		int ScoreEndgame = 0;
-		EGamePhase GamePhase = EGamePhase::OPENING;
-
-		
-		// compute gamePhaseScore with pieceList and materialWeights looping of gfield->piecearray
-		// determine gamephase by gamephasescore
-		int GamePhaseScore = GetGamePhaseScore();
-		if (GamePhaseScore > TotalPhaseOpening) GamePhase = EGamePhase::OPENING;
-		else if (GamePhaseScore < TotalPhaseEndgame) GamePhase = EGamePhase::ENDGAME;
-		else GamePhase = EGamePhase::MIDDLEGAME;
+		int Score = Base(); // base evaluation
+		int Score2 = 0;
 
 
-
+		// for pieces add/remove score based on piece position
 		for (const auto& Piece : GameMode->GField->PieceArray)
 		{
 			if (Piece->GetStatus() == EPieceStatus::ALIVE)
 			{
-				// evaluate material
-				ScoreOpening += (GetPieceValueByMaterial(Piece, EGamePhase::OPENING)) * static_cast<int>(Piece->GetColor());
-				ScoreEndgame +=( GetPieceValueByMaterial(Piece, EGamePhase::ENDGAME))* static_cast<int>(Piece->GetColor());
-
-				// evaluate position
-				ScoreOpening += (GetPieceValueByPosition(Piece, EGamePhase::OPENING))* static_cast<int>(Piece->GetColor());
-				ScoreEndgame += (GetPieceValueByPosition(Piece, EGamePhase::ENDGAME))* static_cast<int>(Piece->GetColor());
+				// TODO => check if middle or end game
+				Score2 += GetPieceValueByPosition(Piece, EGamePhase::MIDDLEGAME);
+				
 			}
 		}
 
-		if (GamePhase == EGamePhase::MIDDLEGAME)
-		{
-			Score = (ScoreOpening * GamePhaseScore +
-				ScoreEndgame * (ScoreOpening - GamePhaseScore)
-				) / ScoreOpening;
-		}
-		else if (GamePhase == EGamePhase::OPENING) Score = ScoreOpening;
-		else if (GamePhase == EGamePhase::ENDGAME) Score = ScoreEndgame;
 
 
-		return Score;
+		/*
+		
+		int materialScore = evaluateMaterial(pieces);
+		bool endgame = isEndgame(pieces);
+		int pieceSquareTableScore = evaluatePieceSquareTables(pieces, endgame);
 
-		// for piece
-			// scoreOpening += materialWeights[opening][piece]
-			// scoreEndgame += "" [endgame][piece]
-			// switch piece type
-				// scoreOpening += pst[opening][PAWN][square]
-				// scoreEndgame += pst[endgame][PAWN][square]
-				// ( WHITES + , BLACKS - )
-
-
-		// interpolate score in the middlegame
+		return materialScore + pieceSquareTableScore;
+		
+		*/
 
 
 
 
 
-
-
-
-
-
-
-
-
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, 
+			FColor::Green, 
+			FString::Printf(TEXT("PESTO %d %d "), Score, Score2));
+		return Score + Score2;
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 		return 0;
 	}
+
+
+
 }
 
 
