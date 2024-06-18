@@ -67,12 +67,13 @@ public:
 	static constexpr int8 MIN_NUMBER_SPAWN_PLAYERS = 2;
 	static constexpr float CAMERA_POS_Z = 1250.0f;
 
-	static constexpr char* STATISTICS_DIRECTORY_NAME = "GameData";
-	static constexpr char* FILENAME_HUMAN_RANDOM	 = "/human_random.csv";
-	static constexpr char* FILENAME_HUMAN_MINIMAX	 = "/human_minimax.csv";
-	static constexpr char* FILENAME_RANDOM_RANDOM	 = "/random_random.csv";
-	static constexpr char* FILENAME_RANDOM_MINIMAX	 = "/random_minimax.csv";
-	static constexpr char* FILENAME_MINIMAX_MINIMAX	 = "/minimax_minimax.csv";
+	static constexpr char* STATISTICS_DIRECTORY_NAME			= "GameData";
+	static constexpr char* FILENAME_HUMAN_RANDOM				= "/human_random.csv";
+	static constexpr char* FILENAME_HUMAN_MINIMAX_BASE			= "/human_minimax_base.csv";
+	static constexpr char* FILENAME_RANDOM_RANDOM				= "/random_random.csv";
+	static constexpr char* FILENAME_RANDOM_MINIMAX_BASE			= "/random_minimax_base.csv";
+	static constexpr char* FILENAME_MINIMAX_BASE_MINIMAX_BASE	= "/minimax_base_minimax_base.csv";
+	static constexpr char* FILENAME_MINIMAX_BASE_MINIMAX_PESTO	= "/minimax_base_minimax_pesto.csv";
 
 
 	/* ATTRIBUTES */

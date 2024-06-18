@@ -68,7 +68,7 @@ void AChess_GameMode::BeginPlay()
 		case EMatchMode::HUMAN_RANDOM:
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			TextPlayer_2 = UChess_GameInstance::RANDOM;
-		case EMatchMode::HUMAN_MINIMAX:
+		case EMatchMode::HUMAN_MINIMAX_BASE:
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			TextPlayer_1 = UChess_GameInstance::HUMAN;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX;
@@ -86,17 +86,37 @@ void AChess_GameMode::BeginPlay()
 		case EMatchMode::RANDOM_RANDOM:
 			TextPlayer_2 = UChess_GameInstance::RANDOM_2;
 			AI_2 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
-		case EMatchMode::RANDOM_MINIMAX:
+		case EMatchMode::RANDOM_MINIMAX_BASE:
 			TextPlayer_1 = UChess_GameInstance::RANDOM_1;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX_2;
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-		case EMatchMode::MINIMAX_MINIMAX:
+		case EMatchMode::MINIMAX_BASE_MINIMAX_BASE:
 			TextPlayer_1 = (TextPlayer_1 != TEXT("")) ? TextPlayer_1 : UChess_GameInstance::MINIMAX_1;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX_2;
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
+			if (HumanPlayer && AI_1 && AI_2)
+			{
+				AI_1->bIsActivePlayer = true;
+				AI_2->bIsActivePlayer = true;
+				HumanPlayer->bIsActivePlayer = false;
+
+				Players.Add(AI_1);			// white
+				Players.Add(AI_2);			// black
+				Players.Add(HumanPlayer);	// spectator
+			}
+			break;
+
+
+		case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:
+			TextPlayer_1 = "BASE";
+			TextPlayer_2 = "Pesto";
+			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			Cast<AChess_MiniMaxPlayer>(AI_1)->SetEvaluationFunction(EEValuationFunction::BASE);
+			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			Cast<AChess_MiniMaxPlayer>(AI_2)->SetEvaluationFunction(EEValuationFunction::PESTO);
 			if (HumanPlayer && AI_1 && AI_2)
 			{
 				AI_1->bIsActivePlayer = true;
@@ -354,11 +374,12 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 			FString FilePath = FPaths::ProjectDir() + STATISTICS_DIRECTORY_NAME;
 			switch (GameInstance->GetMatchMode())
 			{
-			case EMatchMode::HUMAN_RANDOM:		FilePath += FILENAME_HUMAN_RANDOM;		break;
-			case EMatchMode::HUMAN_MINIMAX:		FilePath += FILENAME_HUMAN_MINIMAX;		break;
-			case EMatchMode::RANDOM_RANDOM:		FilePath += FILENAME_RANDOM_RANDOM;		break;
-			case EMatchMode::RANDOM_MINIMAX:	FilePath += FILENAME_RANDOM_MINIMAX;	break;
-			case EMatchMode::MINIMAX_MINIMAX:	FilePath += FILENAME_MINIMAX_MINIMAX;	break;
+			case EMatchMode::HUMAN_RANDOM:					FilePath += FILENAME_HUMAN_RANDOM;					break;
+			case EMatchMode::HUMAN_MINIMAX_BASE:			FilePath += FILENAME_HUMAN_MINIMAX_BASE;			break;
+			case EMatchMode::RANDOM_RANDOM:					FilePath += FILENAME_RANDOM_RANDOM;					break;
+			case EMatchMode::RANDOM_MINIMAX_BASE:			FilePath += FILENAME_RANDOM_MINIMAX_BASE;			break;
+			case EMatchMode::MINIMAX_BASE_MINIMAX_BASE:		FilePath += FILENAME_MINIMAX_BASE_MINIMAX_BASE;		break;
+			case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:	FilePath += FILENAME_MINIMAX_BASE_MINIMAX_PESTO;	break;
 			}
 
 			bool bSuccess = false; FString OutInfoMessage = TEXT("");

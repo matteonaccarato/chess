@@ -10,10 +10,11 @@ UENUM()
 enum class EMatchMode : uint8
 {
 	HUMAN_RANDOM, 
-	HUMAN_MINIMAX,
+	HUMAN_MINIMAX_BASE,
 	RANDOM_RANDOM,
-	RANDOM_MINIMAX,
-	MINIMAX_MINIMAX
+	RANDOM_MINIMAX_BASE,
+	MINIMAX_BASE_MINIMAX_BASE,
+	MINIMAX_BASE_MINIMAX_PESTO
 };
 
 /**
@@ -44,6 +45,7 @@ public:
 	static constexpr char* MINIMAX		  = "AI | MiniMax";
 	static constexpr char* MINIMAX_1      = "AI | MiniMax (1)";
 	static constexpr char* MINIMAX_2	  = "AI | MiniMax (2)";
+	static constexpr char* MINIMAX_P	  = "AI | MiniMax (Pesto)";
 	static constexpr char* MINIMAX_TURN   = "AI (MiniMax)";
 	static constexpr char* MINIMAX_WIN_1  = "AI ";
 	static constexpr char* MINIMAX_WIN_2  = " WON";
