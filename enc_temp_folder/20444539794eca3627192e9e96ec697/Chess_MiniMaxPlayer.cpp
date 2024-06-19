@@ -249,7 +249,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			}
 		}
 		
-		/* if (GameMode->MatchStatus == EMatchResult::NONE)
+		if (GameMode->MatchStatus == EMatchResult::NONE)
 			GameMode->CheckFlag = GameMode->CheckKingsUnderAttack();
 		EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
 		if (Res != EMatchResult::NONE)
@@ -267,7 +267,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			CurrentEval = (BaseValue * Sign * MaximizingPlayerSign);
 			if (CurrentEval != 0)
 				return CurrentEval;
-		} */
+		}
 
 		if (MaximizingPlayer)
 		{

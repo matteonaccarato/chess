@@ -111,20 +111,20 @@ void AChess_GameMode::BeginPlay()
 
 
 		case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:
-			TextPlayer_1 = "BASE";
-			TextPlayer_2 = "Pesto";
+			TextPlayer_2 = "BASE";
+			TextPlayer_1 = "Pesto";
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-			Cast<AChess_MiniMaxPlayer>(AI_1)->SetEvaluationFunction(EEValuationFunction::BASE);
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-			Cast<AChess_MiniMaxPlayer>(AI_2)->SetEvaluationFunction(EEValuationFunction::PESTO);
+			Cast<AChess_MiniMaxPlayer>(AI_2)->SetEvaluationFunction(EEValuationFunction::BASE);
+			Cast<AChess_MiniMaxPlayer>(AI_1)->SetEvaluationFunction(EEValuationFunction::PESTO);
 			if (HumanPlayer && AI_1 && AI_2)
 			{
 				AI_1->bIsActivePlayer = true;
 				AI_2->bIsActivePlayer = true;
 				HumanPlayer->bIsActivePlayer = false;
 
-				Players.Add(AI_1);			// white
-				Players.Add(AI_2);			// black
+				Players.Add(AI_2);			// white
+				Players.Add(AI_1);			// black
 				Players.Add(HumanPlayer);	// spectator
 			}
 			break;
@@ -966,7 +966,7 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
 
 		// TODO => vedere se funziona
 		// add board to gamesaving
-		TArray<FPieceSaving> BoardSaving;
+		/* TArray<FPieceSaving> BoardSaving;
 		for (const auto& Piece : GField->PieceArray)
 		{
 			BoardSaving.Add({
@@ -975,7 +975,7 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
 				Piece->GetStatus()
 				});
 		}
-		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack));
+		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack)); */
 
 
 
