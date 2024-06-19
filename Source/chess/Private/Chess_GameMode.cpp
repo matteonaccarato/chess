@@ -665,8 +665,6 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
 {
 	EMatchResult Result = EMatchResult::NONE;
 
-	ABasePiece* WhiteKing = GField->PieceArray[KingWhitePieceNum];
-	ABasePiece* BlackKing = GField->PieceArray[KingBlackPieceNum];
 	if (WhitePieces.Num() == 0)
 		Result = CheckFlag == EPieceColor::WHITE ? EMatchResult::WHITE : EMatchResult::STALEMATE;
 	else if (BlackPieces.Num() == 0)
@@ -963,6 +961,24 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
 		// Clear starting tile (no player owner, no piece on it, ...)
 		// Update ending tile (new player owner, new tile status, new piece)
 		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY], Simulate);
+
+
+
+		// TODO => vedere se funziona
+		// add board to gamesaving
+		TArray<FPieceSaving> BoardSaving;
+		for (const auto& Piece : GField->PieceArray)
+		{
+			BoardSaving.Add({
+				static_cast<int8>(Piece->GetGridPosition()[0]),
+				static_cast<int8>(Piece->GetGridPosition()[1]),
+				Piece->GetStatus()
+				});
+		}
+		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack));
+
+
+
 
 		// Castling Handling (King moves by two tiles)
 		FCastlingInfo& CastlingInfo = Piece->GetColor() == EPieceColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;

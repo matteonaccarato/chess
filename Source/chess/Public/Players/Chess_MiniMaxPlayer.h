@@ -50,6 +50,7 @@ public:
 
 	static constexpr int QUEEN_VALUE = 900;
 	static constexpr int ATTACKABLE_KING_VALUE = 800;
+	static constexpr int PAWN_PROMOTION_BONUS = 800;
 	static constexpr int ROOK_VALUE = 500;
 	static constexpr int BISHOP_VALUE = 300;
 	static constexpr int KNIGHT_VALUE = 300;
@@ -64,7 +65,7 @@ public:
 
 	int GetGamePhaseScore() const;
 
-
+	bool IsEndGame(int8 QueenCounts[2], int8 RookCounts[2], int8 BishopCounts[2], int8 KnightsCounts[2]) const;
 
 	// TABLES from White's point of view (at the bottom and maximizing the board score)
 	const TArray<int>& MG_PawnTable = {
@@ -256,7 +257,7 @@ public:
 	int32 Pesto() const;
 
 	int32 GetPieceValueByMaterial(const ABasePiece* Piece, const EGamePhase GamePhase) const;
-	int32 GetPieceValueByPosition(const ABasePiece* Piece, const EGamePhase GamePhase) const;
+	int32 GetPieceSquareValue(const EPieceType Type, const int Position, const bool bIsEndGame) const;
 
 
 

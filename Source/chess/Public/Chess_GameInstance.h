@@ -45,7 +45,7 @@ public:
 	static constexpr char* MINIMAX		  = "AI | MiniMax";
 	static constexpr char* MINIMAX_1      = "AI | MiniMax (1)";
 	static constexpr char* MINIMAX_2	  = "AI | MiniMax (2)";
-	static constexpr char* MINIMAX_P	  = "AI | MiniMax (Pesto)";
+	static constexpr char* MINIMAX_P	  = "AI | Pesto";
 	static constexpr char* MINIMAX_TURN   = "AI (MiniMax)";
 	static constexpr char* MINIMAX_WIN_1  = "AI ";
 	static constexpr char* MINIMAX_WIN_2  = " WON";
