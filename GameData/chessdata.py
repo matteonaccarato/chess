@@ -28,12 +28,12 @@ file_data = {
 }
 
 # LOAD DATAFRAMES FROM CSV
-dfs = []
+"""dfs = []
 for value in file_data.values():
-  value["df"] = pd.read_csv(base_url + value["filename"])
+  value["df"] = pd.read_csv(base_url + value["filename"])"""
 
 # PLOT DATA
-for idx, data in enumerate(file_data.values()):
+"""for idx, data in enumerate(file_data.values()):
   fig = px.line(data["df"],
               x="#GAME", y = ["PL_1_WINS/GAMES", "PL_2_WINS/GAMES", "DRAWS/GAMES"],
               title= "<b>" + str(idx + 1) + ") " + data["title"] + "</b>",
@@ -42,4 +42,15 @@ for idx, data in enumerate(file_data.values()):
                   "value": "<b>GAMES RATIO</b>", 
                   "variable": "DATA"
               })
-  fig.show()
+  fig.show()"""
+  
+df = pd.read_csv("./chess_games.csv")
+fig=px.line(df,
+              x="#GAME", y = ["PL_1_WINS/GAMES", "PL_2_WINS/GAMES", "DRAWS/GAMES"],
+              title= "<b>" + "boh" + "</b>",
+              labels = { 
+                  "#GAME": "number of games",
+                  "value": "<b>GAMES RATIO</b>", 
+                  "variable": "DATA"
+              })
+fig.show()
