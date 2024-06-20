@@ -5,9 +5,18 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "../Chess_GameInstance.h"
+#include "MiniMax/PestoEvaluation.h"
 #include "Chess_PlayerInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Chess_MiniMaxPlayer.generated.h"
+
+
+UENUM()
+enum class EEValuationFunction : uint8
+{
+	BASE,	// 0 - default
+	PESTO,  // 1
+};
 
 UCLASS()
 class CHESS_API AChess_MiniMaxPlayer : public APawn, public IChess_PlayerInterface
@@ -22,14 +31,24 @@ public:
 	static constexpr int8 TIMER_BASE_OFFSET	= 1;
 
 	/* EVALUATION | PIECES VALUES */
-	static constexpr int  INFINITE			    = 10000;
-	static constexpr int8 QUEEN_VALUE			= 9;
-	static constexpr int8 ATTACKABLE_KING_VALUE = 8;
-	static constexpr int8 ROOK_VALUE			= 5;
-	static constexpr int8 BISHOP_VALUE			= 3;
-	static constexpr int8 KNIGHT_VALUE			= 3;
-	static constexpr int8 BLOCKING_KING_VALUE	= 2;
-	static constexpr int8 PAWN_VALUE			= 1;
+	static constexpr int  INFINITE = 1000000;
+	static constexpr int QUEEN_VALUE = 900;
+	static constexpr int EG_QUEEN_VALUE = 900;
+	static constexpr int ATTACKABLE_KING_VALUE = 800;
+	static constexpr int PAWN_PROMOTION_BONUS = 800;
+	static constexpr int ROOK_VALUE = 500;
+	static constexpr int EG_ROOK_VALUE = 500;
+	static constexpr int BISHOP_VALUE = 300;
+	static constexpr int EG_BISHOP_VALUE = 300;
+	static constexpr int KNIGHT_VALUE = 300;
+	static constexpr int EG_KNIGHT_VALUE = 300;
+	static constexpr int BLOCKING_KING_VALUE = 200;
+	static constexpr int PAWN_VALUE = 100;
+	static constexpr int EG_PAWN_VALUE = 100;
+
+	
+	/* EVALUATION | FUNCTION */
+	EEValuationFunction EvaluationFunction;
 
 
 	/* METHODS */
@@ -44,6 +63,11 @@ public:
 	virtual void OnTurn() override;
 	virtual void OnWin() override;
 	virtual void OnLose() override;
+
+	void SetEvaluationFunction(EEValuationFunction Evaluation);
+
+	/* Returns piece value based on its type and MiddleGame/EngGame */ 
+	int32 Type2Value(const EPieceType Type, const bool bIsEndgame) const;
 
 
 	/*
@@ -75,22 +99,13 @@ public:
 	
 
 	/*
-	 * Evaluate the current board situation through function f defined as follows:
-	 * f = QUEEN_VALUE * (Q' - Q)
-	 *		+ ATTACKABLE_KING_VALUE * (AK - AK')
-	 *		+ BLOCKING_KING_VALUE * (BK' - BK)
-	 *		+ ROOK_VALUE * (R' - R)
-	 * 		+ BISHOP_VALUE * (B' - B)
-	 *		+ KNIGHT_VALUE * (N' - N)
-	 *		+ PAWN_VALUE * (P' - P)
-	 * The prime value (e.g. X') means the number of pieces of type X of the black player,
-	 * while the standard value (e.g. X) indicates the one of the white player
+	 * Evaluate the current board situation based on EvaluationFunction attribute:
 	 *
-	 * @param Board		TArray<ATile>*	Current board made of tiles
-	 * 
 	 * @return			int32			Board evaluation
 	 */
-	int32 EvaluateBoard(TArray<ATile*> Board) const;
+	int32 EvaluateBoard() const;
+	int32 Base() const;  // Base Evaluation
+	int32 Pesto() const; // Advanced Evaluation (PeSTO)
 
 
 	/*

@@ -68,7 +68,7 @@ void AChess_GameMode::BeginPlay()
 		case EMatchMode::HUMAN_RANDOM:
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			TextPlayer_2 = UChess_GameInstance::RANDOM;
-		case EMatchMode::HUMAN_MINIMAX:
+		case EMatchMode::HUMAN_MINIMAX_BASE:
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			TextPlayer_1 = UChess_GameInstance::HUMAN;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX;
@@ -86,17 +86,37 @@ void AChess_GameMode::BeginPlay()
 		case EMatchMode::RANDOM_RANDOM:
 			TextPlayer_2 = UChess_GameInstance::RANDOM_2;
 			AI_2 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
-		case EMatchMode::RANDOM_MINIMAX:
+		case EMatchMode::RANDOM_MINIMAX_BASE:
 			TextPlayer_1 = UChess_GameInstance::RANDOM_1;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX_2;
 			AI_1 = GetWorld()->SpawnActor<AChess_RandomPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
-		case EMatchMode::MINIMAX_MINIMAX:
+		case EMatchMode::MINIMAX_BASE_MINIMAX_BASE:
 			TextPlayer_1 = (TextPlayer_1 != TEXT("")) ? TextPlayer_1 : UChess_GameInstance::MINIMAX_1;
 			TextPlayer_2 = (TextPlayer_2 != TEXT("")) ? TextPlayer_2 : UChess_GameInstance::MINIMAX_2;
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 
+			if (HumanPlayer && AI_1 && AI_2)
+			{
+				AI_1->bIsActivePlayer = true;
+				AI_2->bIsActivePlayer = true;
+				HumanPlayer->bIsActivePlayer = false;
+
+				Players.Add(AI_1);			// white
+				Players.Add(AI_2);			// black
+				Players.Add(HumanPlayer);	// spectator
+			}
+			break;
+
+
+		case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:
+			TextPlayer_1 = UChess_GameInstance::MINIMAX;
+			TextPlayer_2 = UChess_GameInstance::MINIMAX_PESTO;
+			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
+			Cast<AChess_MiniMaxPlayer>(AI_1)->SetEvaluationFunction(EEValuationFunction::BASE);
+			Cast<AChess_MiniMaxPlayer>(AI_2)->SetEvaluationFunction(EEValuationFunction::PESTO);
 			if (HumanPlayer && AI_1 && AI_2)
 			{
 				AI_1->bIsActivePlayer = true;
@@ -354,11 +374,12 @@ void AChess_GameMode::EndTurn(const int32 PlayerNumber, const bool PiecePromotio
 			FString FilePath = FPaths::ProjectDir() + STATISTICS_DIRECTORY_NAME;
 			switch (GameInstance->GetMatchMode())
 			{
-			case EMatchMode::HUMAN_RANDOM:		FilePath += FILENAME_HUMAN_RANDOM;		break;
-			case EMatchMode::HUMAN_MINIMAX:		FilePath += FILENAME_HUMAN_MINIMAX;		break;
-			case EMatchMode::RANDOM_RANDOM:		FilePath += FILENAME_RANDOM_RANDOM;		break;
-			case EMatchMode::RANDOM_MINIMAX:	FilePath += FILENAME_RANDOM_MINIMAX;	break;
-			case EMatchMode::MINIMAX_MINIMAX:	FilePath += FILENAME_MINIMAX_MINIMAX;	break;
+			case EMatchMode::HUMAN_RANDOM:					FilePath += FILENAME_HUMAN_RANDOM;					break;
+			case EMatchMode::HUMAN_MINIMAX_BASE:			FilePath += FILENAME_HUMAN_MINIMAX_BASE;			break;
+			case EMatchMode::RANDOM_RANDOM:					FilePath += FILENAME_RANDOM_RANDOM;					break;
+			case EMatchMode::RANDOM_MINIMAX_BASE:			FilePath += FILENAME_RANDOM_MINIMAX_BASE;			break;
+			case EMatchMode::MINIMAX_BASE_MINIMAX_BASE:		FilePath += FILENAME_MINIMAX_BASE_MINIMAX_BASE;		break;
+			case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:	FilePath += FILENAME_MINIMAX_BASE_MINIMAX_PESTO;	break;
 			}
 
 			bool bSuccess = false; FString OutInfoMessage = TEXT("");
@@ -644,8 +665,6 @@ EMatchResult AChess_GameMode::ComputeMatchResult(TArray<std::pair<int8, TArray<s
 {
 	EMatchResult Result = EMatchResult::NONE;
 
-	ABasePiece* WhiteKing = GField->PieceArray[KingWhitePieceNum];
-	ABasePiece* BlackKing = GField->PieceArray[KingBlackPieceNum];
 	if (WhitePieces.Num() == 0)
 		Result = CheckFlag == EPieceColor::WHITE ? EMatchResult::WHITE : EMatchResult::STALEMATE;
 	else if (BlackPieces.Num() == 0)
@@ -943,6 +962,7 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
 		// Update ending tile (new player owner, new tile status, new piece)
 		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY], Simulate);
 
+
 		// Castling Handling (King moves by two tiles)
 		FCastlingInfo& CastlingInfo = Piece->GetColor() == EPieceColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
 		if (Piece->GetType() == EPieceType::KING
@@ -1025,7 +1045,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPieceType PieceType)
 
 
 /*
- * Function: SeventyFive_MoveRule
+ * Function: SameConfigurationBoard
  * -----------------------------
  * If the same position occurs five times during the course of the game, the game is automatically a draw.
  * 
@@ -1080,6 +1100,7 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 
 	return Cnt >= Times;
 }
+
 
 
 /*

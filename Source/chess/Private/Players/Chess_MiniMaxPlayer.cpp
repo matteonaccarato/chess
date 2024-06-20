@@ -9,6 +9,7 @@ AChess_MiniMaxPlayer::AChess_MiniMaxPlayer()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	GameInstance = Cast<UChess_GameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	EvaluationFunction = EEValuationFunction::BASE;
 }
 
 // Called when the game starts or when spawned
@@ -31,12 +32,16 @@ void AChess_MiniMaxPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 }
 
+void AChess_MiniMaxPlayer::SetEvaluationFunction(EEValuationFunction Evaluation) { EvaluationFunction = Evaluation; }
+
+
 void AChess_MiniMaxPlayer::OnTurn()
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, UChess_GameInstance::MINIMAX_TURN);
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, 
+		EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_PESTO);
 	if (GameInstance)
-		GameInstance->SetTurnMessage(UChess_GameInstance::MINIMAX_TURN);
+		GameInstance->SetTurnMessage(EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_PESTO);
 
 	if (GameMode)
 	{
@@ -186,17 +191,18 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 
 					if (BestVal == AChess_MiniMaxPlayer::INFINITE * -static_cast<int>(Color))
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
+						// GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
 						return BestMove;
 					}
 				}
 			}
-
 		}
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
-
+	if (EvaluationFunction == EEValuationFunction::BASE)
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, FString::Printf(TEXT("AI (Minimax) bestVal = %d "), BestVal));
+	else 
+		GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Green, FString::Printf(TEXT("Pesto bestVal = %d "), BestVal));
 	return BestMove;
 }
 
@@ -207,10 +213,12 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
  * Analyse all the possible moves the player can make and choose the best one possible based on the current chess board situation.
  * The black player has to maximize the board evaluation, while the white one has to minimize it
  *
- * @param Board		TArray<ATile>*	Current board made of tiles
- * @param Depth		int8			Depth of the minimax algorithm
- * @param Alpha		int32			Store the alpha value to allow alpha-beta pruning implentation to improve time complexity
- * @param Beta		int32			Store the beta value to allow alpha-beta pruning implentation to improve time complexity
+ * @param Board				TArray<ATile>*	Current board made of tiles
+ * @param Depth				int8			Depth of the minimax algorithm
+ * @param Alpha				int32			Store the alpha value to allow alpha-beta pruning implentation to improve time complexity
+ * @param Beta				int32			Store the beta value to allow alpha-beta pruning implentation to improve time complexity
+ * @param MaximizingPlayer	bool			White -> True
+ *											Black -> False
  * 
  * @return			int32			Best board evaluation
  */
@@ -223,7 +231,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 	if (GameMode)
 	{
 		if (Depth == 0 || GameMode->IsGameOver)
-			return EvaluateBoard(Board);
+			return EvaluateBoard();
 
 		// Compute all possible moves
 		TArray<std::pair<int8, TArray<std::pair<int8, int8>>>> Whites;
@@ -241,24 +249,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			}
 		}
 		
-		if (GameMode->MatchStatus == EMatchResult::NONE)
-			GameMode->CheckFlag = GameMode->CheckKingsUnderAttack();
-		EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
-		if (Res != EMatchResult::NONE)
-		{
-			int8  MaximizingPlayerSign = MaximizingPlayer ? 1 : -1;
-			EMatchResult GoodSituation = MaximizingPlayer ? EMatchResult::WHITE : EMatchResult::BLACK;
-			
-			// +1 => good situation (opponent is checkmated)
-			// -1 => bad situation	(current player checkmated or draw)
-			int8 Sign = Res == GoodSituation ? 1 : -1;
-			// return (AChess_MiniMaxPlayer::INFINITE * Sign * MaximizingPlayerSign) / 2;
-			int32 BaseValue = (Res == EMatchResult::WHITE || Res == EMatchResult::BLACK) ?
-				AChess_MiniMaxPlayer::INFINITE :
-				AChess_MiniMaxPlayer::INFINITE / 2;
-			CurrentEval = (BaseValue * Sign * MaximizingPlayerSign);
-		}
-
+	
 		if (MaximizingPlayer)
 		{
 			// Black player
@@ -285,6 +276,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					CurrentEval = FMath::Max(CurrentEval, MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer));
 
 					// Undo the move (restore data)
+					// GameMode->GameSaving.Pop();
 					GameMode->CheckFlag = CheckFlagBackup;
 					GameMode->GField->RestoreTiles(TilesStatusBackup);
 					GameMode->GField->RestorePiecesInfo(PiecesInfoBackup);
@@ -330,6 +322,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					CurrentEval = FMath::Min(CurrentEval, MiniMax(Board, Depth - 1, alpha, beta, !MaximizingPlayer));
 
 					// Undo the move (restore data)
+					// GameMode->GameSaving.Pop();
 					GameMode->CheckFlag = CheckFlagBackup;
 					GameMode->GField->RestoreTiles(TilesStatusBackup);
 					GameMode->GField->RestorePiecesInfo(PiecesInfoBackup);
@@ -338,6 +331,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PieceArray[PieceMove.first]->SetGridPosition(XBackup, YBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetStatus(PieceStatusBackup);
 					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
+
 
 					// Compare values
 					if (CurrentEval <= alpha || CurrentEval == -AChess_MiniMaxPlayer::INFINITE)
@@ -361,7 +355,25 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 /*
  * Function: EvaluationBoard
  * ----------------------------
- * Evaluate the current board situation through function f defined as follows:
+ * Evaluate the current board situation through function f determined by EvaluationFunction attribute
+ * 
+ * @return			int32			Board evaluation
+ */
+int32 AChess_MiniMaxPlayer::EvaluateBoard() const
+{
+	switch (EvaluationFunction)
+	{
+	case EEValuationFunction::BASE:  return Base();
+	case EEValuationFunction::PESTO: return Pesto();
+	default: return 0;
+	}
+}
+
+
+/*
+ * Function: Base
+ * ----------------------------
+ * Evaluate (Base) the current board situation through function f defined as follows:
  * f = QUEEN_VALUE * (Q' - Q)
  *		+ ATTACKABLE_KING_VALUE * (AK - AK')
  *		+ BLOCKING_KING_VALUE * (BK' - BK)
@@ -372,23 +384,21 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
  * The prime value (e.g. X') means the number of pieces of type X of the black player,
  * while the standard value (e.g. X) indicates the one of the white player
  *
- * @param Board		TArray<ATile>*	Current board made of tiles
- * 
  * @return			int32			Board evaluation
  */
-int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
+int32 AChess_MiniMaxPlayer::Base() const 
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
 		int Score = 0;
-		
+
 		// White, Black score variables
-		int8 QueenCounts[2]	  = { 0, 0 };
-		int8 RookCounts[2]	  = { 0, 0 };
-		int8 BishopCounts[2]  = { 0, 0 };
+		int8 QueenCounts[2] = { 0, 0 };
+		int8 RookCounts[2] = { 0, 0 };
+		int8 BishopCounts[2] = { 0, 0 };
 		int8 KnightsCounts[2] = { 0, 0 };
-		int8 PawnsCounts[2]	  = { 0, 0 };
+		int8 PawnsCounts[2] = { 0, 0 };
 
 		GameMode->ComputeAttackableTiles();
 		ABasePiece* WhiteKing = GameMode->GField->PieceArray[GameMode->KingWhitePieceNum];
@@ -397,7 +407,7 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			GameMode->GField->TileArray[WhiteKing->GetGridPosition()[0] * GameMode->GField->Size + WhiteKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[1],
 			GameMode->GField->TileArray[BlackKing->GetGridPosition()[0] * GameMode->GField->Size + BlackKing->GetGridPosition()[1]]->GetTileStatus().AttackableFrom[0]
 		};
-		int BlockingKingsScores[2] = { 
+		int BlockingKingsScores[2] = {
 			ComputeBlockingKingScore(BlackKing), // score for white
 			ComputeBlockingKingScore(WhiteKing)  // score for black
 		};
@@ -428,6 +438,7 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 			+ AChess_MiniMaxPlayer::PAWN_VALUE * (PawnsCounts[1] - PawnsCounts[0]);
 
 		return Score;
+
 	}
 	else
 	{
@@ -435,6 +446,52 @@ int32 AChess_MiniMaxPlayer::EvaluateBoard(TArray<ATile*> Board) const
 		return 0;
 	}
 }
+
+
+
+/*
+ * Function: Pesto (Advanced Evaluation)
+ * ----------------------------
+ * Evaluate (Advanced) the current board situation based on PeSTO's Evaluation Function
+ * 
+ * @return			int32			Board evaluation
+ */
+int32 AChess_MiniMaxPlayer::Pesto() const
+{
+	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		bool bIsEndGame = GameMode->GField->PieceArray.Num() < 10;
+		int Score = Base();
+
+		for (const auto& Piece : GameMode->GField->PieceArray)
+		{
+			if (Piece->GetStatus() == EPieceStatus::ALIVE)
+			{
+				int X = Piece->GetGridPosition()[0];
+				int Y = Piece->GetGridPosition()[1];
+
+				// Vertically flip
+				if (Piece->GetColor() == EPieceColor::BLACK)
+					X = 7 - X;
+				
+				int Position = X * GameMode->GField->Size + Y;
+				int ColorFactor = Color == Piece->GetColor() ? 1 : -1;
+
+				Score += (Type2Value(Piece->GetType(), bIsEndGame) * ColorFactor);
+				Score += (PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame) * ColorFactor);
+			}
+		}
+
+		return Score;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
+		return 0;
+	}
+}
+
 
 
 /*
@@ -496,6 +553,20 @@ void AChess_MiniMaxPlayer::OnWin()
 		PlayerNumber ?
 			GameInstance->IncrementScorePlayer_2() :
 			GameInstance->IncrementScorePlayer_1();
+	}
+}
+
+
+int32 AChess_MiniMaxPlayer::Type2Value(const EPieceType Type, const bool bIsEndgame) const
+{
+	switch (Type)
+	{
+	case EPieceType::PAWN:   return AChess_MiniMaxPlayer::PAWN_VALUE;
+	case EPieceType::KNIGHT: return AChess_MiniMaxPlayer::KNIGHT_VALUE;
+	case EPieceType::BISHOP: return AChess_MiniMaxPlayer::BISHOP_VALUE;
+	case EPieceType::ROOK:   return AChess_MiniMaxPlayer::ROOK_VALUE;
+	case EPieceType::QUEEN:  return AChess_MiniMaxPlayer::QUEEN_VALUE;
+	default: return 0;
 	}
 }
 
