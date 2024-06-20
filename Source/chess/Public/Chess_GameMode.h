@@ -308,6 +308,7 @@ public:
 	 */
 	bool SameConfigurationBoard(const int8 Times) const;
 
+
 	/*
 	 * If no capture or no pawn move has occurred in the last 75 moves (by both players), the game is automatically a draw.
 	 * 

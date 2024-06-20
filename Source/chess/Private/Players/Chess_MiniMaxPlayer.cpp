@@ -38,9 +38,10 @@ void AChess_MiniMaxPlayer::SetEvaluationFunction(EEValuationFunction Evaluation)
 void AChess_MiniMaxPlayer::OnTurn()
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_P);
+	GEngine->AddOnScreenDebugMessage(-1, 20.f, FColor::Red, 
+		EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_PESTO);
 	if (GameInstance)
-		GameInstance->SetTurnMessage(EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_P);
+		GameInstance->SetTurnMessage(EvaluationFunction == EEValuationFunction::BASE ? UChess_GameInstance::MINIMAX_TURN : UChess_GameInstance::MINIMAX_PESTO);
 
 	if (GameMode)
 	{
@@ -195,7 +196,6 @@ std::pair<int8, std::pair<int8, int8>> AChess_MiniMaxPlayer::FindBestMove(TArray
 					}
 				}
 			}
-
 		}
 	}
 
@@ -249,26 +249,7 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 			}
 		}
 		
-		/* if (GameMode->MatchStatus == EMatchResult::NONE)
-			GameMode->CheckFlag = GameMode->CheckKingsUnderAttack();
-		EMatchResult Res = GameMode->ComputeMatchResult(Whites, Blacks);
-		if (Res != EMatchResult::NONE)
-		{
-			int8  MaximizingPlayerSign = MaximizingPlayer ? 1 : -1;
-			EMatchResult GoodSituation = MaximizingPlayer ? EMatchResult::WHITE : EMatchResult::BLACK;
-			
-			// +1 => good situation (opponent is checkmated)
-			// -1 => bad situation	(current player checkmated or draw)
-			int8 Sign = Res == GoodSituation ? 1 : -1;
-			// return (AChess_MiniMaxPlayer::INFINITE * Sign * MaximizingPlayerSign) / 2;
-			int32 BaseValue = (Res == EMatchResult::WHITE || Res == EMatchResult::BLACK) ?
-				AChess_MiniMaxPlayer::INFINITE : 0;
-				// AChess_MiniMaxPlayer::INFINITE / 2;
-			CurrentEval = (BaseValue * Sign * MaximizingPlayerSign);
-			if (CurrentEval != 0)
-				return CurrentEval;
-		} */
-
+	
 		if (MaximizingPlayer)
 		{
 			// Black player
@@ -352,11 +333,6 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 					GameMode->GField->PieceArray[PieceMove.first]->SetMaxNumberSteps(MaxNumberStepsBackup);
 
 
-
-
-
-
-
 					// Compare values
 					if (CurrentEval <= alpha || CurrentEval == -AChess_MiniMaxPlayer::INFINITE)
 						return CurrentEval; // alpha cutoff
@@ -379,7 +355,25 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
 /*
  * Function: EvaluationBoard
  * ----------------------------
- * Evaluate the current board situation through function f defined as follows:
+ * Evaluate the current board situation through function f determined by EvaluationFunction attribute
+ * 
+ * @return			int32			Board evaluation
+ */
+int32 AChess_MiniMaxPlayer::EvaluateBoard() const
+{
+	switch (EvaluationFunction)
+	{
+	case EEValuationFunction::BASE:  return Base();
+	case EEValuationFunction::PESTO: return Pesto();
+	default: return 0;
+	}
+}
+
+
+/*
+ * Function: Base
+ * ----------------------------
+ * Evaluate (Base) the current board situation through function f defined as follows:
  * f = QUEEN_VALUE * (Q' - Q)
  *		+ ATTACKABLE_KING_VALUE * (AK - AK')
  *		+ BLOCKING_KING_VALUE * (BK' - BK)
@@ -390,15 +384,8 @@ int32 AChess_MiniMaxPlayer::MiniMax(TArray<ATile*>& Board, int8 Depth, int32 alp
  * The prime value (e.g. X') means the number of pieces of type X of the black player,
  * while the standard value (e.g. X) indicates the one of the white player
  *
- * @param Board		TArray<ATile>*	Current board made of tiles
- * 
  * @return			int32			Board evaluation
  */
-
-
-
-
-
 int32 AChess_MiniMaxPlayer::Base() const 
 {
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
@@ -462,240 +449,20 @@ int32 AChess_MiniMaxPlayer::Base() const
 
 
 
-int32 AChess_MiniMaxPlayer::GetPieceValueByMaterial(const ABasePiece* Piece, const EGamePhase GamePhase) const
-{
-	// pawn , knight , bishop , rook , queen
-	const TArray<int>& MaterialsWeights = GamePhase == EGamePhase::OPENING ?
-		AChess_MiniMaxPlayer::OpeningMaterialWeights :
-		AChess_MiniMaxPlayer::EndgameMaterialWeights;
-		
-	int Score = 0;
-	switch (Piece->GetType())
-	{
-	case EPieceType::PAWN: Score = MaterialsWeights[0]; break;
-	case EPieceType::KNIGHT: Score = MaterialsWeights[1]; break;
-	case EPieceType::BISHOP: Score = MaterialsWeights[2]; break;
-	case EPieceType::ROOK: Score = MaterialsWeights[3]; break;
-	case EPieceType::QUEEN: Score = MaterialsWeights[4]; break;
-	default: Score = 0;
-	}
-
-	return Score; // * static_cast<int>(Piece->GetColor());
-}
-
-int32 AChess_MiniMaxPlayer::GetPieceSquareValue(const EPieceType Type, const EPieceColor PieceColor, int X, const int Y, const bool bIsEndGame) const
-{
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		if (GameMode->GField->IsValidTile(X, Y))
-		{
-			if (PieceColor == EPieceColor::BLACK)
-			{
-				X = 7 - X;
-			}
-			int Position = X * GameMode->GField->Size + Y;
-
-			switch (Type)
-			{
-			case EPieceType::PAWN: return bIsEndGame ? EG_PawnTable[Position] : MG_PawnTable[Position];
-			case EPieceType::KNIGHT: return bIsEndGame ? EG_KnightTable[Position] : MG_KnightTable[Position];
-			case EPieceType::BISHOP: return bIsEndGame ? EG_BishopTable[Position] : MG_BishopTable[Position];
-			case EPieceType::ROOK: return bIsEndGame ? EG_RookTable[Position] : MG_RookTable[Position];
-			case EPieceType::QUEEN: return bIsEndGame ? EG_QueenTable[Position] : MG_QueenTable[Position];
-			case EPieceType::KING: return bIsEndGame ? EG_KingTable[Position] : MG_KingTable[Position];
-			}
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 20.f,
-				FColor::Green,
-				FString::Printf(TEXT("PESTO | brooo ")));
-		}
-	}
-	return 0;
-}
-
-int AChess_MiniMaxPlayer::GetGamePhaseScore() const
-{
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		int GamePhaseScore = 0;
-		int8 QueenCounts[2] = { 0, 0 };
-		int8 RookCounts[2] = { 0, 0 };
-		int8 BishopCounts[2] = { 0, 0 };
-		int8 KnightsCounts[2] = { 0, 0 };
-		int8 PawnsCounts[2] = { 0, 0 };
-		for (const auto& Piece : GameMode->GField->PieceArray)
-		{
-			if (Piece->GetStatus() == EPieceStatus::ALIVE)
-			{
-				int8 IdxColor = Piece->GetColor() == EPieceColor::WHITE ? 0 : 1;
-				switch (Piece->GetType())
-				{
-				case EPieceType::QUEEN: GamePhaseScore += OpeningMaterialWeights[5]; break;
-				case EPieceType::ROOK: GamePhaseScore += OpeningMaterialWeights[4];  break;
-				case EPieceType::BISHOP: GamePhaseScore += OpeningMaterialWeights[2];  break;
-				case EPieceType::KNIGHT: GamePhaseScore += OpeningMaterialWeights[1];  break;
-				case EPieceType::PAWN: GamePhaseScore += OpeningMaterialWeights[0];  break;
-				}
-			}
-		}
-
-		return GamePhaseScore;
-	}
-
-	return 0;
-}
-
-
 /*
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* 
-* ==================================V1================================
-* 
-int evaluateMaterial(const std::vector<Piece>& pieces) {
-	int score = 0;
-
-	for (const Piece& piece : pieces) {
-		int value = 0;
-		switch (piece.type) {
-			case PAWN: value = PAWN; break;
-			case KNIGHT: value = KNIGHT; break;
-			case BISHOP: value = BISHOP; break;
-			case ROOK: value = ROOK; break;
-			case QUEEN: value = QUEEN; break;
-			case KING: value = KING; break;
-			default: value = 0; break;
-		}
-		score += piece.isWhite ? value : -value;
-	}
-
-	return score;
-}
-
-
-
-int evaluatePieceSquareTables(const std::vector<Piece>& pieces, bool isEndgame) {
-	int score = 0;
-
-	for (const Piece& piece : pieces) {
-		int value = 0;
-		int position = piece.position;
-		if (!piece.isWhite) {
-			position = 63 - position; // Inverti la posizione per i neri
-		}
-
-		switch (piece.type) {
-			case PAWN: value = isEndgame ? eg_pawn_table[position] : mg_pawn_table[position]; break;
-			case KNIGHT: value = isEndgame ? eg_knight_table[position] : mg_knight_table[position]; break;
-			// Altri casi per bishop, rook, queen, king
-		}
-		score += piece.isWhite ? value : -value;
-	}
-
-	return score;
-}
-
-bool isEndgame(const std::vector<Piece>& pieces) {
-	int materialWeight = 0;
-	for (const Piece& piece : pieces) {
-		switch (piece.type) {
-			case PAWN: materialWeight += PAWN; break;
-			case KNIGHT: materialWeight += KNIGHT; break;
-			case BISHOP: materialWeight += BISHOP; break;
-			case ROOK: materialWeight += ROOK; break;
-			case QUEEN: materialWeight += QUEEN; break;
-			default: break;
-		}
-	}
-	return materialWeight < 1400; // Soglia per considerare endgame
-}
-
-
-int evaluate(const std::vector<Piece>& pieces) {
-	int materialScore = evaluateMaterial(pieces);
-	bool endgame = isEndgame(pieces);
-	int pieceSquareTableScore = evaluatePieceSquareTables(pieces, endgame);
-
-	return materialScore + pieceSquareTableScore;
-}
-
-
-
-
-*/
-
-/*
-The former World Chess Champion Alexander Alekhine said, "We cannot define when the middle game ends and the endgame starts."[4] Using the standard system for chess piece relative value, Speelman considers that endgames are positions in which each player has thirteen or fewer points in material (not counting the king). Alternatively, they are positions in which the king can be used actively, but there are some famous exceptions to that*/
-bool AChess_MiniMaxPlayer::IsEndGame(int8 QueenCounts[2], int8 RookCounts[2], int8 BishopCounts[2], int8 KnightsCounts[2]) const
-{
-	int materialWeight = 0;
-	materialWeight += (QueenCounts[0] + QueenCounts[1]) * 9;
-	materialWeight += (RookCounts[0] + RookCounts[1]) * 5;
-	materialWeight += (BishopCounts[0] + BishopCounts[1]) * 3;
-	materialWeight += (KnightsCounts[0] + KnightsCounts[1]) * 3;
-	// Consideriamo anche i pedoni (aggiungi se necessario)
-
-	return materialWeight < 14; // Soglia per considerare endgame
-}
-
-int32 AChess_MiniMaxPlayer::Type2Value(const EPieceType Type, const bool bIsEndgame) const
-{
-	switch (Type)
-	{
-	case EPieceType::PAWN: return AChess_MiniMaxPlayer::PAWN_VALUE;
-	case EPieceType::KNIGHT: return AChess_MiniMaxPlayer::KNIGHT_VALUE;
-	case EPieceType::BISHOP: return AChess_MiniMaxPlayer::BISHOP_VALUE;
-	case EPieceType::ROOK: return AChess_MiniMaxPlayer::ROOK_VALUE;
-	case EPieceType::QUEEN: return AChess_MiniMaxPlayer::QUEEN_VALUE;
-	default: return 0;
-	}
-}
-
-bool AChess_MiniMaxPlayer::AvoidBoardRepetition() const
-{
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		// look every board saved and compare to the current one
-		for (const auto& PieceConfiguration : GameMode->GameSaving)
-		{
-			/* if (GameMode->ArePiecesEqual(PieceConfiguration))
-			{
-
-			} */
-		}
-	}
-
-}
-
-
-// TODO => non serve la board
+ * Function: Pesto (Advanced Evaluation)
+ * ----------------------------
+ * Evaluate (Advanced) the current board situation based on PeSTO's Evaluation Function
+ * 
+ * @return			int32			Board evaluation
+ */
 int32 AChess_MiniMaxPlayer::Pesto() const
 {
-
-
 	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
 	if (GameMode)
 	{
-		
-		int Score = Base();
 		bool bIsEndGame = GameMode->GField->PieceArray.Num() < 10;
-
-		if (AvoidBoardRepetition()) // numero scacchiera ripetuta maggiormente == 4 ed è uguale alla mossa che si vuole fare => = 0
-			return 0;
+		int Score = Base();
 
 		for (const auto& Piece : GameMode->GField->PieceArray)
 		{
@@ -704,17 +471,22 @@ int32 AChess_MiniMaxPlayer::Pesto() const
 				int X = Piece->GetGridPosition()[0];
 				int Y = Piece->GetGridPosition()[1];
 
+				if (Piece->GetColor() == EPieceColor::BLACK)
+					X = 7 - X;
+				
+				int Position = X * GameMode->GField->Size + Y;
+
 				if (Color == EPieceColor::BLACK)
 				{
 					if (Piece->GetColor() == EPieceColor::WHITE)
 					{
 						Score -= Type2Value(Piece->GetType(), bIsEndGame);
-						Score -= GetPieceSquareValue(Piece->GetType(), Piece->GetColor(), X, Y, bIsEndGame);
+						Score -= PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
 					}
 					else
 					{
 						Score += Type2Value(Piece->GetType(), bIsEndGame);
-						Score += GetPieceSquareValue(Piece->GetType(), Piece->GetColor(), X, Y, bIsEndGame);
+						Score += PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
 					}
 				}
 				else
@@ -722,18 +494,16 @@ int32 AChess_MiniMaxPlayer::Pesto() const
 					if (Piece->GetColor() == EPieceColor::WHITE)
 					{
 						Score += Type2Value(Piece->GetType(), bIsEndGame);
-						Score += GetPieceSquareValue(Piece->GetType(), Piece->GetColor(), X, Y, bIsEndGame);
+						Score += PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
 					}
 					else
 					{
 						Score -= Type2Value(Piece->GetType(), bIsEndGame);
-						Score -= GetPieceSquareValue(Piece->GetType(), Piece->GetColor(), X, Y, bIsEndGame);
+						Score -= PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
 					}
 				}
 			}
 		}
-
-
 
 		return Score;
 	}
@@ -742,30 +512,8 @@ int32 AChess_MiniMaxPlayer::Pesto() const
 		UE_LOG(LogTemp, Error, TEXT("GameMode is null"));
 		return 0;
 	}
-
-
-
 }
 
-
-
-
-
-
-
-
-
-
-
-int32 AChess_MiniMaxPlayer::EvaluateBoard() const
-{
-	switch (EvaluationFunction)
-	{
-	case EEValuationFunction::BASE: return Base();
-	case EEValuationFunction::PESTO: return Pesto();
-	default: return 0;
-	}
-}
 
 
 /*
@@ -827,6 +575,20 @@ void AChess_MiniMaxPlayer::OnWin()
 		PlayerNumber ?
 			GameInstance->IncrementScorePlayer_2() :
 			GameInstance->IncrementScorePlayer_1();
+	}
+}
+
+
+int32 AChess_MiniMaxPlayer::Type2Value(const EPieceType Type, const bool bIsEndgame) const
+{
+	switch (Type)
+	{
+	case EPieceType::PAWN:   return AChess_MiniMaxPlayer::PAWN_VALUE;
+	case EPieceType::KNIGHT: return AChess_MiniMaxPlayer::KNIGHT_VALUE;
+	case EPieceType::BISHOP: return AChess_MiniMaxPlayer::BISHOP_VALUE;
+	case EPieceType::ROOK:   return AChess_MiniMaxPlayer::ROOK_VALUE;
+	case EPieceType::QUEEN:  return AChess_MiniMaxPlayer::QUEEN_VALUE;
+	default: return 0;
 	}
 }
 

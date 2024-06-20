@@ -111,8 +111,8 @@ void AChess_GameMode::BeginPlay()
 
 
 		case EMatchMode::MINIMAX_BASE_MINIMAX_PESTO:
-			TextPlayer_1 = "BASE";
-			TextPlayer_2 = "Pesto";
+			TextPlayer_1 = UChess_GameInstance::MINIMAX;
+			TextPlayer_2 = UChess_GameInstance::MINIMAX_PESTO;
 			AI_1 = AI_1 ? AI_1 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			AI_2 = AI_2 ? AI_2 : GetWorld()->SpawnActor<AChess_MiniMaxPlayer>(FVector(), FRotator());
 			Cast<AChess_MiniMaxPlayer>(AI_1)->SetEvaluationFunction(EEValuationFunction::BASE);
@@ -963,23 +963,6 @@ bool AChess_GameMode::MakeMove(ABasePiece* Piece, const int8 NewX, const int8 Ne
 		Piece->Move(TilesArray[OldX * GField->Size + OldY], TilesArray[NewX * GField->Size + NewY], Simulate);
 
 
-
-		// TODO => vedere se funziona
-		// add board to gamesaving
-		/* TArray<FPieceSaving> BoardSaving;
-		for (const auto& Piece : GField->PieceArray)
-		{
-			BoardSaving.Add({
-				static_cast<int8>(Piece->GetGridPosition()[0]),
-				static_cast<int8>(Piece->GetGridPosition()[1]),
-				Piece->GetStatus()
-				});
-		}
-		GameSaving.Add(std::make_tuple(BoardSaving, CastlingInfoWhite, CastlingInfoBlack)); */
-
-
-
-
 		// Castling Handling (King moves by two tiles)
 		FCastlingInfo& CastlingInfo = Piece->GetColor() == EPieceColor::WHITE ? CastlingInfoWhite : CastlingInfoBlack;
 		if (Piece->GetType() == EPieceType::KING
@@ -1117,6 +1100,7 @@ bool AChess_GameMode::SameConfigurationBoard(const int8 Times) const
 
 	return Cnt >= Times;
 }
+
 
 
 /*
