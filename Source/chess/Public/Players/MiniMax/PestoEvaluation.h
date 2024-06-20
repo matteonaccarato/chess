@@ -23,16 +23,16 @@ public:
 	 */
 	static int32 GetPieceSquareValue(const EPieceType Type, int Position, const bool bIsEndGame) 
 	{
-		if (Position < 63)
+		if (Position < 64)
 		{
 			switch (Type)
 			{
-			case EPieceType::PAWN:   return bIsEndGame ? EG_PawnTable[Position] : MG_PawnTable[Position];
+			case EPieceType::PAWN:   return bIsEndGame ? EG_PawnTable[Position]   : MG_PawnTable[Position];
 			case EPieceType::KNIGHT: return bIsEndGame ? EG_KnightTable[Position] : MG_KnightTable[Position];
 			case EPieceType::BISHOP: return bIsEndGame ? EG_BishopTable[Position] : MG_BishopTable[Position];
-			case EPieceType::ROOK:   return bIsEndGame ? EG_RookTable[Position] : MG_RookTable[Position];
-			case EPieceType::QUEEN:  return bIsEndGame ? EG_QueenTable[Position] : MG_QueenTable[Position];
-			case EPieceType::KING:   return bIsEndGame ? EG_KingTable[Position] : MG_KingTable[Position];
+			case EPieceType::ROOK:   return bIsEndGame ? EG_RookTable[Position]   : MG_RookTable[Position];
+			case EPieceType::QUEEN:  return bIsEndGame ? EG_QueenTable[Position]  : MG_QueenTable[Position];
+			case EPieceType::KING:   return bIsEndGame ? EG_KingTable[Position]   : MG_KingTable[Position];
 			}
 		}
 		return 0;
