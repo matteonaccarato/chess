@@ -1062,7 +1062,7 @@ void AChess_GameMode::SetPawnPromotionChoice(EPieceType PieceType)
 
 
 /*
- * Function: SameConfigurationBoard
+ * Function: SeventyFive_MoveRule
  * -----------------------------
  * If the same position occurs five times during the course of the game, the game is automatically a draw.
  * 

@@ -263,7 +263,7 @@ public:
 	int32 GetPieceValueByMaterial(const ABasePiece* Piece, const EGamePhase GamePhase) const;
 	int32 Type2Value(const EPieceType Type, const bool bIsEndgame) const;
 	int32 GetPieceSquareValue(const EPieceType Type, const EPieceColor PieceColor, int X, const int Y, const bool bIsEndGame) const;
-	bool AvoidBoardRepetition() const;
+
 
 
 

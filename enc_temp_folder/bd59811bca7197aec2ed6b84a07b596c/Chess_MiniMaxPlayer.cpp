@@ -664,24 +664,6 @@ int32 AChess_MiniMaxPlayer::Type2Value(const EPieceType Type, const bool bIsEndg
 	}
 }
 
-bool AChess_MiniMaxPlayer::AvoidBoardRepetition() const
-{
-	AChess_GameMode* GameMode = Cast<AChess_GameMode>(GetWorld()->GetAuthGameMode());
-	if (GameMode)
-	{
-		// look every board saved and compare to the current one
-		for (const auto& PieceConfiguration : GameMode->GameSaving)
-		{
-			/* if (GameMode->ArePiecesEqual(PieceConfiguration))
-			{
-
-			} */
-		}
-	}
-
-}
-
-
 // TODO => non serve la board
 int32 AChess_MiniMaxPlayer::Pesto() const
 {
@@ -693,9 +675,6 @@ int32 AChess_MiniMaxPlayer::Pesto() const
 		
 		int Score = Base();
 		bool bIsEndGame = GameMode->GField->PieceArray.Num() < 10;
-
-		if (AvoidBoardRepetition()) // numero scacchiera ripetuta maggiormente == 4 ed è uguale alla mossa che si vuole fare => = 0
-			return 0;
 
 		for (const auto& Piece : GameMode->GField->PieceArray)
 		{
