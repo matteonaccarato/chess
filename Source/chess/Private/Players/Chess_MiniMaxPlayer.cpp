@@ -471,37 +471,15 @@ int32 AChess_MiniMaxPlayer::Pesto() const
 				int X = Piece->GetGridPosition()[0];
 				int Y = Piece->GetGridPosition()[1];
 
+				// Vertically flip
 				if (Piece->GetColor() == EPieceColor::BLACK)
 					X = 7 - X;
 				
 				int Position = X * GameMode->GField->Size + Y;
+				int ColorFactor = Color == Piece->GetColor() ? 1 : -1;
 
-				if (Color == EPieceColor::BLACK)
-				{
-					if (Piece->GetColor() == EPieceColor::WHITE)
-					{
-						Score -= Type2Value(Piece->GetType(), bIsEndGame);
-						Score -= PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
-					}
-					else
-					{
-						Score += Type2Value(Piece->GetType(), bIsEndGame);
-						Score += PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
-					}
-				}
-				else
-				{
-					if (Piece->GetColor() == EPieceColor::WHITE)
-					{
-						Score += Type2Value(Piece->GetType(), bIsEndGame);
-						Score += PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
-					}
-					else
-					{
-						Score -= Type2Value(Piece->GetType(), bIsEndGame);
-						Score -= PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame);
-					}
-				}
+				Score += (Type2Value(Piece->GetType(), bIsEndGame) * ColorFactor);
+				Score += (PestoEvaluation::GetPieceSquareValue(Piece->GetType(), Position, bIsEndGame) * ColorFactor);
 			}
 		}
 
