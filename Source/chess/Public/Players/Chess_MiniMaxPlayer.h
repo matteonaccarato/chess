@@ -31,22 +31,35 @@ public:
 	static constexpr int8 TIMER_BASE_OFFSET	= 1;
 
 	/* EVALUATION | PIECES VALUES */
-	static constexpr int  INFINITE = 1000000;
+	static constexpr int INFINITE = 1000000;
 	static constexpr int QUEEN_VALUE = 900;
-	static constexpr int EG_QUEEN_VALUE = 900;
 	static constexpr int ATTACKABLE_KING_VALUE = 800;
 	static constexpr int PAWN_PROMOTION_BONUS = 800;
 	static constexpr int ROOK_VALUE = 500;
-	static constexpr int EG_ROOK_VALUE = 500;
 	static constexpr int BISHOP_VALUE = 300;
-	static constexpr int EG_BISHOP_VALUE = 300;
 	static constexpr int KNIGHT_VALUE = 300;
-	static constexpr int EG_KNIGHT_VALUE = 300;
 	static constexpr int BLOCKING_KING_VALUE = 200;
 	static constexpr int PAWN_VALUE = 100;
-	static constexpr int EG_PAWN_VALUE = 100;
+
+
+
+
+	static constexpr int EG_QUEEN_VALUE = 936;
+	static constexpr int EG_ROOK_VALUE = 512;
+	static constexpr int EG_BISHOP_VALUE = 297;
+	static constexpr int EG_KNIGHT_VALUE = 281;
+	static constexpr int EG_PAWN_VALUE = 94;
+
+	static constexpr int MG_QUEEN_VALUE = 1025;
+	static constexpr int MG_ROOK_VALUE = 477;
+	static constexpr int MG_KNIGHT_VALUE = 365;
+	static constexpr int MG_BISHOP_VALUE = 337;
+	static constexpr int MG_PAWN_VALUE = 82;
 
 	
+
+
+
 	/* EVALUATION | FUNCTION */
 	EEValuationFunction EvaluationFunction;
 
@@ -66,9 +79,6 @@ public:
 
 	void SetEvaluationFunction(EEValuationFunction Evaluation);
 
-	/* Returns piece value based on its type and MiddleGame/EngGame */ 
-	int32 Type2Value(const EPieceType Type, const bool bIsEndgame) const;
-
 
 	/*
 	 * Analyse all the possible moves the player can make and choose the best one possible based on the current chess board situation.
@@ -81,7 +91,7 @@ public:
 	 * @return				std::pair<int8, std::pair<int8, int8>>						The best move to make where the structure is 
 	 *																					<piece_number, <new_x, new_y>>
 	 */
-	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces) const;
+	std::pair<int8, std::pair<int8, int8>> FindBestMove(TArray<ATile*>& Board, TArray<std::pair<int8, TArray<std::pair<int8, int8>>>>& PlayerPieces);
 	
 	
 	/*
@@ -103,9 +113,9 @@ public:
 	 *
 	 * @return			int32			Board evaluation
 	 */
-	int32 EvaluateBoard() const;
+	int32 EvaluateBoard(bool max) const;
 	int32 Base() const;  // Base Evaluation
-	int32 Pesto() const; // Advanced Evaluation (PeSTO)
+	int32 Pesto(bool max) const; // Advanced Evaluation (PeSTO)
 
 
 	/*
@@ -122,7 +132,12 @@ public:
 	 */
 	int32 ComputeBlockingKingScore(const ABasePiece* KingToBlock) const;
 
+
+	EPieceColor LastCheckFlag;
+	TArray<std::pair<int8, std::pair<int8, int8>>> Last6Moves;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 };
