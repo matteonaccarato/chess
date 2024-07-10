@@ -40,11 +40,9 @@ Then you can resume the game from this position
 <hr>
 
 ### (BOT) PERFORMANCE ([data](./GameData))
-#### 1) RANDOM vs RANDOM
-![Random vs Random](./GameData/Plots/random_random.png)
 
-#### 2) RANDOM vs MINIMAX
-![Random vs Random](./GameData/Plots/random_minimax.png)
+#### 1) RANDOM vs MINIMAX BASE
+![Random vs Minimax base](./GameData/Plots/random_minimax_base.png)
 
-#### 3) MINIMAX vs MINIMAX
-![MiniMax vs MiniMax](./GameData/Plots/minimax_minimax.png)
+#### 2) MINIMAX BASE vs MINIMAX peSTO
+![MiniMax base vs MiniMax peSTO](./GameData/Plots/minimax_base_minimax_pesto.png)
