@@ -1,22 +1,18 @@
-# CHESS
+# CHESS ♟️
 
 ## WHAT
-- Individual project for Design and Analysis of Algorithms course at the University of Genoa
-- Developing a chess game implementing two different CPU intelligences: Random and Smart. 
-The smart one is the result of specific algorithms such as MiniMax and Alpha-beta pruning
-- A simple [python script](./GameData/chessdata.py) (using pandas and plotly) has also been implemented 
-to show bot performance data against each other.
+♟️Developed **chess** game from scratch implementing an **autonomous player** using specific algorithms, such as MiniMax with Alpha‑beta pruning <br>
+💻 Three autonomous players ➡️ Random / MiniMax Base / MiniMax Advanced<br>
+📊 A [**python script**](./GameData/chessdata.py) has also been integrated to show bot performance data against each other.
 
 ## LEARNING
-- Decision algorithms
-- Fast prototyping
+☁️ Decision algorithms <br>
+🏎️ Fast prototyping
 
 ## STACK
-- C++
-- Unreal Engine 5.2
-- Python (Statistics data management)
+🧑‍💻 C++ / Unreal Engine 5.2 / Python 
 
-## HOW TO PLAY
+## HOW TO PLAY ♟️
 #### MOVE PIECES
 - When it is your turn, click on the piece you want to move. After that, possible moves of that piece are graphically shown
 - To confirm a move click on the tile you want to move on or the opponent's piece you want to capture
@@ -41,8 +37,8 @@ Then you can resume the game from this position
 
 ### (BOT) PERFORMANCE ([data](./GameData))
 
-#### 1) RANDOM vs MINIMAX BASE
-![Random vs Minimax base](./GameData/Plots/random_minimax_base.PNG)
+#### 1) RANDOM (red) vs MINIMAX BASE (green)
+![Random  vs Minimax base](./GameData/Plots/random_minimax_base.PNG)
 
-#### 2) MINIMAX BASE vs MINIMAX peSTO
+#### 2) MINIMAX BASE (red) vs MINIMAX ADVANCED (green)
 ![MiniMax base vs MiniMax peSTO](./GameData/Plots/minimax_base_minimax_pesto.PNG)
